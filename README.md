@@ -5,7 +5,9 @@ Tem combos, XP, níveis, recordes, dias seguidos e 12 conquistas escondidas.
 
 ## Jogar
 
-É um arquivo só: abre o `index.html` no navegador. Funciona no PC e no celular.
+**Online:** https://thur-zi.github.io/sudoku-bugado/
+
+Ou localmente: é um arquivo só, abre o `index.html` no navegador. Funciona no PC e no celular.
 
 **Teclado:** `1`–`9` coloca · setas andam · `Backspace` apaga · `N` lápis · `Z` desfaz · `H` dica
 
