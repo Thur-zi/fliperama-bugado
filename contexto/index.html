@@ -1,0 +1,797 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2A1650">
+<title>Contexto · Fliperama Bugado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+:root{ --ctx:#8F7BFF; --bg:var(--green); --by:var(--sun); --br:var(--pink); }
+.wrap.game{max-width:1060px;overflow-x:clip;padding-block:8px 28px}
+.game{display:grid;gap:10px;grid-template-columns:minmax(0,1fr);grid-template-areas:"bar" "side" "entry" "meter" "last" "list"}
+#bar{grid-area:bar}
+.side{grid-area:side;min-width:0}
+.entry{grid-area:entry;min-width:0}
+.meter{grid-area:meter;min-width:0}
+.lastwrap{grid-area:last;min-width:0;position:relative}
+.listwrap{grid-area:list;min-width:0}
+#mascot .bg-bubble{min-height:52px}
+.legend{display:none}
+
+/* ---------- entrada ---------- */
+.guess{display:flex;gap:8px}
+.guess input{flex:1;min-width:0;height:54px;border:3px solid var(--ink);border-radius:14px;background:var(--paper);color:var(--ink);font-family:var(--chunky);font-size:22px;letter-spacing:.02em;padding:0 14px;box-shadow:0 4px 0 var(--ink);outline:none;transition:box-shadow .12s}
+.guess input::placeholder{color:#9a8bbb;font-family:var(--body);font-weight:800;font-size:16px;letter-spacing:0}
+.guess input:focus{box-shadow:0 4px 0 var(--ink),0 0 0 3px var(--ctx)}
+.guess input:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+.guess input:disabled{background:#e6dcf5;cursor:progress}
+.guess .go{flex:none;height:54px;padding:0 16px;font-size:19px;display:flex;align-items:center;gap:6px}
+.guess .go svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+.msg{margin:6px 2px 0;font-size:13.5px;color:var(--sun);min-height:0}
+.msg:empty{display:none}
+.infobar{display:flex;align-items:center;gap:7px;margin-top:10px;flex-wrap:wrap}
+.modechip{cursor:pointer;font-family:var(--chunky);background:var(--ctx);color:var(--ink);letter-spacing:.03em}
+.modechip.inf{background:var(--cyan)}
+.cnt{font-family:var(--chunky);font-size:13px;color:var(--muted);white-space:nowrap}
+.cnt b{font-weight:400;color:var(--paper);font-size:17px;font-variant-numeric:tabular-nums}
+.infobar .sp{flex:1}
+.btn.mini{height:36px;padding:0 11px;font-size:14px;border-radius:11px;box-shadow:0 3px 0 var(--ink);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn.mini svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.btn.mini:active{box-shadow:0 0 0 var(--ink)}
+.btn.mini{position:relative}
+.btn.mini .tag{position:absolute;top:-9px;right:-6px;font-family:var(--chunky);font-weight:400;font-size:11px;line-height:1.2;background:var(--ink);color:var(--sun);border:2px solid var(--sun);border-radius:99px;padding:0 6px}
+@media (max-width:420px){ #bGive span{display:none} #bGive{padding:0 9px} }
+.donecard{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--pink);padding:10px 12px}
+.donecard .dc-txt{flex:1 1 180px;font-size:15px;line-height:1.3}
+.donecard .dc-txt b{font-family:var(--chunky);font-weight:400;font-size:19px;color:var(--violet)}
+.donecard .dc-btns{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- termômetro ---------- */
+.meter{display:flex;align-items:center;gap:8px}
+.meter svg{flex:none;width:24px;height:24px;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.meter .ice{stroke:var(--cyan)}
+.meter .fire{stroke:var(--pink)}
+.m-body{flex:1;min-width:0}
+.m-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
+.m-lbl{font-family:var(--chunky);font-size:11px;letter-spacing:.18em;color:var(--muted)}
+.m-val{font-family:var(--chunky);font-size:14px;color:var(--paper);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-val b{font-weight:400;color:var(--sun)}
+.m-track{position:relative;height:18px;border:3px solid var(--ink);border-radius:99px;background:linear-gradient(90deg,rgba(255,79,154,.22) 0 24.5%,rgba(255,210,63,.22) 24.5% 41%,rgba(61,220,132,.22) 41%),var(--deep);overflow:hidden}
+.m-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--c,var(--pink));border-right:3px solid var(--ink);border-radius:0 99px 99px 0;transition:width .7s cubic-bezier(.3,1.4,.5,1),background-color .3s}
+.m-tick{position:absolute;top:0;bottom:0;width:2px;background:rgba(255,247,230,.35)}
+
+/* ---------- linhas de chute ---------- */
+.row{position:relative;display:flex;align-items:center;gap:10px;min-height:44px;padding:0 14px;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:12px;overflow:hidden;list-style:none}
+.row .fill{position:absolute;left:0;top:0;bottom:0;background:var(--c);border-right:3px solid var(--ink)}
+.row .w{position:relative;flex:1;min-width:0;font-family:var(--chunky);font-size:18px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .n{position:relative;flex:none;font-family:var(--chunky);font-size:18px;font-variant-numeric:tabular-nums}
+.row .tg{position:relative;flex:none;font-family:var(--chunky);font-size:10px;letter-spacing:.08em;color:var(--paper);background:var(--ink);border-radius:6px;padding:2px 6px}
+.row.b-g{--c:var(--bg)} .row.b-y{--c:var(--by)} .row.b-r{--c:var(--br)}
+.row.secret{--c:var(--sun);box-shadow:0 0 0 3px var(--sun)}
+.row.cur{box-shadow:3px 3px 0 var(--cyan)}
+.lastwrap{min-height:8px}
+.lastwrap .lbl{display:block;font-family:var(--chunky);font-size:11px;letter-spacing:.18em;color:var(--muted);margin:0 0 4px 2px}
+#last .row{min-height:54px;border-width:3.5px;box-shadow:4px 4px 0 var(--ctx)}
+#last .row .w,#last .row .n{font-size:22px}
+.list{display:flex;flex-direction:column;gap:6px;margin:0;padding:0}
+.list-head{display:flex;justify-content:space-between;align-items:baseline;margin:6px 2px 6px}
+.list-head span{font-family:var(--chunky);font-size:11px;letter-spacing:.18em;color:var(--muted)}
+.burst{top:26px}
+
+/* vazio + carregando */
+.empty{background:rgba(255,247,230,.06);border:3px dashed var(--line);border-radius:16px;padding:14px 16px;font-size:14.5px;line-height:1.45;color:var(--paper)}
+.empty p{margin:0 0 10px}
+.empty b{color:var(--sun);font-weight:900}
+.ex{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.ex .row{min-height:36px;opacity:.95}
+.ex .row .w,.ex .row .n{font-size:15px}
+.loader{background:var(--paper);color:var(--ink);border:4px solid var(--ink);border-radius:20px;box-shadow:6px 6px 0 var(--pink);padding:18px 18px 16px;text-align:center}
+.loader h2{margin:0 0 4px;font-family:var(--display);font-weight:400;font-size:30px;letter-spacing:.04em;color:var(--violet);line-height:1}
+.loader p{margin:0 0 12px;font-size:14px;color:var(--text-ink)}
+.ld-track{height:22px;border:3px solid var(--ink);border-radius:99px;background:#eadff9;overflow:hidden}
+.ld-fill{display:block;height:100%;width:2%;background:repeating-linear-gradient(-45deg,var(--cyan) 0 12px,#20c9bb 12px 24px);border-right:3px solid var(--ink);transition:width .25s}
+.ld-txt{display:block;margin-top:8px;font-family:var(--chunky);font-size:14px;color:#6b5a90;font-variant-numeric:tabular-nums}
+.loader .btn{margin-top:12px;height:46px;padding:0 18px;font-size:16px}
+.thinking{font-family:var(--chunky);color:var(--muted);text-align:center;padding:20px 0;font-size:16px}
+
+/* animações */
+@keyframes pop{0%{transform:scale(.6) rotate(-3deg);opacity:0}60%{transform:scale(1.05) rotate(1deg);opacity:1}100%{transform:none}}
+.pop{animation:pop .42s cubic-bezier(.3,1.6,.5,1)}
+@keyframes flash{0%,100%{transform:none}25%{transform:scale(1.04) rotate(-1deg);box-shadow:0 0 0 4px var(--sun)}50%{transform:scale(.98)}75%{box-shadow:0 0 0 4px var(--sun)}}
+.flash{animation:flash .9s ease 1}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+.shake{animation:shake .38s}
+
+/* legenda (desktop) */
+.legend{margin-top:14px;background:rgba(255,247,230,.06);border:2.5px solid var(--line);border-radius:16px;padding:12px 14px}
+.legend h3{margin:0 0 8px;font-family:var(--chunky);font-weight:400;font-size:15px;color:var(--paper)}
+.legend ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13.5px;color:var(--paper)}
+.legend li{display:flex;align-items:center;gap:8px}
+.sw{flex:none;width:18px;height:18px;border:2.5px solid var(--ink);border-radius:5px;background:var(--c)}
+.legend .keys{margin-top:10px;font-size:12.5px;color:var(--muted)}
+
+@media (max-width:380px){
+  .guess .go span{display:none}
+  .guess input{font-size:20px}
+  .btn.mini{padding:0 9px;font-size:13px}
+  .cnt{font-size:12px}
+}
+@media (min-width:880px){
+  .game{grid-template-columns:minmax(0,620px) 320px;justify-content:center;column-gap:30px;row-gap:12px;align-items:start;
+    grid-template-areas:"bar bar" "entry side" "meter side" "last side" "list side";grid-template-rows:auto auto auto auto 1fr}
+  .side{grid-row:2/6;position:sticky;top:12px}
+  .legend{display:block}
+  .guess input,.guess .go{height:60px}
+  .guess input{font-size:24px}
+  .entry{padding-top:4px}
+}
+
+/* modais */
+.modes{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.mode{text-align:left;padding:11px 14px 11px 16px;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;border-left-width:12px;border-left-color:var(--c)}
+.mode b{font-family:var(--chunky);font-weight:400;font-size:20px}
+.mode span{grid-column:1;font-size:13.5px;font-weight:700;color:#4b3d6b;line-height:1.3;font-family:var(--body)}
+.mode em{grid-row:1/3;grid-column:2;font-style:normal;font-family:var(--chunky);font-size:12px;color:#6b5a90;text-align:right;line-height:1.2}
+.mode.cur{background:#FFF1B8}
+.secret-big{margin:12px 0 4px;text-align:center;font-family:var(--display);font-size:46px;letter-spacing:.04em;line-height:1;color:var(--sun);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:3px 3px 0 var(--violet)}
+.bands{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.band{display:flex;align-items:center;gap:6px;font-family:var(--chunky);font-size:17px;background:#fff;border:2.5px solid var(--ink);border-radius:10px;padding:3px 10px 3px 6px}
+.top100{list-style:none;margin:8px 0 0;padding:6px;max-height:min(300px,40dvh);overflow:auto;background:#fff;border:2.5px solid var(--ink);border-radius:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:3px 10px;overscroll-behavior:contain}
+.bg-card .top100 li{display:flex;gap:8px;align-items:baseline;font-size:14px;padding:2px 6px;border-radius:7px}
+.top100 li i{font-style:normal;flex:none;min-width:26px;text-align:right;font-family:var(--chunky);font-size:12px;color:#8a7aa8}
+.top100 li.got{background:#D9FBE7;font-weight:900}
+.top100 li.one{background:var(--sun)}
+.stat-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.stat-grid.four .stat span{font-size:10px;letter-spacing:.02em}
+.xprows{margin-top:12px;border:2.5px solid var(--ink);border-radius:12px;background:#fff;overflow:hidden}
+.xprow{display:flex;justify-content:space-between;gap:10px;padding:7px 12px;font-size:14px;font-weight:800;border-bottom:1.5px dashed #d9cdef}
+.xprow:last-child{border-bottom:0}
+.xprow b{font-family:var(--chunky);font-weight:400;color:#0B8A81}
+.xprow b.neg{color:var(--red)}
+.helprow{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:14px;font-weight:800}
+.share-ta{width:100%;min-height:110px;margin-top:10px;border:2.5px solid var(--ink);border-radius:10px;padding:8px;font:inherit;font-size:14px;color:var(--ink);background:#fff}
+</style>
+</head>
+<body>
+<div class="wrap game">
+  <header id="bar"></header>
+
+  <aside class="side">
+    <div id="mascot"></div>
+    <div class="legend" aria-hidden="true">
+      <h3>Como ler os números</h3>
+      <ul>
+        <li><span class="sw" style="--c:var(--green)"></span>1 a 300: quente, tá no assunto</li>
+        <li><span class="sw" style="--c:var(--sun)"></span>301 a 1.500: morno, tá rondando</li>
+        <li><span class="sw" style="--c:var(--pink)"></span>mais de 1.500: frio, muda de ideia</li>
+      </ul>
+      <p class="keys">A posição 1 é a palavra secreta. Conta o SENTIDO, não as letras. <kbd>Enter</kbd> chuta.</p>
+    </div>
+  </aside>
+
+  <section class="entry" id="entry">
+    <form class="guess" id="form" autocomplete="off">
+      <input id="inp" type="text" maxlength="32" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" placeholder="carregando…" aria-label="Teu chute: digita uma palavra" disabled>
+      <button class="btn primary go" id="go" type="submit" disabled aria-label="Chutar"><svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg><span>Chutar</span></button>
+    </form>
+    <div class="donecard" id="doneCard" hidden>
+      <div class="dc-txt" id="dcTxt"></div>
+      <div class="dc-btns">
+        <button class="btn mini primary" id="bResult" type="button">Ver resultado</button>
+        <button class="btn mini cool" id="bNext" type="button">Jogar Infinito</button>
+      </div>
+    </div>
+    <p class="msg" id="msg" role="status"></p>
+    <div class="infobar">
+      <button class="chip modechip" id="modeChip" type="button" title="Trocar modo">DIÁRIO</button>
+      <span class="cnt">chutes <b id="nGuess">0</b></span>
+      <span class="sp"></span>
+      <button class="btn mini cool" id="bHint" type="button" disabled><svg viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg><span>Dica</span><b class="tag" id="nHint" hidden>0</b></button>
+      <button class="btn mini" id="bGive" type="button" aria-label="Desistir" disabled><svg viewBox="0 0 24 24"><path d="M4 22V4"/><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1"/></svg><span>Desistir</span></button>
+    </div>
+  </section>
+
+  <section class="meter" id="meter" aria-label="Termômetro do teu melhor chute">
+    <svg class="ice" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M4.9 6.5l14.2 11M4.9 17.5l14.2-11"/><path d="m9 4 3 2 3-2M9 20l3-2 3 2"/></svg>
+    <div class="m-body">
+      <div class="m-head"><span class="m-lbl">TERMÔMETRO</span><span class="m-val" id="mVal">sem chute ainda</span></div>
+      <div class="m-track"><i class="m-fill" id="mFill"></i><span class="m-tick" style="left:24.5%"></span><span class="m-tick" style="left:41%"></span></div>
+    </div>
+    <svg class="fire" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+  </section>
+
+  <section class="lastwrap" id="lastWrap">
+    <div class="burst" id="burst" aria-hidden="true"></div>
+    <div id="last" aria-live="polite" aria-atomic="true"></div>
+  </section>
+
+  <section class="listwrap" id="listWrap">
+    <div class="loader" id="loader">
+      <h2>CARREGANDO O CÉREBRO</h2>
+      <p id="ldSub">São 16 mil palavras. Só demora na primeira vez.</p>
+      <div class="ld-track"><i class="ld-fill" id="ldFill"></i></div>
+      <span class="ld-txt" id="ldTxt">0%</span>
+    </div>
+    <div id="listBox" hidden></div>
+  </section>
+</div>
+
+<script src="../shared/falas.js"></script>
+<script src="../shared/bugado.js"></script>
+<script src="vocab.js"></script>
+<script src="segredos.js"></script>
+<script src="falas-contexto.js"></script>
+<script>
+(() => {
+const B = Bugado, $ = s => document.querySelector(s), RM = B.RM;
+
+/* ================= dados ================= */
+const VOCAB = window.CTX_VOCAB || [];
+const DIM = 300;
+let N = VOCAB.length;
+const EXACT = new Map(), NORM = new Map();
+VOCAB.forEach((w, i) => {
+  if (!EXACT.has(w)) EXACT.set(w, i);
+  const n = B.normalize(w); if (!NORM.has(n)) NORM.set(n, i);   // o mais frequente ganha
+});
+const SECRETS = (window.CTX_SEGREDOS || []).filter(w => EXACT.has(w));
+const GENERIC = new Set(['coisa','pessoa','algo','tudo','vida','nada','objeto','gente','mundo','negócio','treco','troço','parada','isso','aquilo','palavra','alguém','lugar','ideia','tempo','cara','ser','qualquer','algum','alguma','sim','não','bom','legal','geral','tipo']);
+
+const KEY_D = 'fliperama.contexto.daily', KEY_I = 'fliperama.contexto.inf', KEY_R = 'fliperama.contexto.recent';
+const G = B.game('contexto');
+['played','wins','gaveUp','sumGuesses','dStreak','dMax'].forEach(k => { G[k] = G[k] || 0; });
+
+/* ================= util ================= */
+const fmt = n => Number(n).toLocaleString('pt-BR');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const bw = w => `<b>${esc(w)}</b>`;
+const band = r => r <= 300 ? 'b-g' : r <= 1500 ? 'b-y' : 'b-r';
+const closeness = r => Math.max(0, 1 - Math.log(r) / Math.log(N));
+const pct = r => (3 + 97 * closeness(r)).toFixed(1);
+// cede a vez pro navegador sem o atraso mínimo do setTimeout (que em aba de fundo vira 1s)
+const tickCh = new MessageChannel(), tickQ = [];
+tickCh.port1.onmessage = () => { const f = tickQ.shift(); if (f) f(); };
+const tick = () => new Promise(res => { tickQ.push(res); tickCh.port2.postMessage(0); });
+function hashStr(s){ let h = 5381; for (let i = 0; i < s.length; i++) h = (h * 33 ^ s.charCodeAt(i)) >>> 0; return h.toString(36); }
+
+/* ================= vetores ================= */
+let V = null, NORMS = null;
+async function loadVectors(onProg){
+  const url = 'vetores.bin', expect = N * DIM;
+  const cacheName = 'fliperama-contexto', cacheKey = `vetores.bin?v=${hashStr(VOCAB.join('|'))}`;
+  let buf = null;
+  try {
+    if ('caches' in window){
+      const c = await caches.open(cacheName), hit = await c.match(cacheKey);
+      if (hit){ const b = await hit.arrayBuffer(); if (b.byteLength >= expect) buf = b; }
+    }
+  } catch(e){}
+  if (!buf){
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (res.body && res.body.getReader){
+      const rd = res.body.getReader(), parts = []; let got = 0;
+      for (;;){
+        const { done, value } = await rd.read(); if (done) break;
+        parts.push(value); got += value.length; onProg(Math.min(got / expect, 1));
+      }
+      const out = new Uint8Array(got); let o = 0; for (const p of parts){ out.set(p, o); o += p.length; }
+      buf = out.buffer;
+    } else { buf = await res.arrayBuffer(); }
+    onProg(1);
+    try {
+      if ('caches' in window){
+        const c = await caches.open(cacheName);
+        for (const k of await c.keys()) await c.delete(k);
+        await c.put(cacheKey, new Response(buf.slice(0), { headers:{ 'Content-Type':'application/octet-stream' } }));
+      }
+    } catch(e){}
+  }
+  N = Math.min(N, Math.floor(buf.byteLength / DIM));
+  V = new Int8Array(buf, 0, N * DIM);
+  NORMS = new Float32Array(N);
+  for (let i = 0; i < N; i++){
+    let s = 0; const o = i * DIM;
+    for (let k = 0; k < DIM; k++){ const v = V[o + k]; s += v * v; }
+    NORMS[i] = Math.sqrt(s) || 1;
+    if (i % 4000 === 3999) await tick();
+  }
+}
+
+// ranking de todas as palavras em relação à secreta (1 = a própria)
+async function computeRanking(si){
+  const sims = new Float32Array(N), sv = new Float32Array(DIM), o0 = si * DIM, ns = NORMS[si];
+  for (let k = 0; k < DIM; k++) sv[k] = V[o0 + k];
+  for (let start = 0; start < N; start += 3000){
+    const end = Math.min(N, start + 3000);
+    for (let i = start; i < end; i++){
+      let dot = 0; const o = i * DIM;
+      for (let k = 0; k < DIM; k++) dot += sv[k] * V[o + k];
+      sims[i] = dot / (NORMS[i] * ns);
+    }
+    await tick();
+  }
+  sims[si] = 9;
+  const order = new Uint32Array(N); for (let i = 0; i < N; i++) order[i] = i;
+  order.sort((a, b) => (sims[b] - sims[a]) || (a - b));
+  const rank = new Int32Array(N); for (let k = 0; k < N; k++) rank[order[k]] = k + 1;
+  return { order, rank };
+}
+
+/* ================= entrada: normalização + de-flexão ================= */
+const RULES = [['oes','ao'],['aes','ao'],['aos','ao'],['ns','m'],['ais','al'],['eis','el'],['eis','il'],['ois','ol'],['uis','ul'],['is','il'],['res','r'],['zes','z'],['ses','s'],['les','l'],['s','']];
+function resolve(raw){
+  const s = String(raw).toLowerCase().trim().replace(/^[\s.,;:!?"'“”‘’()]+|[\s.,;:!?"'“”‘’()]+$/g, '');
+  if (!s) return { err:'empty' };
+  if (!/^[a-zà-öø-ÿ-]+$/.test(s)) return { err:'invalid', s };
+  if (EXACT.has(s) && EXACT.get(s) < N) return { i:EXACT.get(s), s };
+  const n = B.normalize(s);
+  if (NORM.has(n) && NORM.get(n) < N) return { i:NORM.get(n), s };
+  for (const [suf, rep] of RULES){
+    if (n.length > suf.length && n.endsWith(suf)){
+      const c = n.slice(0, -suf.length) + rep;
+      if (NORM.has(c) && NORM.get(c) < N) return { i:NORM.get(c), s, plural:true };
+    }
+  }
+  return { err:'unknown', s };
+}
+
+/* ================= segredos ================= */
+function dailySecret(day){
+  const perm = B.shuffle([...SECRETS.keys()], B.rng(0xC0DE2026));
+  return SECRETS[perm[((day % perm.length) + perm.length) % perm.length]];
+}
+function pickInfinite(){
+  const recent = B.store.get(KEY_R) || [], today = dailySecret(B.dayNumber());
+  let pool = SECRETS.filter(w => !recent.includes(w) && w !== today);
+  if (!pool.length) pool = SECRETS.filter(w => w !== today);
+  const w = pool[Math.floor(Math.random() * pool.length)];
+  pushRecent(w); return w;
+}
+function pushRecent(w){ const r = (B.store.get(KEY_R) || []).filter(x => x !== w); r.push(w); while (r.length > 320) r.shift(); B.store.set(KEY_R, r); }
+
+/* ================= estado ================= */
+let S = null, R = null, ready = false, loadTok = 0;
+const newState = (mode, secret, day) => ({ mode, secret, day: day ?? null, guesses:[], hints:0, done:false, won:false, gaveUp:false, ms:[], cold:0, since:0, lastI:-1, xp:0 });
+function save(){
+  if (!S) return;
+  const out = Object.assign({}, S, { guesses: S.guesses.map(g => g.h ? { w:g.w, h:1 } : { w:g.w }) });
+  B.store.set(S.mode === 'daily' ? KEY_D : KEY_I, out);
+}
+const nGuesses = () => S ? S.guesses.filter(g => !g.h).length : 0;
+const bestRank = () => S && S.guesses.length ? Math.min(...S.guesses.map(g => g.r)) : Infinity;
+function bandCounts(){ const c = { g:0, y:0, r:0 }; S.guesses.forEach(g => { if (!g.h) c[band(g.r).slice(2)]++; }); return c; }
+
+/* ================= DOM ================= */
+const inp = $('#inp'), form = $('#form'), msgEl = $('#msg'), listBox = $('#listBox'), lastEl = $('#last'), burstEl = $('#burst');
+const loaderEl = $('#loader');
+const say = (cat, vars, mood, hold) => B.talk(cat, vars, mood, hold);
+function setMsg(t){ msgEl.textContent = t || ''; }
+function anim(el, cls){ if (!el || RM) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); setTimeout(() => el.classList.remove(cls), 950); }
+
+function rowHTML(g, extra = ''){
+  return `<li class="row ${band(g.r)} ${extra}" data-i="${g.i}"><span class="fill" style="width:${pct(g.r)}%"></span><span class="w">${esc(g.w)}</span>${g.h ? '<em class="tg">DICA</em>' : ''}<span class="n">${fmt(g.r)}</span></li>`;
+}
+function exampleRows(){
+  const ex = [['cachorro',3],['leite',432],['planta',5889]];
+  return ex.map(([w, r]) => rowHTML({ w, r, i:-1 })).join('');
+}
+
+function render(){
+  if (!S) return;
+  const daily = S.mode === 'daily';
+  const chip = $('#modeChip');
+  chip.textContent = daily ? `DIÁRIO #${S.day}` : 'INFINITO';
+  chip.classList.toggle('inf', !daily);
+  $('#nGuess').textContent = nGuesses();
+  $('#nHint').hidden = !S.hints; $('#nHint').textContent = S.hints;
+  const live = ready && !S.done;
+  inp.disabled = !live; $('#go').disabled = !live; $('#bHint').disabled = !live; $('#bGive').disabled = !live || !S.guesses.length;
+  inp.placeholder = ready ? 'digita uma palavra' : 'pensando…';
+  form.hidden = S.done; $('#doneCard').hidden = !S.done;
+  if (S.done){
+    $('#dcTxt').innerHTML = S.won
+      ? `Acertou ${bw(S.secret)} em ${nGuesses()} chute${nGuesses() === 1 ? '' : 's'}${S.hints ? ` e ${S.hints} dica${S.hints > 1 ? 's' : ''}` : ''}!`
+      : `Desistiu. A palavra era ${bw(S.secret)}.`;
+    $('#bNext').textContent = daily ? 'Jogar Infinito' : 'Palavra nova';
+  }
+
+  // termômetro
+  const best = bestRank();
+  const fill = $('#mFill');
+  if (best === Infinity){ fill.style.width = '0%'; $('#mVal').textContent = 'sem chute ainda'; }
+  else {
+    fill.style.width = pct(best) + '%';
+    fill.style.setProperty('--c', best <= 300 ? 'var(--green)' : best <= 1500 ? 'var(--sun)' : 'var(--pink)');
+    const z = best === 1 ? 'ACHOU!' : best < 50 ? 'FERVENDO' : best <= 300 ? 'QUENTE' : best <= 1500 ? 'MORNO' : best <= 5000 ? 'FRIO' : 'CONGELADO';
+    $('#mVal').innerHTML = `melhor <b>${fmt(best)}</b> · ${z}`;
+  }
+
+  // último chute
+  const lg = S.guesses.find(g => g.i === S.lastI);
+  lastEl.innerHTML = lg ? `<span class="lbl">ÚLTIMO CHUTE</span><ul class="list">${rowHTML(lg)}</ul>` : '';
+
+  // lista
+  if (!ready){ listBox.innerHTML = '<div class="thinking">O Bugado tá pensando na palavra…</div>'; return; }
+  if (!S.guesses.length && !S.done){
+    listBox.innerHTML = `<div class="empty">
+      <p>Chuta <b>qualquer palavra</b>. Eu digo a <b>posição</b> dela numa fila de 16 mil, organizada pelo <b>sentido</b> parecido com a palavra secreta. A secreta é a <b>número 1</b>.</p>
+      <p>Tipo assim, se a secreta fosse “gato”:</p>
+      <ul class="ex">${exampleRows()}</ul>
+    </div>`;
+    return;
+  }
+  const sorted = [...S.guesses].sort((a, b) => a.r - b.r);
+  let html = '';
+  if (S.done && !S.won) html += rowHTML({ w:S.secret, r:1, i:EXACT.get(S.secret) }, 'secret');
+  html += sorted.map(g => rowHTML(g, g.i === S.lastI ? 'cur' : '')).join('');
+  listBox.innerHTML = `<div class="list-head"><span>POR PROXIMIDADE</span><span>${S.guesses.length} PALAVRA${S.guesses.length === 1 ? '' : 'S'}</span></div><ul class="list" id="list">${html}</ul>`;
+}
+const listRow = i => listBox.querySelector(`.row[data-i="${i}"]`);
+function flashRow(i){
+  const el = listRow(i); if (!el) return;
+  el.scrollIntoView({ block:'nearest', behavior: RM ? 'auto' : 'smooth' });
+  anim(el, 'flash');
+}
+function popNew(){ anim(lastEl.querySelector('.row'), 'pop'); anim(listRow(S.lastI), 'pop'); }
+const burst = (t, c) => B.burst(burstEl, t, c);
+
+/* ================= jogada ================= */
+function submit(){
+  if (!ready || !S || S.done) return;
+  const raw = inp.value, res = resolve(raw);
+  if (res.err === 'empty'){ anim(form, 'shake'); return; }
+  if (res.err === 'invalid'){
+    anim(form, 'shake'); B.sfx.meh(); setMsg('Uma palavra só, só com letras.');
+    say('ctxInvalida', null, 'smug'); return;
+  }
+  if (res.err === 'unknown'){
+    anim(form, 'shake'); B.sfx.err(); B.glitch(); setMsg(`Não conheço “${res.s}”. Não gastou chute.`);
+    say('ctxDesconhecida', { palavra:bw(res.s) }, 'smug'); inp.select(); return;
+  }
+  setMsg(''); inp.value = '';
+  const i = res.i, ex = S.guesses.find(g => g.i === i);
+  if (ex){
+    S.lastI = i; render(); flashRow(i); B.sfx.meh();
+    say('ctxRepetida', { palavra:bw(ex.w), n:fmt(ex.r) }, 'smug'); save(); return;
+  }
+  addGuess(i, false, res.plural ? res.s : null);
+}
+
+const MILES = [[1000,'TOP 1000!','#FFD23F'],[300,'TOP 300!','#FFD23F'],[100,'TOP 100!','#2EE6D6'],[50,'TOP 50!','#2EE6D6'],[20,'QUENTE!','#FF9A3C'],[5,'PERTINHO!','#FF4F9A']];
+function addGuess(i, hint, orig){
+  const prevBest = bestRank(), r = R.rank[i], w = VOCAB[i];
+  S.guesses.push({ w, i, r, h: !!hint }); S.lastI = i;
+  if (hint) S.hints++;
+  if (r === 1){ render(); popNew(); return win(); }
+  const isBest = r < prevBest;
+  if (!hint){ S.cold = r > 1500 ? (S.cold || 0) + 1 : 0; }
+  if (isBest) S.since = 0; else if (!hint) S.since = (S.since || 0) + 1;
+  render(); popNew();
+  const lr = listRow(i); if (lr && S.guesses.length > 6) lr.scrollIntoView({ block:'nearest', behavior: RM ? 'auto' : 'smooth' });
+
+  // marcos
+  let mile = null;
+  if (isBest) for (const m of MILES){ if (r <= m[0] && !S.ms.includes(m[0])){ S.ms.push(m[0]); mile = m; } }
+  if (mile){ burst(mile[1], mile[2]); B.glitch('boing'); }
+
+  // sons
+  if (hint) B.sfx.hint();
+  else if (isBest && r <= 300) B.sfx.good();
+  else if (isBest) B.sfx.place(Math.max(0, Math.round(closeness(r) * 14)));
+  else if (r > 1500) B.sfx.meh();
+  else B.sfx.tap();
+  save();
+  if (hint) return r;
+
+  // o que o Bugado fala
+  const n = nGuesses(), vars = { palavra:bw(w), n:fmt(r), melhor: prevBest === Infinity ? '—' : fmt(prevBest), orig: orig ? bw(orig) : '' };
+  let cat, mood = 'talk';
+  if (orig && Math.random() < .6) cat = 'ctxPlural';
+  else if (GENERIC.has(w)) { cat = 'ctxGenerico'; mood = 'smug'; }
+  else if (n === 1) cat = 'ctxPrimeiro';
+  else if ([5,10,15,20,30,40,60].includes(S.cold)){ cat = 'ctxSequenciaFria'; vars.k = S.cold; mood = 'shock'; }
+  else if (isBest && r <= 10){ cat = 'ctxPertinho'; mood = 'shock'; }
+  else if (isBest && prevBest !== Infinity && r <= 3000 && Math.random() < (mile ? .35 : .5)){ cat = 'ctxRecorde'; mood = 'happy'; }
+  else if (!isBest && [8,15,25,40,60,90].includes(S.since) && prevBest <= 5000){ cat = 'ctxEstagnado'; vars.k = S.since; mood = 'smug'; }
+  else if (!isBest && prevBest <= 1500 && r > prevBest * 4 && Math.random() < .4){ cat = 'ctxPior'; mood = 'smug'; }
+  else {
+    cat = r < 50 ? 'ctxFervendo' : r <= 300 ? 'ctxQuente' : r <= 1500 ? 'ctxMorno' : r <= 5000 ? 'ctxFrio' : 'ctxCongelado';
+    mood = { ctxFervendo:'shock', ctxQuente:'happy', ctxMorno:'talk', ctxFrio:'smug', ctxCongelado: Math.random() < .5 ? 'shock' : 'smug' }[cat];
+  }
+  say(cat, vars, mood, 5000);
+  return r;
+}
+
+function hint(){
+  if (!ready || !S || S.done) return;
+  const best = bestRank(), guessed = new Set(S.guesses.map(g => g.i));
+  const target = best === Infinity ? 300 : best <= 2 ? 0 : Math.max(2, Math.floor(best / 2));
+  const upper = best === Infinity ? N : best - 1;
+  let idx = -1;
+  const ok = (rr, strict) => { if (rr < 2 || rr > upper) return false; const w = R.order[rr - 1]; return !guessed.has(w) && (!strict || w < 9000); };
+  if (target){
+    const span = Math.max(3, Math.round(target * .2));
+    for (const strict of [true, false]){
+      for (let d = 0; d <= (strict ? span : N) && idx < 0; d++){
+        if (ok(target - d, strict)) idx = R.order[target - d - 1];
+        else if (ok(target + d, strict)) idx = R.order[target + d - 1];
+      }
+      if (idx >= 0) break;
+    }
+  }
+  if (idx < 0){ for (let k = 1; k < N; k++){ const w = R.order[k]; if (!guessed.has(w)){ idx = w; break; } } }
+  if (idx < 0) return;
+  const hadGuesses = nGuesses();
+  const r = addGuess(idx, true);
+  const vars = { palavra:bw(VOCAB[idx]), n:fmt(r), k:S.hints };
+  const cat = !hadGuesses && S.hints === 1 ? 'ctxDicaSemChute' : S.hints === 1 ? 'ctxDica1' : S.hints === 2 ? 'ctxDica2' : 'ctxDicaMuitas';
+  say(cat, vars, 'smug', 7000);
+  anim($('#bHint'), 'flash');
+}
+
+function askGiveUp(){
+  if (!ready || !S || S.done) return;
+  B.openModal(`
+    <h2>Desistir?</h2>
+    <p class="sub">${B.line('ctxDesistirPergunta')}</p>
+    <p>Eu revelo a palavra secreta e mostro as 100 mais perto dela. ${S.mode === 'daily' ? 'O diário de hoje conta como perdido.' : ''}</p>
+    <div class="m-actions">
+      <button class="btn primary" type="button" data-act="close">Nada, vou continuar</button>
+      <button class="btn hot" type="button" data-act="giveup">Desisto, conta logo</button>
+    </div>`);
+}
+B.onAct('giveup', () => { B.closeModal(true); finish(false); });
+
+/* ================= fim ================= */
+function xpFor(){
+  const k = nGuesses();
+  let xp = Math.max(15, 80 - k / 2) - 10 * S.hints;
+  xp = Math.max(10, xp);
+  if (S.mode !== 'daily') xp = xp / 2;
+  return Math.round(xp);
+}
+function finish(won){
+  S.done = true; S.won = won; S.gaveUp = !won;
+  const k = nGuesses();
+  G.played++;
+  if (won){
+    S.xp = xpFor();
+    B.registerWin('contexto');
+    G.sumGuesses += k; G.best = G.best ? Math.min(G.best, k) : k;
+  } else { G.gaveUp++; }
+  if (S.mode === 'daily'){
+    G.lastDaily = { day:S.day, won };
+    if (won){ G.dStreak = G.dLastWin === S.day - 1 ? G.dStreak + 1 : 1; G.dLastWin = S.day; G.dMax = Math.max(G.dMax, G.dStreak); }
+    else G.dStreak = 0;
+    pushRecent(S.secret);
+  }
+  B.saveProfile(); save(); render();
+  if (won){
+    B.gainXP(S.xp, { quiet:true });
+    B.sfx.win(); B.confetti(); burst('ACERTOU!', '#FFD23F');
+    const cat = S.hints ? 'ctxVitoriaComDica' : k <= 15 ? 'ctxVitoriaRapida' : k > 60 ? 'ctxVitoriaDemorada' : 'ctxVitoria';
+    say(cat, { k }, 'happy', 99999);
+  } else {
+    B.sfx.lose(); B.glitch();
+    say('ctxDesistiu', { palavra:bw(S.secret) }, 'dead', 99999);
+    const el = listRow(EXACT.get(S.secret)); if (el) el.scrollIntoView({ block:'nearest' });
+  }
+  setTimeout(showResult, won ? (RM ? 500 : 1700) : 700);
+}
+const win = () => finish(true);
+
+function shareText(){
+  const c = bandCounts(), k = nGuesses(), h = S.hints;
+  const title = S.mode === 'daily' ? `Fliperama Bugado · Contexto #${S.day}` : 'Fliperama Bugado · Contexto Infinito';
+  const res = S.won ? `Acertei em ${k} chute${k === 1 ? '' : 's'}${h ? ` e ${h} dica${h > 1 ? 's' : ''}` : ''}` : `Desisti depois de ${k} chute${k === 1 ? '' : 's'}`;
+  return `${title}\n${res}\n🟩 ${c.g}  🟨 ${c.y}  🟥 ${c.r}\n${location.origin}${location.pathname}`;
+}
+function showResult(){
+  if (!S || !S.done || !R) return;
+  const k = nGuesses(), c = bandCounts(), guessed = new Set(S.guesses.map(g => g.i)), daily = S.mode === 'daily';
+  const top = Array.from(R.order.slice(0, 100)).map((w, j) => `<li class="${j === 0 ? 'one' : guessed.has(w) ? 'got' : ''}"><i>${j + 1}</i>${esc(VOCAB[w])}</li>`).join('');
+  const lvl = B.levelInfo();
+  B.openModal(`
+    ${S.won ? '<h2 class="big">ACERTOU!</h2>' : '<h2>Fica pra próxima</h2>'}
+    <p class="sub">${B.line(S.won ? 'vitoriaGeral' : 'derrotaGeral')}</p>
+    <div class="secret-big">${esc(S.secret)}</div>
+    <div class="stat-grid four">
+      <div class="stat"><b>${k}</b><span>chutes</span></div>
+      <div class="stat"><b>${S.hints}</b><span>dicas</span></div>
+      <div class="stat"><b>${S.won ? '+' + S.xp : '0'}</b><span>XP</span></div>
+      ${daily ? `<div class="stat"><b>${G.dLastWin >= S.day - 1 ? G.dStreak : 0}</b><span>seguidos</span></div>` : `<div class="stat"><b>${lvl.lvl}</b><span>nível</span></div>`}
+    </div>
+    <div class="bands" aria-label="Chutes por cor">
+      <span class="band"><span class="sw" style="--c:var(--green)"></span>${c.g}</span>
+      <span class="band"><span class="sw" style="--c:var(--sun)"></span>${c.y}</span>
+      <span class="band"><span class="sw" style="--c:var(--pink)"></span>${c.r}</span>
+    </div>
+    <h3>As 100 mais perto de “${esc(S.secret)}”</h3>
+    <ol class="top100">${top}</ol>
+    <div class="m-actions">
+      <button class="btn primary" type="button" data-act="share">Copiar resultado</button>
+      <button class="btn cool" type="button" data-act="next">${daily ? 'Jogar Infinito' : 'Palavra nova'}</button>
+      <button class="btn" type="button" data-act="close">Ver minha lista</button>
+    </div>`);
+}
+B.onAct('share', async () => {
+  const t = shareText();
+  if (await B.copyText(t)) B.toast('Copiado!', 'Cola no grupo e passa vergonha junto.');
+  else B.openModal(`<h2>Copia aí</h2><p class="sub">Teu navegador não deixou eu copiar sozinho.</p><textarea class="share-ta" readonly>${esc(t)}</textarea><div class="m-actions"><button class="btn primary" type="button" data-act="close">Fechar</button></div>`);
+});
+B.onAct('next', () => { B.closeModal(true); openMode('inf', { fresh:true }); });
+
+/* ================= modos ================= */
+async function openMode(mode, opts = {}){
+  const tok = ++loadTok;
+  let st;
+  const day = B.dayNumber();
+  if (mode === 'daily'){
+    const sec = dailySecret(day);
+    st = B.store.get(KEY_D);
+    if (!st || st.day !== day || st.secret !== sec) st = newState('daily', sec, day);
+  } else {
+    st = opts.fresh ? null : B.store.get(KEY_I);
+    if (!st || st.done || !EXACT.has(st.secret)) st = newState('inf', pickInfinite());
+  }
+  st = Object.assign(newState(st.mode, st.secret, st.day), st);
+  st.guesses = (st.guesses || []).filter(g => g && EXACT.has(g.w)).map(g => ({ w:g.w, i:EXACT.get(g.w), h: !!g.h, r:0 }));
+  const restored = st.guesses.length > 0;
+  G.lastMode = mode; B.saveProfile();
+  S = st; ready = false; R = null; setMsg('');
+  render();
+  const rk = await computeRanking(EXACT.get(S.secret));
+  if (tok !== loadTok) return;
+  R = rk; S.guesses.forEach(g => { g.r = R.rank[g.i]; });
+  ready = true; save(); render();
+  if (!opts.quiet){
+    if (S.done && mode === 'daily') say('ctxDiarioFeito', null, 'smug', 7000);
+    else if (S.done) say('ctxDiarioFeito', null, 'smug', 7000);
+    else if (restored) say('ctxVoltou', { k:nGuesses(), melhor:fmt(bestRank()) }, 'smug', 6000);
+    else say(mode === 'daily' ? 'ctxInicioDiario' : 'ctxInicioInfinito', { dia:S.day }, 'talk', 6000);
+  }
+  if (!S.done && matchMedia('(pointer:fine)').matches) inp.focus({ preventScroll:true });
+}
+
+function showModes(){
+  const day = B.dayNumber(), d = B.store.get(KEY_D), inf = B.store.get(KEY_I);
+  const dToday = d && d.day === day && d.secret === dailySecret(day) ? d : null;
+  const dStatus = !dToday || !dToday.guesses.length ? 'novo' : dToday.done ? (dToday.won ? 'feito' : 'perdido') : `${dToday.guesses.length} chutes`;
+  const infGoing = inf && !inf.done && inf.guesses && inf.guesses.length;
+  B.openModal(`
+    <h2>Escolhe o modo</h2>
+    <p class="sub">O diário é igual pra todo mundo. O infinito é só teu, e nunca acaba.</p>
+    <div class="modes">
+      <button class="btn mode ${S && S.mode === 'daily' ? 'cur' : ''}" type="button" data-act="mode" data-m="daily" style="--c:var(--ctx)"><b>Diário #${day}</b><span>Uma palavra por dia. Compara com os amigos.</span><em>${dStatus}</em></button>
+      <button class="btn mode ${S && S.mode === 'inf' ? 'cur' : ''}" type="button" data-act="mode" data-m="${infGoing ? 'inf' : 'infnew'}" style="--c:var(--cyan)"><b>Infinito</b><span>${infGoing ? 'Continua a palavra que você deixou pela metade.' : 'Palavra sorteada. Joga quantas quiser.'}</span><em>${infGoing ? `${inf.guesses.length} chutes` : 'novo'}</em></button>
+      ${infGoing ? '<button class="btn mode" type="button" data-act="mode" data-m="infnew" style="--c:var(--sun)"><b>Infinito: palavra nova</b><span>Larga a atual (ela não conta como derrota) e sorteia outra.</span><em>novo</em></button>' : ''}
+    </div>
+    <div class="m-actions"><button class="btn" type="button" data-act="close">Voltar</button></div>`);
+}
+B.onAct('mode', b => {
+  B.closeModal(true); B.sfx.flip();
+  const m = b.dataset.m;
+  if (m === 'daily') openMode('daily');
+  else openMode('inf', { fresh: m === 'infnew' });
+});
+
+function showStats(){
+  const avg = G.wins ? (G.sumGuesses / G.wins).toFixed(1).replace('.', ',') : '—';
+  const day = B.dayNumber(), streak = G.dLastWin >= day - 1 ? G.dStreak : 0;
+  const today = G.lastDaily && G.lastDaily.day === day ? (G.lastDaily.won ? 'feito' : 'perdido') : 'pendente';
+  B.openModal(`
+    <h2>Tua ficha no Contexto</h2>
+    <p class="sub">Diário de hoje: <b>${today}</b>.</p>
+    <div class="stat-grid">
+      <div class="stat"><b>${G.played}</b><span>jogos</span></div>
+      <div class="stat"><b>${G.wins || 0}</b><span>vitórias</span></div>
+      <div class="stat"><b>${avg}</b><span>média de chutes</span></div>
+      <div class="stat"><b>${G.best || '—'}</b><span>melhor</span></div>
+      <div class="stat"><b>${streak}</b><span>diários seguidos</span></div>
+      <div class="stat"><b>${G.dMax}</b><span>maior sequência</span></div>
+      <div class="stat"><b>${G.gaveUp}</b><span>desistências</span></div>
+    </div>
+    <p style="margin-top:14px">${G.gaveUp > (G.wins || 0) ? 'Mais desistência que vitória. Eu não julgo. Julgo sim.' : G.wins ? 'Nada mal. Eu tô de olho nessa média.' : 'Ainda sem vitória. Todo mundo começa no gelo.'}</p>
+    <div class="m-actions"><button class="btn primary" type="button" data-act="close">Fechar</button></div>`);
+}
+function showHelp(){
+  B.openModal(`
+    <h2>Contexto pra quem nunca jogou</h2>
+    <p class="sub">É quente-ou-frio com palavras. Mas o que vale é o SENTIDO, não a escrita.</p>
+    <h3>Como funciona</h3>
+    <ul>
+      <li><span class="tag2">CHUTA</span><span>Digita qualquer palavra e aperta <kbd>Enter</kbd>. Chutes são infinitos.</span></li>
+      <li><span class="tag2" style="--c:#8F7BFF">NÚMERO</span><span>É a <b>posição</b> da tua palavra numa fila de 16 mil, ordenada por quanto o sentido dela se parece com o da secreta. A secreta é a <b>1</b>. Número menor = mais perto.</span></li>
+      <li><span class="tag2" style="--c:#2EE6D6">SENTIDO</span><span>“Gato” e “pato” se escrevem parecido, mas ficam longe. “Gato” e “cachorro” ficam pertinho, porque aparecem nos mesmos assuntos.</span></li>
+    </ul>
+    <h3>As cores</h3>
+    <ul>
+      <li><span class="tag2" style="--c:var(--green)">VERDE</span><span>Até 300: quente, tá no assunto.</span></li>
+      <li><span class="tag2" style="--c:var(--sun)">AMARELO</span><span>De 301 a 1.500: morno, tá rondando.</span></li>
+      <li><span class="tag2" style="--c:var(--pink)">ROSA</span><span>Mais de 1.500: frio. Muda de assunto.</span></li>
+    </ul>
+    <h3>Truques</h3>
+    <ul>
+      <li><span class="tag2" style="--c:#FFF1B8">1</span><span>Começa com temas bem diferentes (bicho, comida, lugar, sentimento) e vê qual esquenta.</span></li>
+      <li><span class="tag2" style="--c:#FFF1B8">2</span><span>Achou algo quente? Chuta os “vizinhos”: onde fica, pra que serve, quem usa, sinônimos.</span></li>
+      <li><span class="tag2" style="--c:#FFF1B8">3</span><span>Plural e acento tanto faz: eu entendo “animais” como “animal”. Nome próprio eu não conheço.</span></li>
+    </ul>
+    <h3>Botões</h3>
+    <ul>
+      <li><span class="tag2" style="--c:var(--cyan)">DICA</span><span>Revela uma palavra no meio do caminho entre teu melhor chute e a secreta. Custa XP.</span></li>
+      <li><span class="tag2" style="--c:#fff">DESISTIR</span><span>Mostra a resposta e as 100 palavras mais perto dela.</span></li>
+      <li><span class="tag2" style="--c:#8F7BFF">MODO</span><span><b>Diário</b>: uma palavra por dia, igual pra todo mundo. <b>Infinito</b>: sorteia quantas quiser (vale metade do XP).</span></li>
+    </ul>
+    <div class="m-actions"><button class="btn primary" type="button" data-act="close">Bora chutar</button></div>`);
+}
+
+/* ================= eventos ================= */
+form.addEventListener('submit', e => { e.preventDefault(); submit(); inp.focus({ preventScroll:true }); });
+inp.addEventListener('input', () => { if (msgEl.textContent) setMsg(''); });
+$('#bHint').addEventListener('click', () => { B.sfx.tap(); hint(); });
+$('#bGive').addEventListener('click', () => { B.sfx.tap(); askGiveUp(); });
+$('#modeChip').addEventListener('click', () => { B.sfx.tap(); showModes(); });
+$('#bResult').addEventListener('click', () => { B.sfx.tap(); showResult(); });
+$('#bNext').addEventListener('click', () => { B.sfx.flip(); openMode('inf', { fresh:true }); });
+// digitou fora do campo? manda pro campo
+document.addEventListener('keydown', e => {
+  if (B.isModalOpen() || e.ctrlKey || e.metaKey || e.altKey || inp.disabled || form.hidden) return;
+  if (document.activeElement === inp) return;
+  if (e.key.length === 1 && /[a-zà-ÿ]/i.test(e.key) && !/^(BUTTON|A|INPUT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName)){ inp.focus(); }
+});
+
+/* ================= início ================= */
+B.mountBar($('#bar'), { title:'Contexto', color:'#8F7BFF', buttons:[
+  { icon:'stats', label:'Estatísticas', onClick:showStats },
+  { icon:'help', label:'Como jogar', onClick: () => { $('#bHelp').classList.remove('pulse'); showHelp(); }, id:'bHelp' },
+  { icon:'plus', label:'Trocar modo / palavra nova', onClick:showModes, cls:'sun' }
+]});
+B.mountMascot($('#mascot'), { pokeCat:'cutucarContexto' });
+const wide = matchMedia('(min-width:880px)');
+const applyStack = () => B.setStack(wide.matches);
+applyStack(); wide.addEventListener('change', applyStack);
+const firstTime = !B.profile().seen.contexto;
+if (firstTime){ B.profile().seen.contexto = true; B.saveProfile(); $('#bHelp').classList.add('pulse'); }
+
+let loadTalk = null;
+async function boot(){
+  loaderEl.hidden = false; listBox.hidden = true;
+  $('#ldSub').textContent = 'São 16 mil palavras. Só demora na primeira vez.';
+  loaderEl.querySelector('.btn') && loaderEl.querySelector('.btn').remove();
+  say('ctxCarregando', null, 'talk', 4000);
+  loadTalk = setInterval(() => say('ctxCarregando', null, Math.random() < .5 ? 'talk' : 'smug', 4000), 4200);
+  const fillEl = $('#ldFill'), txtEl = $('#ldTxt');
+  try {
+    if (!VOCAB.length || !SECRETS.length) throw new Error('vocab');
+    await loadVectors(p => {
+      fillEl.style.width = Math.max(2, p * 100).toFixed(1) + '%';
+      txtEl.textContent = `${Math.round(p * 100)}% · ${(p * N * DIM / 1048576).toFixed(1).replace('.', ',')} de ${(N * DIM / 1048576).toFixed(1).replace('.', ',')} MB`;
+    });
+  } catch(err){
+    clearInterval(loadTalk);
+    $('#ldSub').textContent = 'Deu ruim pra baixar o cérebro de palavras. Confere a internet e tenta de novo.';
+    txtEl.textContent = 'erro: ' + (err && err.message || 'desconhecido');
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn primary'; b.textContent = 'Tentar de novo';
+    b.onclick = boot; loaderEl.appendChild(b);
+    B.say('Tropecei no cabo da internet. Tenta de novo?', 'dead', 99999);
+    return;
+  }
+  clearInterval(loadTalk);
+  fillEl.style.width = '100%'; txtEl.textContent = 'pronto!';
+  loaderEl.hidden = true; listBox.hidden = false;
+  const infSaved = B.store.get(KEY_I);
+  const startInf = G.lastMode === 'inf' && infSaved && !infSaved.done && infSaved.guesses && infSaved.guesses.length;
+  await openMode(startInf ? 'inf' : 'daily', { quiet: firstTime });
+  if (firstTime) B.say('Oi! Eu sou o <b>Bugado</b>. Aqui você chuta palavras e eu digo o quão perto do <b>sentido</b> da secreta elas estão. Número menor = mais quente. Dúvida? Aperta o <b>?</b> lá em cima.', 'talk', 9000);
+}
+boot();
+B.chatter({ active: () => ready && S && !S.done, randomCat:'ctxAleatorio', idleCat:'ctxParado', every:[55,100], idleAfter:45 });
+})();
+</script>
+</body>
+</html>

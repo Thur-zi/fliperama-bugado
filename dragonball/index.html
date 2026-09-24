@@ -1,0 +1,881 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2A1650">
+<title>Quem é esse Guerreiro? · Fliperama Bugado</title>
+<meta name="description" content="Adivinhe o personagem de Dragon Ball pelas pistas de raça, afiliação, estreia, planeta, cabelo e poder.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+/* ================= Dragon Ball: Quem é esse Guerreiro? ================= */
+:root{--db:#FF9A3C;--db2:#FF6A1A;--ok:var(--green);--part:var(--sun);--bad:var(--red);--scouter:#3DDC84}
+body{overflow-x:hidden}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-top:10px}
+.side,.main{min-width:0}
+.main{display:flex;flex-direction:column;gap:12px}
+@media (min-width:1040px){
+  .layout{grid-template-columns:230px minmax(0,1fr);align-items:start;gap:16px}
+  .side{position:sticky;top:12px;display:flex;flex-direction:column;gap:14px}
+}
+.side-card{display:none}
+@media (min-width:1040px){ .side-card{display:block} }
+
+/* ---------- modos ---------- */
+.modes{display:flex;gap:6px;background:var(--deep);border:3px solid var(--ink);border-radius:16px;padding:5px;box-shadow:0 4px 0 var(--ink)}
+.modes button{flex:1;min-width:0;appearance:none;border:2.5px solid transparent;border-radius:11px;background:none;color:var(--paper);font-family:var(--chunky);font-size:15px;padding:7px 4px;cursor:pointer;white-space:nowrap;transition:background-color .15s,color .15s}
+.modes button small{display:block;font-family:var(--body);font-size:10px;font-weight:800;letter-spacing:.05em;color:var(--muted)}
+.modes button[aria-selected="true"]{background:var(--db);color:var(--ink);border-color:var(--ink)}
+.modes button[aria-selected="true"] small{color:var(--ink)}
+.modes button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+
+/* ---------- painel principal (papel) ---------- */
+.panel{position:relative;background:var(--paper);color:var(--ink);border:4px solid var(--ink);border-radius:20px;box-shadow:6px 6px 0 var(--db);padding:12px 12px 14px}
+.p-head{display:flex;align-items:center;gap:10px}
+.radar{flex:none;width:58px;height:58px;filter:drop-shadow(2px 2px 0 var(--ink))}
+.radar .sweep{transform-origin:50px 54px;animation:sweep 2.8s linear infinite}
+@keyframes sweep{to{transform:rotate(360deg)}}
+.radar .blip{animation:blip 1.4s ease-in-out infinite}
+.radar .blip.b2{animation-delay:.7s}
+@keyframes blip{50%{opacity:.25}}
+.p-title{flex:1;min-width:0}
+.p-title h1{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(25px,7.4vw,36px);line-height:.95;letter-spacing:.03em;color:var(--db);-webkit-text-stroke:1.6px var(--ink);paint-order:stroke fill;text-shadow:2px 2px 0 var(--ink)}
+.p-title h1 span{color:var(--sun)}
+.p-title p{margin:3px 0 0;font-size:12.5px;color:var(--text-ink);font-weight:800}
+.counter{flex:none;text-align:center;background:var(--ink);color:var(--scouter);border-radius:12px;padding:5px 8px;min-width:54px;font-family:var(--chunky);box-shadow:inset 0 0 0 2px #2c6b45}
+.counter b{display:block;font-weight:400;font-size:24px;line-height:1;font-variant-numeric:tabular-nums;text-shadow:0 0 6px rgba(61,220,132,.6)}
+.counter span{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase}
+
+.guess{display:flex;gap:8px;margin-top:12px}
+.combo{position:relative;flex:1;min-width:0}
+.combo input{width:100%;height:50px;border:3px solid var(--ink);border-radius:14px;background:#fff;color:var(--ink);padding:0 14px 0 42px;font-size:16px;font-weight:800;box-shadow:inset 0 3px 0 rgba(27,16,48,.08)}
+.combo input::placeholder{color:#8d7fae;font-weight:700}
+.combo .db4{position:absolute;left:10px;top:50%;width:24px;height:24px;transform:translateY(-50%);pointer-events:none}
+.guess .go{flex:none;height:50px;padding:0 16px;font-size:18px}
+.list{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:30;margin:0;padding:5px;list-style:none;background:var(--paper);border:3px solid var(--ink);border-radius:14px;box-shadow:4px 4px 0 var(--ink);max-height:min(340px,52vh);overflow-y:auto;overscroll-behavior:contain}
+.list li{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:10px;cursor:pointer;color:var(--ink)}
+.list li[aria-selected="true"]{background:var(--db);box-shadow:inset 0 0 0 2px var(--ink)}
+.list li .nm{min-width:0;display:flex;flex-direction:column;line-height:1.15}
+.list li .nm b{font-size:15px;font-weight:900}
+.list li .nm small{font-size:11.5px;color:#6b5a90;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list li mark{background:none;color:var(--violet);text-decoration:underline;text-decoration-thickness:2px}
+.list li[aria-selected="true"] mark{color:var(--ink)}
+.list .none{justify-content:center;color:#6b5a90;font-size:13.5px;cursor:default}
+
+.hints{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.hint-btn{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 12px;font-size:14.5px}
+.hint-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.hint-btn small{font-family:var(--body);font-weight:900;font-size:11px;background:var(--ink);color:var(--paper);border-radius:99px;padding:1px 7px}
+.hint-btn.locked{background:#e9dfcb;color:#7a6c95;cursor:default;box-shadow:0 2px 0 var(--ink);transform:none}
+.hint-btn.used{background:var(--cyan)}
+.hint-btn.ready{background:var(--sun);animation:hint-ready 1.2s ease-in-out 3}
+@keyframes hint-ready{50%{transform:translateY(-3px) rotate(-2deg)}}
+.hints .spacer{flex:1}
+.hints .ghost{height:38px;padding:0 12px;font-size:14px;background:#fff}
+.hintbox{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap}
+.hint-card{flex:1 1 220px;display:flex;gap:10px;align-items:center;background:#fff;border:3px dashed var(--ink);border-radius:14px;padding:9px 12px;animation:bg-popin .35s cubic-bezier(.3,1.6,.5,1)}
+.hint-card p{margin:0;font-size:14.5px;line-height:1.35;font-weight:800;color:var(--text-ink)}
+.hint-card .lbl{display:block;font-family:var(--chunky);font-size:12px;color:var(--db2);letter-spacing:.06em}
+.blur{flex:none;width:92px;height:92px;border-radius:12px;border:3px solid var(--ink);overflow:hidden;background:#f3e6ff}
+.blur img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;filter:blur(9px) saturate(1.3);transform:scale(1.15)}
+.name-hint{font-family:var(--chunky);font-size:22px;letter-spacing:.14em;color:var(--ink)}
+
+/* ---------- avatares ---------- */
+.ava{position:relative;flex:none;display:grid;place-items:center;overflow:hidden;border:2.5px solid var(--ink);border-radius:12px;background:radial-gradient(circle at 50% 30%,#fff3dc,#ffd9a8);width:40px;height:40px}
+.ava img{position:absolute;left:0;top:0;width:100%;height:auto;min-height:100%;object-fit:cover;object-position:50% 0;transform:scale(1.55);transform-origin:50% 4%}
+.ava.fb{background:hsl(var(--h) 70% 62%)}
+.ava.fb b{position:relative;z-index:1;font-family:var(--chunky);font-weight:400;font-size:15px;color:var(--ink);text-shadow:1px 1px 0 rgba(255,255,255,.6)}
+.ava.fb .db4{position:absolute;right:-5px;bottom:-5px;width:22px;height:22px;opacity:.9}
+.ava.lg{width:56px;height:56px;border-radius:14px}
+.ava.lg.fb b{font-size:20px}
+.ava.xl{width:100%;height:100%;border:0;border-radius:0;background:none}
+.ava.xl img{position:static;width:100%;height:100%;object-fit:contain;object-position:50% 50%;transform:none;filter:drop-shadow(4px 4px 0 var(--ink))}
+.ava.xl.fb{background:hsl(var(--h) 70% 62%);border-radius:50%;border:4px solid var(--ink);width:150px;height:150px;margin:auto}
+.ava.xl.fb b{font-size:52px}
+.ava.xl.fb .db4{width:54px;height:54px;right:4px;bottom:4px}
+
+/* ---------- tabuleiro ---------- */
+.board{position:relative}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:12px;color:var(--muted);margin:0 2px 8px}
+.legend i{display:inline-block;width:14px;height:14px;border:2px solid var(--ink);border-radius:4px;vertical-align:-3px;margin-right:4px}
+.legend .l-ok{background:var(--ok)} .legend .l-part{background:var(--part)} .legend .l-bad{background:var(--bad)}
+.legend .swipe{margin-left:auto;color:var(--cyan);font-family:var(--chunky);letter-spacing:.04em}
+.gridwrap{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;padding:0 0 8px;scrollbar-width:thin;scrollbar-color:var(--db) transparent;-webkit-overflow-scrolling:touch}
+.grid{--c0:64px;--tw:62px;--gap:5px;display:grid;gap:7px;width:max-content;min-width:100%}
+@media (min-width:560px){ .grid{--c0:74px;--tw:72px} }
+@media (min-width:1040px){ .grid{--c0:82px;--tw:76px;--gap:6px} }
+.row,.ghead{display:grid;grid-template-columns:var(--c0) repeat(8,var(--tw));gap:var(--gap)}
+.ghead div{font-family:var(--chunky);font-size:11.5px;letter-spacing:.03em;color:var(--paper);text-align:center;padding-bottom:4px;border-bottom:3px solid var(--db);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ghead .who,.row .who{position:sticky;left:0;z-index:2;background:var(--night)}
+.ghead .who{text-align:left}
+.row .who{display:flex;flex-direction:column;align-items:center;gap:3px;padding-right:2px;box-shadow:6px 0 6px -4px rgba(20,10,42,.9)}
+.row .who .ava{width:44px;height:44px}
+@media (min-width:560px){ .row .who .ava{width:52px;height:52px} }
+.row .who .wn{font-size:10.5px;font-weight:900;line-height:1.05;text-align:center;color:var(--paper);max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.row.win .who .wn{color:var(--green)}
+.tile{position:relative;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;text-align:center;border:3px solid var(--ink);border-radius:12px;box-shadow:2px 3px 0 var(--ink);color:var(--ink);padding:3px;overflow:hidden;font-size:10.5px;font-weight:900;line-height:1.08;hyphens:manual;overflow-wrap:anywhere}
+@media (min-width:560px){ .tile{font-size:11.5px} }
+@media (min-width:1040px){ .tile{font-size:12px} }
+.tile.ok{background:var(--ok)} .tile.part{background:var(--part)} .tile.bad{background:var(--bad)}
+.tile .t{position:relative;z-index:1}
+.tile .big{font-family:var(--chunky);font-weight:400;font-size:1.35em;letter-spacing:.02em}
+.tile .num{position:relative;z-index:1;font-family:var(--chunky);font-size:2.2em;line-height:.9}
+.tile .sym{position:relative;z-index:1;font-size:1.9em;line-height:.9}
+.tile .sub{position:relative;z-index:1;font-size:.85em;opacity:.8}
+.tile .sw{position:relative;z-index:1;width:16px;height:16px;border-radius:50%;background:var(--hc);border:2.5px solid var(--ink);margin-bottom:2px}
+.tile .sw[data-none]{background:repeating-linear-gradient(45deg,#fff 0 3px,#d9cfe8 3px 6px)}
+.tile .arr{position:absolute;inset:10%;background:rgba(27,16,48,.2);clip-path:polygon(50% 0,100% 48%,68% 48%,68% 100%,32% 100%,32% 48%,0 48%)}
+.tile.down .arr{transform:rotate(180deg)}
+.row.new .tile{animation:tile-in .55s cubic-bezier(.3,1.5,.5,1) both;animation-delay:calc(var(--i)*110ms)}
+@keyframes tile-in{0%{transform:rotateX(90deg) scale(.6);opacity:0}60%{opacity:1}100%{transform:none}}
+.row.new .who{animation:who-in .4s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes who-in{from{transform:translateX(-20px) scale(.6);opacity:0}}
+.empty{margin:4px 2px;color:var(--muted);font-size:14px;text-align:center;padding:18px 8px;border:3px dashed #4a3584;border-radius:16px}
+
+/* ---------- revelação ---------- */
+.reveal{position:relative;overflow:hidden;background:var(--paper);color:var(--ink);border:4px solid var(--ink);border-radius:22px;box-shadow:6px 6px 0 var(--pink);padding:14px;animation:bg-popin .45s cubic-bezier(.3,1.6,.5,1)}
+.reveal::before{content:"";position:absolute;inset:-40%;background:repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,154,60,.28) 0 5deg,transparent 5deg 14deg);animation:spin 30s linear infinite;pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.reveal > *{position:relative}
+.rv-top{display:flex;gap:14px;align-items:center}
+.rv-pic{flex:none;width:130px;height:150px;display:grid;place-items:center}
+.rv-info{flex:1;min-width:0}
+.rv-kicker{font-family:var(--chunky);font-size:13px;letter-spacing:.1em;color:var(--db2)}
+.rv-name{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(30px,9vw,46px);line-height:.95;letter-spacing:.03em;color:var(--sun);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:3px 3px 0 var(--pink);overflow-wrap:anywhere}
+.rv-meta{margin:6px 0 0;font-size:13px;font-weight:800;color:var(--text-ink)}
+.rv-quote{margin:10px 0 0;font-size:14.5px;font-weight:800;line-height:1.4;color:var(--ink);background:#fff;border:3px solid var(--ink);border-radius:14px;padding:8px 12px}
+.scouter{margin-top:10px;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(61,220,132,.9),rgba(46,230,214,.75));border:3px solid var(--ink);border-radius:30px 8px 30px 8px;padding:7px 14px;color:#0c2a19;position:relative;overflow:hidden}
+.scouter::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.14) 0 2px,transparent 2px 4px);pointer-events:none}
+.scouter b{font-family:var(--chunky);font-weight:400;font-size:24px;line-height:1;font-variant-numeric:tabular-nums;min-width:2ch}
+.scouter .lvl{display:flex;gap:3px;flex:1}
+.scouter .lvl i{flex:1;height:10px;border:2px solid #0c2a19;border-radius:3px;background:rgba(255,255,255,.35)}
+.scouter .lvl i.on{background:#0c2a19}
+.scouter small{font-family:var(--chunky);font-size:11px;letter-spacing:.08em;display:block}
+.scouter .readout{min-width:0}
+.scouter .readout span{display:block;font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rv-facts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.rv-facts .tag2{--c:#fff;font-size:11.5px}
+.rv-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.rv-actions .btn{flex:1 1 140px;height:48px;font-size:16px}
+.rv-next{margin:10px 0 0;font-size:13px;font-weight:800;color:var(--text-ink);text-align:center}
+.rv-next b{font-family:var(--chunky);font-weight:400;font-size:16px;font-variant-numeric:tabular-nums;color:var(--violet)}
+@media (max-width:420px){ .rv-pic{width:104px;height:124px} .ava.xl.fb{width:104px;height:104px} .ava.xl.fb b{font-size:38px} }
+
+/* burst central */
+.burst-layer{position:fixed;inset:0;pointer-events:none;z-index:45}
+.side-card{background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--db);padding:10px 12px}
+.side-card h3{margin:0 0 6px;font-family:var(--chunky);font-weight:400;font-size:15px;color:var(--violet)}
+.side-card p{margin:4px 0;font-size:12.5px;font-weight:800;color:var(--text-ink);line-height:1.35}
+
+/* ---------- modais ---------- */
+.bg-card .help-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+.bg-card .help-tiles .tile{aspect-ratio:auto;min-height:54px;font-size:12px}
+.bg-card .attr{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:14px;margin:0}
+.bg-card .attr dt{font-family:var(--chunky);color:var(--db2)}
+.bg-card .attr dd{margin:0;font-weight:700;color:var(--text-ink);line-height:1.4}
+.bg-card .tabs{display:flex;gap:6px;margin:10px 0 0}
+.bg-card .tabs button{flex:1;height:36px;font-size:13px;border-width:2.5px;box-shadow:0 3px 0 var(--ink)}
+.bg-card .tabs button[aria-pressed="true"]{background:var(--db)}
+.dist{display:flex;flex-direction:column;gap:5px;margin-top:6px}
+.dist div{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:8px;font-family:var(--chunky);font-size:13px}
+.dist i{display:block;height:22px;min-width:26px;border:2.5px solid var(--ink);border-radius:7px;background:#e9dfcb;font-style:normal;text-align:right;padding:0 7px;line-height:17px;font-size:12px}
+.dist i.hl{background:var(--db)}
+.dist i.has{background:var(--cyan)}
+.dist i.hl.has{background:var(--db)}
+
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion: reduce){
+  .row.new .tile,.row.new .who{animation-delay:0s!important}
+  .reveal::before,.radar .sweep{animation:none}
+}
+</style>
+</head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <radialGradient id="dbg" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#FFE7A8"/><stop offset=".45" stop-color="#FFB547"/><stop offset="1" stop-color="#F07A12"/></radialGradient>
+  <symbol id="db4" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17.5" fill="url(#dbg)" stroke="#1B1030" stroke-width="3"/><ellipse cx="14" cy="11.5" rx="5" ry="3" fill="#fff" opacity=".75" transform="rotate(-28 14 11.5)"/><g id="db4stars" fill="#E0241B"></g></symbol>
+</defs></svg>
+
+<div class="wrap">
+  <header id="bar"></header>
+  <div class="layout">
+    <aside class="side">
+      <div id="mascot"></div>
+      <div class="side-card" id="sideCard"></div>
+    </aside>
+    <main class="main">
+      <nav class="modes" role="tablist" aria-label="Modo de jogo">
+        <button type="button" role="tab" data-mode="diario">Diário<small>1 por dia</small></button>
+        <button type="button" role="tab" data-mode="classico">Clássico Z<small>DB + Z</small></button>
+        <button type="button" role="tab" data-mode="infinito">Infinito<small>sem fim</small></button>
+      </nav>
+
+      <section class="panel" aria-labelledby="ttl">
+        <div class="p-head">
+          <svg class="radar" viewBox="0 0 100 108" aria-hidden="true">
+            <rect x="42" y="0" width="16" height="12" rx="4" fill="#FFF7E6" stroke="#1B1030" stroke-width="4"/>
+            <circle cx="50" cy="54" r="46" fill="#FFF7E6" stroke="#1B1030" stroke-width="5"/>
+            <circle cx="50" cy="54" r="36" fill="#1f7a45" stroke="#1B1030" stroke-width="3"/>
+            <g stroke="#7CF2A9" stroke-width="1.4" opacity=".55"><path d="M14 54h72M50 18v72M24 36h52M24 72h52M32 22v64M68 22v64"/></g>
+            <path class="sweep" d="M50 54 L50 18 A36 36 0 0 1 80 34 Z" fill="#7CF2A9" opacity=".35"/>
+            <polygon points="50,49 54,57 46,57" fill="#FFF7E6"/>
+            <circle class="blip" cx="68" cy="40" r="4.5" fill="#FF9A3C" stroke="#1B1030" stroke-width="1.5"/>
+            <circle class="blip b2" cx="33" cy="70" r="3.5" fill="#FF9A3C" stroke="#1B1030" stroke-width="1.5"/>
+          </svg>
+          <div class="p-title">
+            <h1 id="ttl">Quem é esse <span>Guerreiro?</span></h1>
+            <p id="sub">…</p>
+          </div>
+          <div class="counter" aria-live="polite"><b id="count">0</b><span>chutes</span></div>
+        </div>
+
+        <div class="guess" id="guessRow">
+          <div class="combo">
+            <svg class="db4" aria-hidden="true"><use href="#db4"/></svg>
+            <input id="q" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go"
+              role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="list"
+              aria-label="Digite o nome de um personagem" placeholder="Digite um guerreiro…">
+            <ul class="list" id="list" role="listbox" aria-label="Sugestões" hidden></ul>
+          </div>
+          <button class="btn primary go" type="button" id="go">Chutar</button>
+        </div>
+
+        <div class="hints">
+          <button class="btn hint-btn locked" type="button" id="hFrase" aria-disabled="true">
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Frase <small></small></button>
+          <button class="btn hint-btn locked" type="button" id="hFoto" aria-disabled="true">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg><span class="hl">Foto</span> <small></small></button>
+          <span class="spacer"></span>
+          <button class="btn ghost" type="button" id="giveup" hidden>Desistir</button>
+        </div>
+        <div class="hintbox" id="hintbox" hidden></div>
+      </section>
+
+      <section id="reveal" class="reveal" hidden aria-live="polite"></section>
+
+      <section class="board" aria-label="Seus chutes">
+        <div class="legend" id="legend">
+          <span><i class="l-ok"></i>igual</span><span><i class="l-part"></i>quase</span><span><i class="l-bad"></i>diferente</span>
+          <span>▲▼ mais / menos</span><span class="swipe" id="swipe" hidden>arrasta pro lado ⇆</span>
+        </div>
+        <div class="gridwrap" id="gridwrap">
+          <div class="grid" id="grid" role="table" aria-label="Tabela de chutes"></div>
+        </div>
+        <p class="empty" id="empty">Nenhum chute ainda. O scouter tá esperando.</p>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="burst-layer" aria-hidden="true"><div class="burst" id="burst"></div></div>
+<p class="sr" id="live" aria-live="polite"></p>
+
+<script src="../shared/falas.js"></script><script src="../shared/bugado.js"></script>
+<script src="personagens.js"></script><script src="falas-dragonball.js"></script>
+<script>
+(() => {
+const B = window.Bugado, CH = window.DB_CHARS || [];
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const byName = new Map(CH.map(c => [c.nome, c]));
+
+/* ---------------- 4 estrelas da esfera ---------------- */
+(function stars(){
+  const g = document.getElementById('db4stars'); if (!g) return;
+  const pts = (cx, cy, R, r) => { let s=''; for (let i=0;i<10;i++){ const a=-Math.PI/2 + i*Math.PI/5, rr=i%2?r:R; s += `${(cx+Math.cos(a)*rr).toFixed(2)},${(cy+Math.sin(a)*rr).toFixed(2)} `; } return s; };
+  g.innerHTML = [[20,12.5],[12.5,20.5],[27.5,20.5],[20,28.5]].map(([x,y]) => `<polygon points="${pts(x,y,4.6,1.9)}"/>`).join('');
+})();
+const BALL = '<svg class="db4" aria-hidden="true"><use href="#db4"/></svg>';
+
+/* ---------------- regras ---------------- */
+const SERIES = ['', 'Dragon Ball', 'Dragon Ball Z', 'Filmes Z', 'Dragon Ball GT', 'Dragon Ball Super'];
+const SERIES_SHORT = ['', 'DB', 'DBZ', 'Filme Z', 'GT', 'Super'];
+const RACE_GROUP = { 'Saiyajin':'sai', 'Meio-Saiyajin':'sai', 'Descendente Saiyajin':'sai', 'Humano':'ter', 'Animal':'ter',
+  'Androide':'art', 'Bio-Androide':'art', 'Deus':'div', 'Anjo':'div', 'Kaioshin':'div', 'Kaio':'div', 'Majin':'dem', 'Demônio':'dem' };
+const SIDE = { 'Guerreiros Z':'bem', 'Aliados':'bem', 'Tropa do Orgulho':'bem', 'Vilão':'mal', 'Exército Red Ribbon':'mal',
+  'Forças do Freeza':'mal', 'Clã de Babidi':'mal', 'Deuses':'neutro', 'Neutro':'neutro', 'Universo 6':'neutro' };
+const HAIR = { 'Preto':'#1f1a24', 'Loiro':'#FFD84A', 'Azul':'#4FA3FF', 'Lilás':'#C7A2FF', 'Roxo':'#9B59D0', 'Verde':'#3CB371', 'Ruivo':'#E8622C', 'Branco':'#FFFFFF' };
+const FIELDS = [
+  { k:'raca', label:'Raça' }, { k:'genero', label:'Gênero' }, { k:'afiliacao', label:'Afiliação' },
+  { k:'estreia', label:'Estreia', ord:true }, { k:'planeta', label:'Planeta' }, { k:'cabelo', label:'Cabelo' },
+  { k:'transforma', label:'Transforma' }, { k:'poder', label:'Poder', ord:true }
+];
+const POWER_READ = ['', '5 (fazendeiro com espingarda)', '180', '260', '1.500', '18.000', '1.000.000', '150.000.000', '??? (scouter derreteu)', 'MAIS DE 8000!!! (muito mais)', '∞ (nem tenta)'];
+const MODES = {
+  diario:   { label:'Diário', daily:true, salt:90113, pool: () => CH },
+  classico: { label:'Clássico Z', daily:true, salt:51071, pool: () => CH.filter(c => c.estreia <= 2) },
+  infinito: { label:'Infinito', daily:false, pool: () => CH }
+};
+const DIST = ['1','2','3','4','5','6-7','8-10','11-15','16+'];
+const bucket = n => n<=5 ? String(n) : n<=7 ? '6-7' : n<=10 ? '8-10' : n<=15 ? '11-15' : '16+';
+
+function compare(g, s){
+  return FIELDS.map(f => {
+    const a = g[f.k], b = s[f.k];
+    if (f.ord){
+      if (a === b) return { st:'ok' };
+      return { st: (f.k === 'poder' && Math.abs(a-b) === 1) ? 'part' : 'bad', arrow: b > a ? 'up' : 'down' };
+    }
+    if (a === b) return { st:'ok' };
+    if (f.k === 'raca' && RACE_GROUP[a] && RACE_GROUP[a] === RACE_GROUP[b]) return { st:'part' };
+    if (f.k === 'afiliacao' && SIDE[a] && SIDE[a] === SIDE[b]) return { st:'part' };
+    return { st:'bad' };
+  });
+}
+
+/* ---------------- estado ---------------- */
+const MKEY = 'fliperama.dragonball.mode';
+const skey = m => MODES[m].daily ? `fliperama.dragonball.${m}.daily` : `fliperama.dragonball.${m}.state`;
+let mode = MODES[B.store.get(MKEY)] ? B.store.get(MKEY) : 'diario';
+let S = null;          // estado da rodada
+let secret = null;     // personagem secreto
+let today = B.dayNumber();
+
+function dailySecret(m, day){
+  const pool = MODES[m].pool(), n = pool.length;
+  const cycle = Math.floor(day / n);
+  const order = B.shuffle([...Array(n).keys()], B.rng(MODES[m].salt * 7 + cycle * 7919));
+  return pool[order[((day % n) + n) % n]];
+}
+function randomSecret(){
+  const recent = B.store.get('fliperama.dragonball.recent') || [];
+  const pool = CH.filter(c => !recent.includes(c.nome));
+  const c = pool[Math.floor(Math.random()*pool.length)] || CH[0];
+  recent.push(c.nome); while (recent.length > 40) recent.shift();
+  B.store.set('fliperama.dragonball.recent', recent);
+  return c;
+}
+function freshState(m){
+  const st = { mode:m, guesses:[], hints:{ frase:false, foto:false }, won:false, gaveUp:false, xp:0 };
+  if (MODES[m].daily){ st.day = today; st.secret = dailySecret(m, today).nome; }
+  else st.secret = randomSecret().nome;
+  return st;
+}
+function loadState(m){
+  let st = B.store.get(skey(m));
+  const bad = !st || !byName.has(st.secret) || (MODES[m].daily && st.day !== today);
+  if (bad) st = freshState(m);
+  st.guesses = (st.guesses || []).filter(n => byName.has(n));
+  st.hints = st.hints || { frase:false, foto:false };
+  return st;
+}
+const save = () => B.store.set(skey(mode), S);
+const finished = () => !!(S && (S.won || S.gaveUp));
+const guessed = () => S.guesses.map(n => byName.get(n));
+
+/* ---------------- stats ---------------- */
+function G(){ return B.game('dragonball'); }
+function MS(m){
+  const g = G(); g.modes = g.modes || {};
+  return g.modes[m] = Object.assign({ played:0, wins:0, sum:0, streak:0, best:0, lastDay:null, dist:{} }, g.modes[m] || {});
+}
+function curStreak(m){ const s = MS(m); return (MODES[m].daily && s.lastDay !== null && s.lastDay >= today - 1) ? s.streak : (MODES[m].daily ? 0 : s.streak); }
+
+/* ---------------- avatares ---------------- */
+const hash = s => { let h = 7; for (const ch of s) h = (h*31 + ch.charCodeAt(0)) >>> 0; return h; };
+const initials = nome => { const w = nome.replace(/[^\p{L}\p{N} ]/gu,'').split(/\s+/).filter(Boolean); return (w.length > 1 ? w[0][0] + w[1][0] : w[0].slice(0,2)).toUpperCase(); };
+function avatar(c, size=''){
+  if (c.img) return `<span class="ava ${size}"><img src="${esc(c.img)}" alt="" loading="lazy" decoding="async" data-fb="${esc(c.nome)}"></span>`;
+  return `<span class="ava ${size} fb" style="--h:${hash(c.nome)%360}"><b>${esc(initials(c.nome))}</b>${BALL}</span>`;
+}
+// imagem quebrada vira avatar desenhado (nunca ícone quebrado)
+document.addEventListener('error', e => {
+  const t = e.target;
+  if (!(t instanceof HTMLImageElement) || t.dataset.fb === undefined) return;
+  const box = t.parentElement, nome = t.dataset.fb;
+  if (box.classList.contains('ava')){ box.classList.add('fb'); box.style.setProperty('--h', hash(nome)%360); box.innerHTML = `<b>${esc(initials(nome))}</b>${BALL}`; }
+  else { const c = byName.get(nome); if (c) box.innerHTML = `<div class="name-hint">${esc(c.nome[0])}${'·'.repeat(Math.max(0,c.nome.length-1))}</div>`; }
+}, true);
+
+/* ---------------- tiles ---------------- */
+// hifenização manual (sílabas) das palavras compridas que aparecem nos tiles
+const HYPH = { 'Guerreiros':'Guer-rei-ros', 'Namekuseijin':'Na-meku-sei-jin', 'Namekusei':'Name-kusei', 'Desconhecido':'Des-conhe-cido',
+  'Alienígena':'Alie-nígena', 'Kaioshins':'Kaio-shins', 'Kaioshin':'Kaio-shin', 'Demoníaco':'Demo-níaco', 'Descendente':'Descen-dente',
+  'Tsufurujin':'Tsufu-rujin', 'Saiyajin':'Saiya-jin', 'Androide':'Andro-ide', 'Exército':'Exér-cito' };
+const soft = s => String(s).split(' ').map(w => w.split('-').map(p => HYPH[p] ? HYPH[p].split('-').map(esc).join('&shy;') : esc(p)).join('-')).join(' ');
+function tileInner(c, f){
+  const v = c[f.k];
+  switch (f.k){
+    case 'genero': return `<span class="sym">${v==='Masculino'?'♂':v==='Feminino'?'♀':'⚲'}</span><span class="t">${v==='Masculino'?'Masc.':v==='Feminino'?'Fem.':'Outro'}</span>`;
+    case 'estreia': return `<span class="t big">${SERIES_SHORT[v]}</span>`;
+    case 'poder': return `<span class="num">${v}</span><span class="sub">/10</span>`;
+    case 'cabelo': return `<span class="sw" style="--hc:${HAIR[v]||'#999'}"${v==='Nenhum'?' data-none':''}></span><span class="t">${esc(v)}</span>`;
+    case 'transforma': return `<span class="t big">${esc(v)}</span>`;
+    default: return `<span class="t">${soft(v)}</span>`;
+  }
+}
+const ST_TXT = { ok:'certo', part:'quase', bad:'errado' };
+function plainVal(c, f){ return f.k === 'estreia' ? SERIES[c.estreia] : f.k === 'poder' ? `${c.poder} de 10` : c[f.k]; }
+function rowHTML(c, res, isNew){
+  const win = c.nome === S.secret;
+  const cells = FIELDS.map((f, i) => {
+    const r = res[i], arrow = r.arrow ? `<i class="arr"></i>` : '';
+    const al = `${f.label}: ${plainVal(c,f)}, ${ST_TXT[r.st]}${r.arrow ? (r.arrow==='up' ? ', o alvo é maior' : ', o alvo é menor') : ''}`;
+    return `<div class="tile ${r.st} ${r.arrow||''}" style="--i:${i+1}" role="cell" aria-label="${esc(al)}" title="${esc(al)}">${arrow}${tileInner(c, f)}</div>`;
+  }).join('');
+  return `<div class="row${isNew?' new':''}${win?' win':''}" role="row"><div class="who" role="cell">${avatar(c)}<span class="wn">${esc(c.nome)}</span></div>${cells}</div>`;
+}
+function headHTML(){ return `<div class="ghead" role="row"><div class="who" role="columnheader">Guerreiro</div>${FIELDS.map(f => `<div role="columnheader">${f.label}</div>`).join('')}</div>`; }
+
+/* ---------------- render ---------------- */
+const grid = $('#grid'), gridwrap = $('#gridwrap');
+function renderBoard(newest){
+  const cs = guessed(), s = byName.get(S.secret);
+  grid.innerHTML = cs.length ? headHTML() + cs.slice().reverse().map(c => rowHTML(c, compare(c, s), newest && c.nome === newest)).join('') : '';
+  $('#empty').hidden = cs.length > 0;
+  $('#count').textContent = cs.length;
+  gridwrap.scrollLeft = 0;
+  checkSwipe();
+}
+function checkSwipe(){ $('#swipe').hidden = !(S.guesses.length && gridwrap.scrollWidth > gridwrap.clientWidth + 4); }
+
+function renderModes(){
+  document.querySelectorAll('.modes button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.mode === mode)));
+  const m = MODES[mode], n = m.pool().length;
+  $('#sub').textContent = m.daily ? `${m.label} #${today} · ${n} guerreiros no radar` : `Infinito · ${n} guerreiros no radar`;
+  $('#q').placeholder = mode === 'classico' ? 'Só DB e Z… digita aí' : 'Digite um guerreiro…';
+}
+
+function renderHints(){
+  const n = S.guesses.length, fin = finished();
+  [['frase', 5, $('#hFrase')], ['foto', 10, $('#hFoto')]].forEach(([k, need, el]) => {
+    const used = S.hints[k], open = n >= need || fin;
+    el.classList.toggle('locked', !open && !used);
+    el.classList.toggle('used', used);
+    el.classList.toggle('ready', open && !used && !fin);
+    el.setAttribute('aria-disabled', String(!open || used));
+    el.querySelector('small').textContent = used ? 'aberta' : open ? (fin ? 'ver' : '−10 XP') : `em ${need - n}`;
+    const label = k === 'frase' ? 'Dica: frase' : 'Dica: foto borrada';
+    el.setAttribute('aria-label', `${label}${used ? ' (aberta)' : open ? '' : ` — libera em ${need - n} chutes`}`);
+  });
+  $('#giveup').hidden = mode !== 'infinito' || fin || n === 0;
+  document.querySelector('.hints').hidden = fin;
+  const box = $('#hintbox'), parts = [];
+  if (S.hints.frase || fin) parts.push(`<div class="hint-card"><p><span class="lbl">FRASE</span>“${esc(secret.frase)}”</p></div>`);
+  if ((S.hints.foto) && !fin){
+    parts.push(secret.img
+      ? `<div class="hint-card"><div class="blur"><img src="${esc(secret.img)}" alt="Foto borrada do personagem" data-fb="${esc(secret.nome)}"></div><p><span class="lbl">FOTO BORRADA</span>Aperta os olhos…</p></div>`
+      : `<div class="hint-card"><p><span class="lbl">SEM FOTO DESSE — TOMA A INICIAL</span><span class="name-hint">${esc(secret.nome[0])}${'·'.repeat(secret.nome.length-1)}</span><br>${secret.nome.length} caracteres</p></div>`);
+  }
+  // frase só aparece no painel durante o jogo (no fim, fica no card de revelação)
+  const show = fin ? [] : parts;
+  box.innerHTML = show.join(''); box.hidden = !show.length;
+}
+
+function renderSide(){
+  const el = $('#sideCard'); if (!el) return;
+  const m = MS(mode);
+  el.innerHTML = `<h3>${MODES[mode].label}</h3>
+    <p>Jogadas: <b>${m.played}</b> · Vitórias: <b>${m.wins}</b></p>
+    <p>Média: <b>${m.wins ? (m.sum/m.wins).toFixed(1) : '–'}</b> chutes${MODES[mode].daily ? ` · Sequência: <b>${curStreak(mode)}</b>` : ''}</p>
+    <p style="margin-top:8px;color:#6b5a90">Amarelo em <b>Raça</b> = mesma família · em <b>Afiliação</b> = mesmo lado · em <b>Poder</b> = 1 nível de diferença.</p>`;
+}
+
+function renderReveal(animate){
+  const el = $('#reveal');
+  if (!finished()){ el.hidden = true; el.innerHTML = ''; $('#guessRow').hidden = false; return; }
+  $('#guessRow').hidden = true;
+  const c = secret, n = S.guesses.length;
+  const kicker = S.won ? (n === 1 ? 'DE PRIMEIRA!' : `ACERTOU EM ${n} CHUTES!`) : 'O GUERREIRO ERA…';
+  const hintsUsed = (S.hints.frase?1:0) + (S.hints.foto?1:0);
+  const lvl = Array.from({length:10}, (_, i) => `<i class="${i < c.poder ? 'on' : ''}"></i>`).join('');
+  const actions = [];
+  if (S.won) actions.push(`<button class="btn primary" type="button" data-rv="share">Compartilhar</button>`);
+  if (mode === 'infinito') actions.push(`<button class="btn cool" type="button" data-rv="new">Novo guerreiro</button>`);
+  else actions.push(`<button class="btn cool" type="button" data-rv="inf">Jogar Infinito</button>`);
+  actions.push(`<button class="btn" type="button" data-rv="stats">Estatísticas</button>`);
+  el.innerHTML = `
+    <div class="rv-top">
+      <div class="rv-pic">${avatar(c, 'xl')}</div>
+      <div class="rv-info">
+        <div class="rv-kicker">${kicker}</div>
+        <h2 class="rv-name">${esc(c.nome)}</h2>
+        <p class="rv-meta">${esc(SERIES[c.estreia])} · ${esc(c.saga)}</p>
+        ${S.won ? `<p class="rv-meta">+${S.xp} XP${hintsUsed ? ` · ${hintsUsed} dica${hintsUsed>1?'s':''}` : ''}${mode==='infinito' ? ' · Infinito (metade)' : ''}</p>` : ''}
+      </div>
+    </div>
+    <p class="rv-quote">“${esc(c.frase)}”</p>
+    <div class="scouter" role="img" aria-label="Nível de poder ${c.poder} de 10">
+      <div class="readout"><small>NÍVEL DE PODER</small><span>${esc(POWER_READ[c.poder])}</span></div>
+      <b>${c.poder}</b><div class="lvl">${lvl}</div>
+    </div>
+    <div class="rv-facts">
+      <span class="tag2">${esc(c.raca)}</span><span class="tag2">${esc(c.afiliacao)}</span><span class="tag2">${esc(c.planeta)}</span>
+      <span class="tag2">Cabelo: ${esc(c.cabelo)}</span><span class="tag2">Transforma: ${esc(c.transforma)}</span>
+    </div>
+    <div class="rv-actions">${actions.join('')}</div>
+    ${MODES[mode].daily ? `<p class="rv-next">Próximo guerreiro em <b id="cd">--:--:--</b></p>` : ''}`;
+  el.hidden = false;
+  if (!animate) el.style.animation = 'none'; else el.style.animation = '';
+  tickCountdown();
+}
+
+function renderAll(newest, animateReveal){
+  secret = byName.get(S.secret);
+  renderModes(); renderBoard(newest); renderHints(); renderReveal(animateReveal); renderSide();
+}
+
+/* ---------------- autocomplete ---------------- */
+const q = $('#q'), list = $('#list');
+let items = [], active = -1;
+const IDX = CH.map(c => ({ c, n: B.normalize(c.nome), a: c.apelidos.map(a => ({ raw:a, n:B.normalize(a) })) }));
+function hl(text, query){
+  const nt = B.normalize(text), i = nt.indexOf(query);
+  if (i < 0 || !query) return esc(text);
+  // normalize() remove acentos sem mudar o tamanho das letras latinas usadas aqui
+  return esc(text.slice(0, i)) + '<mark>' + esc(text.slice(i, i + query.length)) + '</mark>' + esc(text.slice(i + query.length));
+}
+function search(raw){
+  const qq = B.normalize(raw); if (!qq) return [];
+  const pool = new Set(MODES[mode].pool().map(c => c.nome)), done = new Set(S.guesses);
+  const out = [];
+  for (const it of IDX){
+    if (!pool.has(it.c.nome) || done.has(it.c.nome)) continue;
+    let score = -1, via = null;
+    if (it.n.startsWith(qq)) score = 0;
+    else if (it.n.split(/[\s.-]+/).some(w => w.startsWith(qq))) score = 1;
+    else if (it.n.includes(qq)) score = 2;
+    else {
+      const a = it.a.find(a => a.n.startsWith(qq)) || it.a.find(a => a.n.includes(qq));
+      if (a){ score = a.n.startsWith(qq) ? 3 : 4; via = a.raw; }
+    }
+    if (score >= 0) out.push({ c:it.c, score, via });
+  }
+  out.sort((x, y) => x.score - y.score || x.c.nome.length - y.c.nome.length || x.c.nome.localeCompare(y.c.nome, 'pt'));
+  return out.slice(0, 8);
+}
+function openList(){
+  const raw = q.value; items = search(raw); active = items.length ? 0 : -1;
+  if (!raw.trim()){ closeList(); return; }
+  const qq = B.normalize(raw);
+  list.innerHTML = items.length ? items.map((it, i) => `<li role="option" id="opt${i}" aria-selected="${i===active}" data-i="${i}">${avatar(it.c)}<span class="nm"><b>${hl(it.c.nome, qq)}</b>${it.via ? `<small>também: ${hl(it.via, qq)}</small>` : `<small>${esc(SERIES[it.c.estreia])}</small>`}</span></li>`).join('')
+    : `<li class="none" role="option" aria-disabled="true">Ninguém com esse nome no radar…</li>`;
+  list.hidden = false; q.setAttribute('aria-expanded', 'true');
+  q.setAttribute('aria-activedescendant', active >= 0 ? `opt${active}` : '');
+}
+function closeList(){ list.hidden = true; q.setAttribute('aria-expanded', 'false'); q.removeAttribute('aria-activedescendant'); active = -1; }
+function setActive(i){
+  if (!items.length) return;
+  active = (i + items.length) % items.length;
+  list.querySelectorAll('li[data-i]').forEach(li => li.setAttribute('aria-selected', String(+li.dataset.i === active)));
+  const li = document.getElementById('opt' + active); if (li) li.scrollIntoView({ block:'nearest' });
+  q.setAttribute('aria-activedescendant', 'opt' + active);
+}
+q.addEventListener('input', openList);
+q.addEventListener('focus', () => { if (q.value.trim()) openList(); });
+q.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown'){ e.preventDefault(); if (list.hidden) openList(); else setActive(active + 1); }
+  else if (e.key === 'ArrowUp'){ e.preventDefault(); setActive(active - 1); }
+  else if (e.key === 'Enter'){ e.preventDefault(); submit(); }
+  else if (e.key === 'Escape'){ if (!list.hidden){ e.preventDefault(); e.stopPropagation(); closeList(); } }
+});
+list.addEventListener('pointerdown', e => {
+  const li = e.target.closest('li[data-i]'); if (!li) return;
+  e.preventDefault(); active = +li.dataset.i; submit();
+});
+document.addEventListener('pointerdown', e => { if (!e.target.closest('.combo')) closeList(); });
+$('#go').addEventListener('click', () => { B.sfx.tap(); submit(); });
+
+function submit(){
+  if (finished()) return;
+  const raw = q.value.trim();
+  if (!raw){ q.focus(); return; }
+  let c = null;
+  if (!list.hidden && active >= 0 && items[active]) c = items[active].c;
+  else {
+    const r = search(raw); if (r.length) c = r[0].c;
+  }
+  if (!c){
+    const nq = B.normalize(raw);
+    const exact = IDX.find(it => it.n === nq || it.a.some(a => a.n === nq));
+    if (exact && S.guesses.includes(exact.c.nome)) B.talk('dbJaChutou', { nome: exact.c.nome }, 'smug');
+    else B.talk('dbNaoAchou', null, 'shock');
+    B.sfx.err(); B.glitch(); return;
+  }
+  q.value = ''; closeList();
+  makeGuess(c);
+  if (!finished()) q.focus({ preventScroll:true });
+}
+
+/* ---------------- chute ---------------- */
+function makeGuess(c){
+  if (S.guesses.includes(c.nome) || finished()) return;
+  const prev = guessed();
+  S.guesses.push(c.nome);
+  const n = S.guesses.length;
+  if (n === 1){
+    MS(mode).played++;
+    if (mode === 'diario'){ G().lastDaily = { day: today, won:false }; }
+    if (mode === 'classico'){ G().lastDailyClassico = { day: today, won:false }; }
+    B.saveProfile();
+  }
+  const res = compare(c, secret);
+  const win = c.nome === secret.nome;
+  if (win) S.won = true;
+  save();
+  renderBoard(c.nome); renderHints();
+  // sons em sequência com o flip dos tiles
+  if (!B.RM) res.forEach((r, i) => setTimeout(() => B.tone(r.st==='ok' ? 880 : r.st==='part' ? 660 : 330, .06, 'square', .03), 110 * (i+1) + 180));
+  const greens = res.filter(r => r.st === 'ok').length, yellows = res.filter(r => r.st === 'part').length;
+  $('#live').textContent = win ? `Acertou! É ${c.nome}.` : `${c.nome}: ${greens} certos, ${yellows} quase.`;
+  const delay = B.RM ? 50 : 110 * FIELDS.length + 450;
+  if (win){ setTimeout(onWin, delay); return; }
+  setTimeout(() => { greens >= 5 ? B.sfx.good() : greens + yellows === 0 ? B.sfx.meh() : B.sfx.place(greens * 2); }, delay - 200);
+  react(c, res, n, prev);
+  if (n === 5 || n === 10) renderHints();
+}
+
+/* o mascote comenta o chute — escolhe entre várias categorias possíveis */
+function react(c, res, n, prev){
+  const vars = { nome: c.nome, n, raca: c.raca };
+  const say = (cat, extra, mood='talk', hold=5500) => B.talk(cat, Object.assign({}, vars, extra||{}), mood, hold);
+  if (n === 5) return say('dbMarco5', null, 'smug', 6500);
+  if (n === 10) return say('dbMarco10', null, 'shock', 6500);
+  if (n === 15) return say('dbMarco15', null, 'smug', 6500);
+  if (n >= 20 && n % 5 === 0) return say('dbMarco20', null, Math.random() < .5 ? 'dead' : 'shock', 6500);
+  if (n === 1){
+    if (c.nome === 'Goku') return say('dbGokuPrimeiro', null, 'smug');
+    if (Math.random() < .5) return say('dbPrimeiro');
+  }
+  // ignorou pista já conhecida?
+  const clue = ignoredClue(c, prev);
+  if (clue && Math.random() < (clue.cat === 'dbIgnorouVerde' ? .7 : .4)) return say(clue.cat, { campo: clue.campo, valor: clue.valor }, 'smug');
+
+  const at = k => res[FIELDS.findIndex(f => f.k === k)];
+  const greens = res.filter(r => r.st === 'ok').length, yellows = res.filter(r => r.st === 'part').length;
+  const cands = [];
+  const add = (cat, w, extra, mood) => cands.push({ cat, w, extra, mood });
+  if (window.DB_FALAS_PERSONAGEM && DB_FALAS_PERSONAGEM.includes(c.nome)) add('dbc_' + c.nome, 7, null, 'smug');
+  if (greens === 0 && yellows === 0) add('dbTudoVermelho', 8, null, Math.random() < .5 ? 'dead' : 'shock');
+  if (greens >= 6) add('dbQuase', 9, null, 'shock');
+  const bestBefore = prev.reduce((m, p) => Math.max(m, compare(p, secret).filter(r => r.st === 'ok').length), 0);
+  if (n > 2 && greens >= 3 && greens > bestBefore) add('dbMelhorou', 5, null, 'happy');
+  if (n >= 4){
+    const last = [c, ...prev.slice(-2)].map(p => compare(p, secret).filter(r => r.st === 'ok').length);
+    if (last.every(g => g <= 1)) add('dbSequenciaRuim', 4, null, 'smug');
+  }
+  const r = at('raca'), a = at('afiliacao'), p = at('poder'), e = at('estreia'), pl = at('planeta');
+  if (r.st === 'ok') add('dbRacaCerta', 3, null, 'happy'); else if (r.st === 'part') add('dbRacaParcial', 3);
+  if (a.st === 'ok') add('dbAfiliacaoCerta', 2, { valor: c.afiliacao }, 'happy'); else if (a.st === 'part') add('dbAfiliacaoParcial', 2);
+  const pd = secret.poder - c.poder;
+  if (pd >= 4) add('dbPoderMuitoAcima', 4, null, 'shock'); else if (pd <= -4) add('dbPoderMuitoAbaixo', 4, null, 'smug');
+  else if (Math.abs(pd) === 1) add('dbPoderPerto', 2); else if (pd === 0) add('dbPoderCerto', 2, null, 'happy');
+  if (e.st === 'ok') add('dbMesmaSerie', 2); else add(e.arrow === 'up' ? 'dbSerieDepois' : 'dbSerieAntes', 1);
+  if (pl.st === 'ok') add('dbMesmoPlaneta', 2, { valor: c.planeta }, 'happy');
+  add('dbErro', 3);
+  let t = Math.random() * cands.reduce((s, x) => s + x.w, 0), pick = cands[cands.length-1];
+  for (const x of cands){ t -= x.w; if (t <= 0){ pick = x; break; } }
+  say(pick.cat, pick.extra, pick.mood || (Math.random() < .5 ? 'talk' : 'smug'));
+}
+function ignoredClue(c, prev){
+  if (!prev.length) return null;
+  const keys = ['raca','afiliacao','planeta','cabelo','genero','transforma'];
+  for (const k of B.shuffle(keys.slice())){
+    const f = FIELDS.find(x => x.k === k), i = FIELDS.indexOf(f);
+    const green = prev.find(p => compare(p, secret)[i].st === 'ok');
+    if (green && green[k] !== c[k]) return { cat:'dbIgnorouVerde', campo: f.label, valor: green[k] };
+    // repetir gênero/transforma errado é quase inevitável — só comenta os atributos "ricos"
+    if (k === 'genero' || k === 'transforma') continue;
+    const red = prev.find(p => p[k] === c[k] && compare(p, secret)[i].st === 'bad');
+    if (red) return { cat:'dbIgnorouPista', campo: f.label, valor: c[k] };
+  }
+  return null;
+}
+
+/* ---------------- vitória / derrota ---------------- */
+function onWin(){
+  const n = S.guesses.length, hints = (S.hints.frase?1:0) + (S.hints.foto?1:0);
+  let xp = Math.max(10, 50 - 3*(n-1)) - 10*hints;
+  xp = Math.max(5, xp);
+  if (mode === 'infinito') xp = Math.max(3, Math.round(xp/2));
+  S.xp = xp; save();
+  const m = MS(mode);
+  m.wins++; m.sum += n; m.dist[bucket(n)] = (m.dist[bucket(n)]||0) + 1;
+  if (MODES[mode].daily){
+    m.streak = (m.lastDay === today - 1) ? m.streak + 1 : (m.lastDay === today ? m.streak : 1);
+    m.lastDay = today; m.best = Math.max(m.best, m.streak);
+    if (mode === 'diario') G().lastDaily = { day: today, won:true, guesses:n };
+    if (mode === 'classico') G().lastDailyClassico = { day: today, won:true, guesses:n };
+  } else { m.streak++; m.best = Math.max(m.best, m.streak); }
+  B.saveProfile();
+  B.registerWin('dragonball');
+  B.sfx.win(); B.confetti();
+  const words = ['KAMEHAMEHA!', `É O ${secret.nome.toUpperCase()}!`, 'GENKI DAMA!', 'MAIS DE 8000!', 'FINAL FLASH!', 'KAIOKEN!'];
+  const bw = secret.nome.length <= 11 && Math.random() < .5 ? words[1] : words[Math.floor(Math.random()*words.length)];
+  B.burst($('#burst'), bw, ['#FFD23F','#FF9A3C','#2EE6D6'][Math.floor(Math.random()*3)]);
+  renderAll(null, true);
+  B.toast(`+${xp} XP`, `${secret.nome} em ${n} chute${n>1?'s':''}`);
+  const leveled = B.gainXP(xp);
+  if (!leveled){
+    const vars = { n, nome: secret.nome, alvo: secret.nome, xp };
+    let cat = n === 1 ? 'dbWin1' : n <= 3 ? 'dbWin23' : n <= 9 ? 'dbWinMid' : 'dbWinMuito';
+    if (hints && Math.random() < .5) cat = 'dbWinDica';
+    else if (MODES[mode].daily && n > 1 && Math.random() < .3) cat = 'dbWinDiario';
+    B.talk(cat, vars, n === 1 ? 'shock' : 'happy', 8000);
+  }
+  B.glitch('boing');
+  setTimeout(() => { const r = $('#reveal'); if (r && !r.hidden) r.scrollIntoView({ behavior: B.RM ? 'auto' : 'smooth', block:'nearest' }); }, 300);
+}
+function giveUp(){
+  S.gaveUp = true; save();
+  const m = MS(mode); m.streak = 0; B.saveProfile();
+  B.sfx.lose(); renderAll(null, true);
+  B.talk('dbDesistiu', { alvo: secret.nome }, 'dead', 7000);
+}
+
+/* ---------------- dicas ---------------- */
+function useHint(k){
+  const need = k === 'frase' ? 5 : 10;
+  if (finished()){ if (k === 'frase') $('#reveal').scrollIntoView({ behavior:'smooth', block:'nearest' }); return; }
+  if (S.hints[k]) return;
+  if (S.guesses.length < need){ B.sfx.err(); B.say(`Calma! A dica ${k === 'frase' ? 'da frase' : 'da foto'} libera em <b>${need - S.guesses.length}</b> chute${need - S.guesses.length > 1 ? 's' : ''}.`, 'smug', 3500); return; }
+  S.hints[k] = true; save(); B.sfx.hint(); renderHints();
+  B.talk(k === 'frase' ? 'dbDicaFrase' : (secret.img ? 'dbDicaFoto' : 'dbDicaNome'), null, 'happy');
+}
+$('#hFrase').addEventListener('click', () => useHint('frase'));
+$('#hFoto').addEventListener('click', () => useHint('foto'));
+$('#giveup').addEventListener('click', () => {
+  B.openModal(`<h2>Desistir?</h2><p class="sub">O guerreiro vai ser revelado e essa rodada não dá XP. O Vegeta nunca faria isso. (Ele faria.)</p>
+    <div class="m-actions"><button class="btn hot" type="button" data-act="giveup-yes">Revelar</button><button class="btn" type="button" data-act="close">Continuar tentando</button></div>`);
+});
+B.onAct('giveup-yes', () => { B.closeModal(true); giveUp(); });
+
+/* ---------------- revelação: ações ---------------- */
+$('#reveal').addEventListener('click', e => {
+  const b = e.target.closest('[data-rv]'); if (!b) return; B.sfx.tap();
+  const a = b.dataset.rv;
+  if (a === 'share') share();
+  else if (a === 'new') newInfinite();
+  else if (a === 'inf') setMode('infinito');
+  else if (a === 'stats') openStats(mode);
+});
+function newInfinite(){
+  S = freshState('infinito'); save(); renderAll();
+  B.talk('dbNovoInfinito', null, 'happy'); q.focus({ preventScroll:true });
+  window.scrollTo({ top:0, behavior: B.RM ? 'auto' : 'smooth' });
+}
+
+function shareText(){
+  const s = secret, n = S.guesses.length;
+  const title = mode === 'diario' ? `Fliperama Bugado · Dragon Ball #${today}` : mode === 'classico' ? `Fliperama Bugado · Dragon Ball Clássico Z #${today}` : 'Fliperama Bugado · Dragon Ball (Infinito)';
+  const em = { ok:'🟩', part:'🟨', bad:'🟥' };
+  let rows = guessed().map(c => compare(c, s).map(r => em[r.st]).join(''));
+  if (rows.length > 10) rows = [`⋯ +${rows.length - 9} chutes`, ...rows.slice(-9)];
+  const hints = [S.hints.frase ? '💬' : '', S.hints.foto ? '🖼️' : ''].join('');
+  return `${title}\n🐉 Acertei em ${n} chute${n>1?'s':''}${hints ? ' ' + hints : ''}\n${rows.join('\n')}\n${location.origin}${location.pathname}`;
+}
+async function share(){
+  const ok = await B.copyText(shareText());
+  if (ok){ B.toast('Copiado!', 'Cola no grupo e se exibe'); B.talk('dbShare', null, 'happy'); }
+  else B.openModal(`<h2>Copia aí</h2><p class="sub">Não consegui copiar sozinho. Seleciona o texto:</p><pre style="white-space:pre-wrap;background:#fff;border:3px solid var(--ink);border-radius:12px;padding:10px;font-size:14px">${esc(shareText())}</pre><div class="m-actions"><button class="btn primary" type="button" data-act="close">Fechar</button></div>`);
+}
+
+/* ---------------- modais: ajuda e stats ---------------- */
+function openHelp(){
+  B.openModal(`<h2>Quem é esse Guerreiro?</h2>
+    <p class="sub">Descubra o personagem secreto de Dragon Ball. Cada chute mostra o que bate com o alvo.</p>
+    <div class="help-tiles">
+      <div class="tile ok"><span class="t">Verde<br>igual</span></div>
+      <div class="tile part"><span class="t">Amarelo<br>quase</span></div>
+      <div class="tile bad"><i class="arr"></i><span class="t">Vermelho<br>▲ o alvo é maior</span></div>
+    </div>
+    <h3>Os atributos</h3>
+    <dl class="attr">
+      <dt>Raça</dt><dd>Amarelo = mesma família: Saiyajins (e meio/descendentes) · Humano e Animal (terráqueos) · Androides e Bio-Androides · Deus, Anjo, Kaioshin e Kaio · Majin e Demônio.</dd>
+      <dt>Afiliação</dt><dd>Amarelo = mesmo lado, grupo diferente. <b>Bem</b>: Guerreiros Z, Aliados, Tropa do Orgulho. <b>Mal</b>: Vilão, Red Ribbon, Forças do Freeza, Clã de Babidi. <b>Neutro</b>: Deuses, Neutro, Universo 6.</dd>
+      <dt>Estreia</dt><dd>Onde apareceu primeiro: DB → DBZ → Filmes Z → GT → Super. A seta diz se o alvo estreou depois (▲) ou antes (▼).</dd>
+      <dt>Planeta</dt><dd>Planeta natal (ou lar, pra deuses e anjos). Origem sem nome = Desconhecido.</dd>
+      <dt>Cabelo</dt><dd>Cor na forma base mais conhecida. Careca ou sem cabelo = Nenhum.</dd>
+      <dt>Transforma</dt><dd>Tem transformação ou forma alternativa mostrada na obra.</dd>
+      <dt>Poder</dt><dd>Pico canônico de 1 (Mr. Satan) a 10 (anjos e Zeno Sama). Amarelo = 1 nível de diferença.</dd>
+    </dl>
+    <h3>Modos e dicas</h3>
+    <ul>
+      <li><span class="pill sun">Diário</span><span>Um guerreiro por dia, igual pra todo mundo.</span></li>
+      <li><span class="pill">Clássico Z</span><span>Diário só com personagens de Dragon Ball e Z.</span></li>
+      <li><span class="pill pink">Infinito</span><span>Sem limite, XP pela metade.</span></li>
+      <li><span class="pill sun">5 chutes</span><span>libera a <b>frase</b>; 10 chutes libera a <b>foto borrada</b>. Cada dica custa 10 XP.</span></li>
+    </ul>
+    <p class="sub" style="margin-top:12px">Teclado: digite, <kbd>↑</kbd><kbd>↓</kbd> escolhem, <kbd>Enter</kbd> chuta, <kbd>Esc</kbd> fecha.</p>
+    <div class="m-actions"><button class="btn primary" type="button" data-act="close">Bora!</button></div>`);
+}
+function openStats(m){
+  const s = MS(m), max = Math.max(1, ...DIST.map(k => s.dist[k]||0));
+  const lastB = (m === mode && S.won) ? bucket(S.guesses.length) : null;
+  const tabs = Object.keys(MODES).map(k => `<button class="btn" type="button" data-act="stmode" data-mode="${k}" aria-pressed="${k===m}">${MODES[k].label}</button>`).join('');
+  B.openModal(`<h2>Estatísticas</h2>
+    <div class="tabs">${tabs}</div>
+    <div class="stat-grid">
+      <div class="stat"><b>${s.played}</b><span>Jogadas</span></div>
+      <div class="stat"><b>${s.wins}</b><span>Vitórias</span></div>
+      <div class="stat"><b>${s.wins ? (s.sum/s.wins).toFixed(1) : '–'}</b><span>Média</span></div>
+      <div class="stat"><b>${curStreak(m)}</b><span>${MODES[m].daily ? 'Seq. dias' : 'Seguidas'}</span></div>
+      <div class="stat"><b>${s.best}</b><span>Recorde</span></div>
+    </div>
+    <h3>Chutes até acertar</h3>
+    <div class="dist">${DIST.map(k => { const v = s.dist[k]||0; return `<div><span>${k}</span><i class="${v?'has':''} ${k===lastB?'hl':''}" style="width:${Math.max(8, v/max*100)}%">${v}</i></div>`; }).join('')}</div>
+    <div class="m-actions">${(m === mode && S.won) ? '<button class="btn primary" type="button" data-act="share">Compartilhar</button>' : ''}<button class="btn" type="button" data-act="close">Fechar</button></div>`);
+}
+B.onAct('stmode', b => openStats(b.dataset.mode));
+B.onAct('share', () => share());
+
+/* ---------------- modos ---------------- */
+function setMode(m, quiet){
+  if (!MODES[m]) return;
+  mode = m; B.store.set(MKEY, m);
+  S = loadState(m); save();
+  closeList(); q.value = '';
+  renderAll();
+  if (!quiet){
+    if (finished() && MODES[m].daily) B.talk('dbInicioDiarioFeito', null, 'smug');
+    else B.talk(Math.random() < .5 ? 'dbModo' : 'dbInicio', null, 'talk');
+  }
+}
+document.querySelectorAll('.modes button').forEach(b => b.addEventListener('click', () => { B.sfx.tap(); if (b.dataset.mode !== mode) setMode(b.dataset.mode); }));
+document.querySelector('.modes').addEventListener('keydown', e => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  const ks = Object.keys(MODES), i = ks.indexOf(mode), nx = ks[(i + (e.key === 'ArrowRight' ? 1 : -1) + ks.length) % ks.length];
+  setMode(nx); document.querySelector(`.modes [data-mode="${nx}"]`).focus();
+});
+
+/* ---------------- relógio do próximo diário ---------------- */
+function tickCountdown(){
+  const el = document.getElementById('cd');
+  const now = new Date(), next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  const s = Math.max(0, Math.floor((next - now) / 1000));
+  if (el) el.textContent = `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor(s/60)%60).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+  if (B.dayNumber() !== today){ today = B.dayNumber(); if (MODES[mode].daily){ S = loadState(mode); save(); renderAll(); B.talk('dbInicio', null, 'happy'); } }
+}
+setInterval(tickCountdown, 1000);
+
+/* ---------------- montagem ---------------- */
+B.mountBar(document.getElementById('bar'), { title:'Dragon Ball', color:'#FF9A3C', buttons:[
+  { icon:'help', label:'Como jogar', onClick: openHelp },
+  { icon:'stats', label:'Estatísticas', onClick: () => openStats(mode) },
+  { id:'snd', icon: B.profile().sound ? 'on' : 'off', label:'Som', onClick: () => { B.setSound(!B.profile().sound); document.getElementById('snd').innerHTML = B.ICON[B.profile().sound ? 'on' : 'off']; } }
+]});
+B.mountMascot(document.getElementById('mascot'), { pokeCat:'cutucarDB' });
+const wide = matchMedia('(min-width:1040px)');
+const applyStack = () => B.setStack(wide.matches);
+applyStack(); (wide.addEventListener ? wide.addEventListener('change', applyStack) : wide.addListener(applyStack));
+
+// falas aleatórias/paradas: mistura as do Dragon Ball com as gerais
+const F = window.FALAS || {}, D = window.DB_FALAS || {};
+B.addLines({
+  dbAleatorioMix: [].concat(D.aleatorioDB || [], F.aleatorio || []),
+  dbParadoMix: [].concat(D.paradoDB || [], F.parado || [])
+});
+B.chatter({ active: () => !finished() && !document.hidden, idleCat:'dbParadoMix', randomCat:'dbAleatorioMix', every:[45,85] });
+
+addEventListener('resize', checkSwipe);
+gridwrap.addEventListener('scroll', () => { if (gridwrap.scrollLeft > 10) $('#swipe').hidden = true; }, { passive:true });
+
+if (!CH.length){ B.say('Deu ruim: a lista de personagens não carregou. Recarrega a página?', 'dead', 99999); return; }
+setMode(mode, true);
+if (!B.store.get('fliperama.dragonball.seenHelp')){ B.store.set('fliperama.dragonball.seenHelp', 1); setTimeout(openHelp, 500); }
+setTimeout(() => {
+  if (finished() && MODES[mode].daily) B.talk('dbInicioDiarioFeito', null, 'smug', 6000);
+  else if (S.guesses.length) B.say(`Voltou! Você tá com <b>${S.guesses.length}</b> chute${S.guesses.length>1?'s':''} nesse aqui. Bora terminar.`, 'happy', 5000);
+  else B.talk('dbInicio', null, 'talk', 6000);
+}, 350);
+})();
+</script>
+</body></html>

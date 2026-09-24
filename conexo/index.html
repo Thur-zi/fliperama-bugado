@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2A1650">
+<title>Conexo · Fliperama Bugado</title>
+<meta name="description" content="Ache os 4 grupos escondidos entre 16 palavras. Diário e Infinito, com um mascote que julga cada jogada.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+:root{
+  --g1:#FFD23F; --g2:#3DDC84; --g3:#4FA8FF; --g4:#C07BFF;
+  --gap:8px;
+  --rowh:clamp(56px, min(22vw, calc((100dvh - 330px) / 4.6)), 84px);
+}
+.cx-layout{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.cx-main{width:100%;max-width:560px;margin:0 auto;min-width:0}
+#mascot{width:100%;max-width:560px;margin:0 auto}
+#mascot .bg-bubble{min-height:60px}
+.cx-side-extra{display:none}
+
+/* ---------- topo: modo + vidas ---------- */
+.cx-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.seg{display:flex;background:var(--deep);border:3px solid var(--ink);border-radius:14px;padding:3px;gap:3px;box-shadow:0 3px 0 var(--ink)}
+.seg button{appearance:none;border:0;background:transparent;color:var(--muted);font-family:var(--chunky);font-size:15px;padding:6px 11px;border-radius:10px;cursor:pointer;line-height:1.05;white-space:nowrap;transition:background-color .15s,color .15s}
+.seg button small{font-size:11px;opacity:.8;margin-left:2px}
+.seg button.on{background:var(--pink);color:var(--ink)}
+.seg button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+.seg .done-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);border:1.5px solid var(--ink);margin-left:4px;vertical-align:1px}
+.lives{display:flex;align-items:center;gap:3px}
+.lives .lbl{font-family:var(--chunky);font-size:12px;color:var(--muted);margin-right:4px;letter-spacing:.05em}
+.heart{width:24px;height:24px;transition:transform .2s}
+.heart path{fill:var(--pink);stroke:var(--ink);stroke-width:2.2;stroke-linejoin:round}
+.heart.lost path{fill:#4a3478;stroke:#1B1030}
+.heart.lost{transform:scale(.82)}
+.heart.breaking{animation:cx-heartbreak .6s ease}
+@keyframes cx-heartbreak{0%{transform:scale(1)}30%{transform:scale(1.35) rotate(-12deg)}60%{transform:scale(.7) rotate(10deg)}100%{transform:scale(.82)}}
+
+/* ---------- tabuleiro ---------- */
+.board-wrap{position:relative}
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:var(--rowh);gap:var(--gap)}
+.tile{appearance:none;position:relative;min-width:0;display:flex;align-items:center;justify-content:center;padding:4px 3px;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:12px;box-shadow:0 4px 0 var(--ink);cursor:pointer;font-family:var(--chunky);font-weight:400;line-height:1.02;text-align:center;overflow:hidden;user-select:none;-webkit-user-select:none;transition:transform .1s,box-shadow .1s,background-color .12s,color .12s}
+.tile .w{display:block;width:100%;font-size:17px;letter-spacing:.01em;overflow-wrap:normal;word-break:normal;hyphens:none;white-space:normal}
+.tile:hover{background:#fff}
+.tile:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.tile.sel{background:var(--violet);color:var(--paper);transform:translateY(-2px);box-shadow:0 6px 0 var(--ink)}
+.tile.sel:hover{background:#6c50ff}
+.tile:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+.tile.pop{animation:cx-pop .22s cubic-bezier(.3,1.8,.5,1)}
+@keyframes cx-pop{50%{transform:scale(1.08) translateY(-2px)}}
+.tile.hop{animation:cx-hop .35s ease}
+@keyframes cx-hop{40%{transform:translateY(-12px) rotate(-3deg)}}
+.tile.shake{animation:cx-shake .5s ease}
+@keyframes cx-shake{15%,55%{transform:translateX(-7px) rotate(-2deg)}35%,75%{transform:translateX(7px) rotate(2deg)}}
+.tile.gone{animation:cx-gone .32s ease forwards}
+@keyframes cx-gone{to{transform:scale(.3) rotate(8deg);opacity:0}}
+.tile.enter{animation:cx-enter .35s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes cx-enter{from{transform:scale(.6);opacity:0}}
+
+.solved{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px 10px;border:3px solid var(--ink);border-radius:14px;box-shadow:0 4px 0 var(--ink);color:var(--ink);text-align:center;min-width:0;overflow:hidden;position:relative}
+.solved.l1{background:var(--g1)} .solved.l2{background:var(--g2)} .solved.l3{background:var(--g3)} .solved.l4{background:var(--g4)}
+.solved b{font-family:var(--display);font-weight:400;font-size:20px;letter-spacing:.04em;line-height:1.02;max-width:100%}
+.solved span{font-size:13px;font-weight:900;letter-spacing:.03em;line-height:1.15;max-width:100%}
+.solved.revealed{background-image:repeating-linear-gradient(-45deg,rgba(27,16,48,.13) 0 8px,transparent 8px 16px)}
+.solved.in{animation:cx-solved .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes cx-solved{from{transform:scale(.55) rotate(-2deg);opacity:0}60%{transform:scale(1.04)}}
+.burst{z-index:6}
+
+/* ---------- ações ---------- */
+.actions{display:flex;gap:8px;margin-top:14px}
+.actions .btn{flex:1 1 0;min-width:0;height:50px;font-size:16px;padding:0 6px;white-space:nowrap}
+.actions .btn.primary{flex:1.25 1 0}
+.actions .btn small{font-size:12px;opacity:.75}
+.hint{margin:10px 2px 0;text-align:center;font-size:13px;color:var(--muted)}
+.hint b{color:var(--sun);font-weight:900}
+
+/* ---------- modais ---------- */
+.cx-legend{display:flex;flex-direction:column;gap:6px;margin:12px 0 2px}
+.cx-legend div{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:800;color:var(--text-ink)}
+.cx-legend i{flex:none;width:34px;height:20px;border:2.5px solid var(--ink);border-radius:6px}
+.bg-card .ex{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:8px 0 4px}
+.bg-card .ex span{font-family:var(--chunky);font-size:12px;text-align:center;border:2.5px solid var(--ink);border-radius:8px;padding:6px 2px;background:#fff}
+.bg-card .ex .sel{background:var(--violet);color:var(--paper)}
+.bg-card .ex .bar{grid-column:1/-1;background:var(--g1);font-family:var(--display);font-size:16px;letter-spacing:.04em}
+.dist{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.dist .r{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:900;color:var(--text-ink)}
+.dist .r > span{width:62px;flex:none;text-align:right}
+.dist .r i{display:block;height:22px;min-width:26px;border:2.5px solid var(--ink);border-radius:7px;background:var(--cyan);font-style:normal;font-family:var(--chunky);font-size:13px;color:var(--ink);text-align:right;padding:0 6px;line-height:17px}
+.dist .r.lose i{background:var(--pink)}
+.dist .r.hl i{background:var(--sun)}
+.grid-emoji{display:flex;flex-direction:column;align-items:center;gap:4px;margin:14px 0 4px}
+.grid-emoji div{display:flex;gap:4px}
+.grid-emoji i{width:22px;height:22px;border:2.5px solid var(--ink);border-radius:5px}
+.grid-emoji i.l1{background:var(--g1)} .grid-emoji i.l2{background:var(--g2)} .grid-emoji i.l3{background:var(--g3)} .grid-emoji i.l4{background:var(--g4)}
+.res-groups{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.res-groups div{border:2.5px solid var(--ink);border-radius:10px;padding:5px 10px;font-size:13px;color:var(--ink);font-weight:800;line-height:1.25}
+.res-groups div b{font-family:var(--chunky);font-weight:400;font-size:14px;display:block}
+.res-groups .l1{background:var(--g1)} .res-groups .l2{background:var(--g2)} .res-groups .l3{background:var(--g3)} .res-groups .l4{background:var(--g4)}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.m-actions.res{margin-top:16px}
+.m-actions.res .btn{flex:1 1 120px}
+#shareBox{width:100%;margin-top:12px;font:inherit;font-size:13px;color:var(--ink);background:#fff;border:2.5px solid var(--ink);border-radius:10px;padding:8px;resize:none}
+.quote{margin-top:12px;background:var(--paper2);border:2.5px dashed var(--line);border-radius:12px;padding:8px 12px;font-size:14px;font-weight:800;color:var(--text-ink)}
+
+/* ---------- desktop: mascote na coluna lateral ---------- */
+@media (min-width:880px){
+  :root{--gap:10px;--rowh:84px}
+  .cx-layout{display:grid;grid-template-columns:minmax(0,580px) 270px;grid-template-areas:"main side";justify-content:center;align-items:start;gap:34px;margin-top:22px}
+  .cx-main{grid-area:main;max-width:none}
+  .cx-side{grid-area:side;position:sticky;top:18px;display:flex;flex-direction:column;gap:18px}
+  #mascot{max-width:none}
+  .cx-side-extra{display:block;background:var(--deep);border:3px solid var(--ink);border-radius:18px;padding:14px 16px;box-shadow:4px 4px 0 var(--ink)}
+  .cx-side-extra h4{margin:0 0 8px;font-family:var(--chunky);font-weight:400;font-size:15px;color:var(--cyan);letter-spacing:.04em}
+  .cx-side-extra .cx-legend div{color:var(--paper);font-size:13px}
+  .cx-side-extra p{margin:10px 0 0;font-size:12.5px;color:var(--muted);line-height:1.4}
+  .tile .w{font-size:20px}
+  .solved b{font-size:24px}
+  .solved span{font-size:14.5px}
+  .actions .btn{height:54px;font-size:18px}
+}
+@media (max-width:360px){
+  .seg button{font-size:13px;padding:6px 8px}
+  .heart{width:20px;height:20px}
+  .lives .lbl{display:none}
+  .actions .btn{font-size:14px}
+}
+@media (prefers-reduced-motion: reduce){
+  .tile.sel{transform:none}
+}
+</style>
+</head><body>
+<div class="wrap">
+  <header id="bar"></header>
+  <div class="cx-layout">
+    <aside class="cx-side">
+      <div id="mascot"></div>
+      <div class="cx-side-extra">
+        <h4>CORES DOS GRUPOS</h4>
+        <div class="cx-legend">
+          <div><i style="background:var(--g1)"></i>Amarelo · o fácil</div>
+          <div><i style="background:var(--g2)"></i>Verde · o médio</div>
+          <div><i style="background:var(--g3)"></i>Azul · o difícil</div>
+          <div><i style="background:var(--g4)"></i>Roxo · a pegadinha</div>
+        </div>
+        <p>Teclado: <kbd>Enter</kbd> envia · <kbd>Esc</kbd> desmarca · <kbd>E</kbd> embaralha</p>
+      </div>
+    </aside>
+    <main class="cx-main">
+      <div class="cx-top">
+        <div class="seg" role="tablist" aria-label="Modo de jogo">
+          <button type="button" role="tab" data-mode="daily" id="tabDaily">Diário <small id="dayNo"></small></button>
+          <button type="button" role="tab" data-mode="inf" id="tabInf">Infinito</button>
+        </div>
+        <div class="lives" id="lives" aria-live="polite"></div>
+      </div>
+      <div class="board-wrap">
+        <div class="board" id="board" aria-label="Tabuleiro: 16 palavras"></div>
+        <div class="burst" id="burst" aria-hidden="true"></div>
+      </div>
+      <div class="actions" id="actPlay">
+        <button type="button" class="btn" id="bShuffle">Embaralhar</button>
+        <button type="button" class="btn" id="bClear">Desmarcar</button>
+        <button type="button" class="btn primary" id="bSubmit" disabled>Enviar <small id="selCount">0/4</small></button>
+      </div>
+      <div class="actions" id="actPost" hidden>
+        <button type="button" class="btn cool" id="bResult">Ver resultado</button>
+        <button type="button" class="btn primary" id="bNext">Próximo</button>
+      </div>
+      <p class="hint" id="hint">Ache <b>4 grupos</b> de 4 palavras com algo em comum.</p>
+    </main>
+  </div>
+</div>
+<script src="../shared/falas.js"></script><script src="../shared/bugado.js"></script>
+<script src="puzzles.js"></script><script src="falas-conexo.js"></script><script src="conexo.js"></script>
+</body></html>

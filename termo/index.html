@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2A1650">
+<title>Termo · Fliperama Bugado</title>
+<meta name="description" content="Termo: adivinhe a palavra de cinco letras em seis tentativas. Com dueto, quarteto, diário e treino infinito.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+:root{
+  --c-ok:#3DDC84; --c-mid:#FFD23F; --c-no:#4A3A6E; --c-no-t:#D9CDF2; --c-noq:#9C8FB8;
+  --kh:52px;
+}
+html,body{overflow-x:hidden}
+.tm{height:100vh;height:100dvh;min-height:540px;display:flex;flex-direction:column;gap:7px;padding-block:8px 10px}
+.tm > *{min-width:0}
+#bar{flex:none}
+#side{flex:none;display:flex;flex-direction:column}
+#mascot{flex:none}
+#mascot .bg-bubble{min-height:0;height:62px;overflow:hidden}
+#mascot .bg-bubble p{font-size:13px;line-height:1.24}
+#mascot .bg-bubble p.long{font-size:12px;line-height:1.2}
+.side-card{display:none}
+main{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+
+/* ---------- modos ---------- */
+.modes{flex:none;display:flex;gap:8px;justify-content:space-between;align-items:center}
+.seg{display:flex;gap:2px;padding:3px;background:var(--deep);border:3px solid var(--ink);border-radius:13px;box-shadow:0 3px 0 var(--ink);min-width:0}
+.seg button{appearance:none;border:0;background:none;color:var(--muted);font-family:var(--chunky);font-size:14px;letter-spacing:.02em;padding:5px 9px;border-radius:9px;cursor:pointer;white-space:nowrap;transition:background-color .15s,color .15s}
+.seg button:hover{color:var(--paper)}
+.seg button[aria-pressed="true"]{background:var(--paper);color:var(--ink);box-shadow:0 2px 0 var(--ink)}
+.seg.kind button[aria-pressed="true"]{background:var(--cyan)}
+.seg button:focus-visible{outline:3px solid var(--cyan);outline-offset:1px}
+.seg .n{font-size:11px;opacity:.75;margin-left:2px}
+#bar .bar-title small{overflow:hidden;text-overflow:ellipsis}
+@media (max-width:420px){ #bar .bar-title small{letter-spacing:.1em} }
+@media (max-width:560px){ .seg button{font-size:13.5px;padding:5px 7px} .seg .n{display:none} }
+@media (max-width:360px){ .seg button{font-size:12.5px;padding:5px 5px} .modes{gap:5px} }
+
+/* ---------- tabuleiros ---------- */
+#stage{flex:1;min-height:0;position:relative;display:grid;place-items:center}
+#boards{display:grid;gap:var(--gb,10px);grid-template-columns:repeat(var(--cols,1),auto);justify-content:center;align-content:center}
+.board{position:relative;display:grid;gap:var(--g,6px);padding:var(--pad,0px);border-radius:14px;transition:border-color .3s,box-shadow .3s}
+.multi .board{background:rgba(20,10,42,.55);border:2.5px solid var(--ink);box-shadow:0 3px 0 var(--ink)}
+.multi .board.solved{border-color:var(--c-ok);box-shadow:0 3px 0 var(--ink),0 0 0 2px var(--ink)}
+.board .ok{position:absolute;right:-7px;top:-9px;z-index:2;display:none;width:22px;height:22px;border-radius:50%;background:var(--c-ok);border:2.5px solid var(--ink);color:var(--ink);font:400 13px/17px var(--chunky);text-align:center}
+.multi .board.solved .ok{display:block}
+.row{display:grid;grid-template-columns:repeat(5,var(--t,56px));gap:var(--g,6px)}
+.tile{--bw:max(1.5px,calc(var(--t,56px)*.055));width:var(--t,56px);height:var(--t,56px);display:grid;place-items:center;font-family:var(--chunky);font-size:calc(var(--t,56px)*.56);line-height:1;color:var(--paper);border:var(--bw) dashed rgba(255,247,230,.17);border-radius:calc(var(--t,56px)*.17);user-select:none;-webkit-user-select:none;text-transform:uppercase}
+.row.cur .tile{border-style:solid;border-color:rgba(255,247,230,.42);background:rgba(255,247,230,.05);cursor:pointer}
+.row.cur .tile.cursor{border-color:var(--cyan);box-shadow:inset 0 calc(var(--t,56px)*-.08) 0 var(--cyan)}
+.tile[data-s]{border-style:solid;border-color:var(--ink);box-shadow:0 calc(var(--bw)*1.3) 0 var(--ink)}
+.tile[data-s="t"]{background:var(--paper);color:var(--ink)}
+.row.cur .tile[data-s="t"]{border-color:var(--ink);background:var(--paper)}
+.row.cur .tile[data-s="t"].cursor{box-shadow:0 calc(var(--bw)*1.3) 0 var(--ink),inset 0 calc(var(--t,56px)*-.09) 0 var(--cyan)}
+.tile[data-s="c"]{background:var(--c-ok);color:var(--ink)}
+.tile[data-s="p"]{background:var(--c-mid);color:var(--ink)}
+.tile[data-s="a"]{background:var(--c-no);color:var(--c-no-t)}
+.row.dead .tile{opacity:.28}
+.tile.pop{animation:tm-pop .12s ease-out}
+@keyframes tm-pop{50%{transform:scale(1.13)}}
+.tile.flip{animation:tm-flip .5s ease-in-out}
+@keyframes tm-flip{0%{transform:rotateX(0)}50%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
+.row.shake{animation:tm-shake .45s}
+@keyframes tm-shake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-7px)}40%,60%{transform:translateX(7px)}}
+.tile.win{animation:tm-bounce .7s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes tm-bounce{30%{transform:translateY(-38%) rotate(-6deg)}60%{transform:translateY(6%)}}
+.board.yay{animation:tm-yay .6s cubic-bezier(.3,1.6,.5,1)}
+@keyframes tm-yay{35%{transform:scale(1.05) rotate(-1.5deg)}}
+
+/* ---------- teclado ---------- */
+#kb{flex:none;display:flex;flex-direction:column;gap:6px;width:100%;max-width:560px;margin:0 auto;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.kr{display:flex;gap:5px;justify-content:center}
+.key{flex:1 1 0;min-width:0;height:var(--kh);position:relative;padding:0;border:2.5px solid var(--ink);border-radius:10px;background:var(--paper);color:var(--ink);box-shadow:0 3px 0 var(--ink);font-family:var(--chunky);font-size:19px;cursor:pointer;overflow:hidden;transition:transform .06s,box-shadow .06s,background-color .25s}
+.key .l{position:relative;z-index:1;pointer-events:none}
+.key.wide{flex:1.65 1 0;font-size:13px;letter-spacing:.04em;background:var(--sun)}
+.key.back svg{width:24px;height:24px;margin:auto;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.key:active,.key.hit{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.key:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+.key[data-s="c"]{background:var(--c-ok)}
+.key[data-s="p"]{background:var(--c-mid)}
+.key[data-s="a"]{background:var(--c-no);color:var(--c-no-t);box-shadow:0 2px 0 var(--ink)}
+.key .q{position:absolute;inset:0;display:grid;pointer-events:none}
+.key .q i{display:block}
+.key .q i[data-s="c"]{background:var(--c-ok)}
+.key .q i[data-s="p"]{background:var(--c-mid)}
+.key .q i[data-s="a"]{background:var(--c-noq)}
+.key.dim{background:var(--c-no);color:var(--c-no-t)}
+.key.dim .q i[data-s="a"]{background:transparent}
+
+/* ---------- painel de fim ---------- */
+.endp{flex:none;width:100%;max-width:560px;margin:0 auto;height:calc(var(--kh)*3 + 18px);display:flex;flex-direction:column;justify-content:center;gap:8px;padding:10px 12px;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--pink);animation:bg-popin .35s cubic-bezier(.3,1.6,.5,1)}
+.endp .top{display:flex;align-items:center;gap:10px;min-width:0}
+.endp h3{margin:0;font-family:var(--display);font-weight:400;font-size:28px;letter-spacing:.03em;line-height:1;color:var(--violet);white-space:nowrap}
+.endp .ans{display:flex;flex-wrap:wrap;gap:5px;min-width:0}
+.endp .ans span{font-family:var(--chunky);font-size:15px;padding:2px 8px;border:2.5px solid var(--ink);border-radius:8px;background:var(--c-ok);white-space:nowrap}
+.endp .ans span.lost{background:var(--pink)}
+.endp .meta{margin:0;font-size:13px;color:var(--text-ink);line-height:1.3}
+.endp .meta b{font-family:var(--chunky);font-weight:400;color:var(--violet)}
+.endp .acts{display:flex;gap:8px}
+.endp .acts .btn{flex:1 1 0;min-width:0;height:44px;font-size:15px;padding:0 6px;white-space:nowrap}
+
+/* ---------- modais ---------- */
+.st-tabs{display:flex;gap:6px;margin:10px 0 2px;flex-wrap:wrap}
+.st-tabs .btn{height:34px;padding:0 12px;font-size:14px;box-shadow:0 3px 0 var(--ink)}
+.st-tabs .btn[aria-pressed="true"]{background:var(--cyan)}
+.dist{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+.dist .dr{display:flex;align-items:center;gap:6px;font-family:var(--chunky);font-size:14px}
+.dist .dr > span{width:16px;text-align:right;color:var(--ink)}
+.dist .bb{min-width:26px;padding:2px 7px;text-align:right;background:#cfc3e8;border:2px solid var(--ink);border-radius:6px;color:var(--ink);font-size:13px;transition:width .6s cubic-bezier(.3,1.3,.5,1)}
+.dist .bb.hi{background:var(--c-ok)}
+.dist .bb.x{background:var(--pink)}
+.m-note{margin:12px 0 0;font-size:13px;color:#6b5a90;font-weight:800}
+.m-note b{font-family:var(--chunky);font-weight:400;color:var(--violet)}
+.res-words{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.res-words span{font-family:var(--chunky);font-size:17px;padding:3px 10px;border:2.5px solid var(--ink);border-radius:9px;background:var(--c-ok);box-shadow:2px 2px 0 var(--ink)}
+.res-words span.lost{background:var(--pink)}
+.ex{display:flex;gap:5px;margin:8px 0 4px}
+.ex i{font-style:normal;width:36px;height:36px;display:grid;place-items:center;font-family:var(--chunky);font-size:20px;border:2.5px solid var(--ink);border-radius:7px;background:#fff;color:var(--ink);box-shadow:0 2px 0 var(--ink)}
+.ex i.c{background:var(--c-ok)} .ex i.p{background:var(--c-mid)} .ex i.a{background:var(--c-no);color:var(--c-no-t)}
+.share-box{width:100%;min-height:120px;margin-top:10px;font:700 14px/1.3 var(--body);border:2.5px solid var(--ink);border-radius:10px;padding:8px;resize:vertical;color:var(--ink);background:#fff}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- celular: quarteto aperta o teclado ---------- */
+@media (max-width:879px){
+  .tm[data-mode="quarteto"]{--kh:46px}
+  .tm[data-mode="quarteto"] #kb{gap:5px}
+}
+@media (max-height:700px) and (max-width:879px){ .tm{--kh:46px} #mascot .bg-mascot{width:48px;height:48px} #mascot .bg-bubble{height:54px} #mascot .bg-bubble p{font-size:12px} }
+
+/* ---------- desktop ---------- */
+@media (min-width:880px){
+  .tm{--kh:58px;display:grid;grid-template-columns:290px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);column-gap:30px;row-gap:12px;padding-block:12px 18px;min-height:600px}
+  #bar{grid-column:1/-1}
+  #side{grid-column:1;grid-row:2;gap:18px;padding-top:14px;min-height:0;overflow:auto}
+  #mascot .bg-bubble{height:auto;min-height:118px;overflow:visible}
+  #mascot .bg-bubble p{font-size:15.5px;line-height:1.3}
+  #mascot .bg-bubble p.long{font-size:14.5px}
+  main{grid-column:2;grid-row:2;gap:12px}
+  .modes{justify-content:center;gap:14px}
+  .seg button{font-size:16px;padding:6px 13px}
+  .key{font-size:21px}
+  .key.wide{font-size:14px}
+  .side-card{display:block;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--violet);padding:14px 16px}
+  .side-card h4{margin:0;font-family:var(--display);font-weight:400;font-size:26px;letter-spacing:.03em;color:var(--violet);line-height:1}
+  .side-card .sub{margin:2px 0 10px;font-size:13px;color:#6b5a90}
+  .side-card .dots{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+  .side-card .dots i{width:14px;height:14px;border-radius:50%;border:2.5px solid var(--ink);background:#fff}
+  .side-card .dots i.u{background:var(--pink)}
+  .side-card .leg{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--text-ink)}
+  .side-card .leg span{display:flex;align-items:center;gap:8px}
+  .side-card .leg i{flex:none;width:20px;height:20px;border:2.5px solid var(--ink);border-radius:5px}
+  .side-card .kbd{margin-top:12px;font-size:12.5px;color:#6b5a90;line-height:1.6}
+}
+@media (prefers-reduced-motion: reduce){ .tile.win,.board.yay,.tile.flip,.tile.pop,.row.shake{animation:none} }
+</style>
+</head><body>
+<div class="wrap tm" id="app">
+  <header id="bar"></header>
+  <aside id="side">
+    <div id="mascot"></div>
+    <div class="side-card" id="sideCard" aria-live="off"></div>
+  </aside>
+  <main>
+    <nav class="modes" aria-label="Modo de jogo">
+      <div class="seg" role="group" aria-label="Quantidade de palavras">
+        <button type="button" data-mode="termo">Termo</button>
+        <button type="button" data-mode="dueto">Dueto</button>
+        <button type="button" data-mode="quarteto">Quarteto</button>
+      </div>
+      <div class="seg kind" role="group" aria-label="Diário ou treino">
+        <button type="button" data-kind="daily">Diário<span class="n" id="dayN"></span></button>
+        <button type="button" data-kind="treino">Treino</button>
+      </div>
+    </nav>
+    <section id="stage" aria-label="Tabuleiro">
+      <div id="boards"></div>
+      <div class="burst" id="burst" aria-hidden="true"></div>
+    </section>
+    <div id="kb" role="group" aria-label="Teclado"></div>
+    <div id="endp" class="endp" hidden></div>
+    <p class="sr" id="sr" aria-live="polite"></p>
+  </main>
+</div>
+<script src="../shared/falas.js"></script><script src="../shared/bugado.js"></script>
+<script src="palavras.js"></script>
+<script src="falas-termo.js"></script>
+<script>
+(() => {
+'use strict';
+const B = window.Bugado, RM = B.RM;
+const $ = s => document.querySelector(s);
+const MODES = {
+  termo:    { n:1, tries:6, name:'Termo',    xp:30, salt:11 },
+  dueto:    { n:2, tries:7, name:'Dueto',    xp:45, salt:23 },
+  quarteto: { n:4, tries:9, name:'Quarteto', xp:60, salt:47 }
+};
+const norm = s => B.normalize(s).replace(/[^a-z]/g,'');
+const up = s => String(s).toLocaleUpperCase('pt-BR');
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const chance = p => Math.random() < p;
+
+/* ---------------- palavras ---------------- */
+const DISP = new Map();              // chave sem acento -> grafia bonita
+TERMO.validas.forEach(w => { w = w.normalize('NFC'); const k = norm(w); if (k.length === 5 && !DISP.has(k)) DISP.set(k, w); });
+const ANS = [];
+TERMO.respostas.forEach(w => { w = w.normalize('NFC'); const k = norm(w); if (k.length !== 5 || ANS.includes(k)) return; ANS.push(k); if (!DISP.has(k)) DISP.set(k, w); });
+const show = k => up(DISP.get(k) || k);
+const FAMOSAS = ['audio','serao','raios','ideia','areia','seria','terao','oeste','reais','sorte','aureo','ouvir','tenis'];
+const FEIAS = ['merda','porra','bosta','foder','cagar','mijar','peido','bunda','putas','cuzao','vadia','piroca','xoxota','bicha','viado','corno','fodas','fodeu','caral'];
+
+/* ---------------- diário determinístico ----------------
+   Cada modo tem uma permutação fixa das respostas (semente própria).
+   Dia d usa as posições d*n ... d*n+n-1 → mesmo pra todo mundo, sem repetir por ~anos. */
+const permCache = {};
+function perm(mode){ return permCache[mode] || (permCache[mode] = B.shuffle([...ANS], B.rng(0x7E12 + MODES[mode].salt*7919))); }
+function dailyAnswers(mode, day){
+  const P = perm(mode), L = P.length, n = MODES[mode].n, out = [];
+  let i = day*n;
+  while (out.length < n){ const w = P[((i % L) + L) % L]; if (!out.includes(w)) out.push(w); i++; }
+  return out;
+}
+function randomAnswers(mode){ const out = []; while (out.length < MODES[mode].n){ const w = pick(ANS); if (!out.includes(w)) out.push(w); } return out; }
+
+function evaluate(g, a){
+  const res = ['a','a','a','a','a'], left = {};
+  for (let i=0;i<5;i++){ if (g[i] === a[i]) res[i] = 'c'; else left[a[i]] = (left[a[i]]||0) + 1; }
+  for (let i=0;i<5;i++){ if (res[i] !== 'c' && left[g[i]] > 0){ res[i] = 'p'; left[g[i]]--; } }
+  return res;
+}
+const RANK = { '':0, a:1, p:2, c:3 };
+
+/* ---------------- estado ---------------- */
+const UIKEY = 'fliperama.termo.ui';
+const skey = (mode, kind) => `fliperama.termo.${mode}.${kind === 'daily' ? 'daily' : 'treino'}`;
+let S = null, M = null;                // estado da partida, config do modo
+let cur = ['','','','',''], cursor = 0, busy = false, revealing = -1;
+let invalidRow = 0, cursorTalked = 0, layout = { c:1, r:1 };
+const G = B.game('termo');
+
+function stats(mode){
+  G.modes = G.modes || {};
+  const m = G.modes[mode] = G.modes[mode] || {};
+  const def = { played:0, wins:0, streak:0, max:0, dist:{}, lastDay:null, lastWinDay:null, tp:0, tw:0 };
+  for (const k in def) if (m[k] === undefined) m[k] = def[k];
+  return m;
+}
+const streakOf = m => (m.lastWinDay != null && B.dayNumber() - m.lastWinDay <= 1) ? m.streak : 0;
+
+function save(){ B.store.set(skey(S.mode, S.kind), { day:S.day, answers:S.answers, guesses:S.guesses, done:S.done, won:S.won, t0:S.t0, t1:S.t1, counted:S.counted }); }
+function load(mode, kind){
+  const day = B.dayNumber(); let st = B.store.get(skey(mode, kind));
+  const okGuesses = st && Array.isArray(st.guesses) && st.guesses.every(g => typeof g === 'string' && DISP.has(g));
+  if (kind === 'daily'){
+    if (!st || st.day !== day || !okGuesses) st = { day, guesses:[] };
+    st.answers = dailyAnswers(mode, day);
+  } else if (!st || st.done || !okGuesses || !Array.isArray(st.answers) || st.answers.length !== MODES[mode].n || !st.answers.every(a => ANS.includes(a))){
+    st = { answers: randomAnswers(mode), guesses:[] };
+  }
+  S = { mode, kind, day, answers:st.answers, guesses:st.guesses.slice(0, MODES[mode].tries), done:!!st.done, won:!!st.won, t0:st.t0||0, t1:st.t1||0, counted:!!st.counted };
+  M = MODES[mode];
+  // consistência (ex.: estado salvo terminado sem flag)
+  const fin = finishedState(); if (fin && !S.done){ S.done = true; S.won = fin === 'won'; }
+  cur = ['','','','','']; cursor = 0; revealing = -1; invalidRow = 0;
+  if (kind === 'treino') save();   // recarregar a página mantém a mesma palavra do treino
+  B.store.set(UIKEY, { mode, kind });
+}
+const solvedAt = b => S.guesses.indexOf(S.answers[b]);
+const shownRows = b => { const s = solvedAt(b); return s >= 0 ? s + 1 : S.guesses.length; };
+function finishedState(){
+  if (S.answers.every((a,b) => solvedAt(b) >= 0)) return 'won';
+  if (S.guesses.length >= M.tries) return 'lost';
+  return null;
+}
+
+/* ---------------- montagem ---------------- */
+const app = $('#app'), boardsEl = $('#boards'), stage = $('#stage'), kbEl = $('#kb'), endEl = $('#endp');
+const KB_ROWS = ['qwertyuiop', 'asdfghjkl<', 'zxcvbnm>'];
+const BACK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1Z"/><path d="m17 9-5 6"/><path d="m12 9 5 6"/></svg>';
+
+function build(){
+  app.dataset.mode = S.mode;
+  boardsEl.className = M.n > 1 ? 'multi' : '';
+  boardsEl.innerHTML = S.answers.map((_, b) =>
+    `<div class="board" data-b="${b}" role="group" aria-label="Palavra ${b+1}"><span class="ok" aria-hidden="true">✓</span>` +
+    Array.from({length:M.tries}, (_, r) => `<div class="row" data-r="${r}">` + '<div class="tile"></div>'.repeat(5) + '</div>').join('') + '</div>'
+  ).join('');
+  kbEl.innerHTML = KB_ROWS.map(row => '<div class="kr">' + [...row].map(ch => {
+    if (ch === '<') return `<button type="button" class="key back" data-k="back" aria-label="Apagar">${BACK_SVG}</button>`;
+    if (ch === '>') return `<button type="button" class="key wide" data-k="enter" aria-label="Enviar">ENTER</button>`;
+    const q = M.n > 1 ? `<span class="q">${'<i></i>'.repeat(M.n)}</span>` : '';
+    return `<button type="button" class="key" data-k="${ch}" aria-label="${ch.toUpperCase()}">${q}<span class="l">${ch.toUpperCase()}</span></button>`;
+  }).join('') + '</div>').join('');
+  document.querySelectorAll('.modes [data-mode]').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === S.mode));
+  document.querySelectorAll('.modes [data-kind]').forEach(b => b.setAttribute('aria-pressed', b.dataset.kind === S.kind));
+  $('#dayN').textContent = ' #' + B.dayNumber();
+  const nb = document.getElementById('btnNova'); if (nb) nb.hidden = S.kind !== 'treino';
+  fit(); render();
+}
+
+/* tamanho dos quadradinhos: testa arranjos e fica com o maior tile que cabe */
+function fit(){
+  if (!M) return;
+  const W = stage.clientWidth, H = stage.clientHeight; if (!W || !H) return;
+  const desk = innerWidth >= 880, n = M.n, R = M.tries;
+  const maxT = desk ? {1:66, 2:56, 4:46}[n] : {1:64, 2:52, 4:42}[n];
+  const opts = n === 1 ? [[1,1]] : n === 2 ? [[2,1],[1,2]] : [[2,2],[4,1]];
+  let best = null;
+  for (const [c, r] of opts){
+    const gb = n === 1 ? 0 : (desk ? 18 : 10), pad = n === 1 ? 0 : (desk ? 9 : 5);
+    for (const g of (n === 1 ? [6] : n === 2 ? [5,4] : [4,3])){
+      const bw = (W - gb*(c-1))/c - pad*2 - 5, bh = (H - gb*(r-1))/r - pad*2 - 8;
+      const t = Math.floor(Math.min((bw - 4*g)/5, (bh - (R-1)*g)/R, maxT));
+      if (!best || t > best.t) best = { t, c, r, g, gb, pad };
+    }
+  }
+  const t = Math.max(12, best.t);
+  const s = boardsEl.style;
+  s.setProperty('--t', t + 'px'); s.setProperty('--g', best.g + 'px'); s.setProperty('--gb', best.gb + 'px');
+  s.setProperty('--pad', best.pad + 'px'); s.setProperty('--cols', best.c);
+  if (layout.c !== best.c || layout.r !== best.r){ layout = { c:best.c, r:best.r }; renderKeys(); }
+}
+if ('ResizeObserver' in window) new ResizeObserver(() => fit()).observe(stage); else addEventListener('resize', fit);
+
+/* ---------------- desenho ---------------- */
+function render(){ for (let b = 0; b < M.n; b++) renderBoard(b); renderKeys(); renderEnd(); renderSide(); }
+function renderBoard(b){
+  const bd = boardsEl.children[b]; if (!bd) return;
+  const sv = solvedAt(b), shown = shownRows(b), ans = S.answers[b];
+  bd.classList.toggle('solved', sv >= 0 && sv !== revealing);
+  bd.setAttribute('aria-label', `Palavra ${b+1}${sv >= 0 && sv !== revealing ? ': ' + show(ans) + ', resolvida' : ''}`);
+  const rows = bd.querySelectorAll('.row');
+  rows.forEach((row, r) => {
+    const tiles = row.children;
+    row.className = 'row';
+    if (r < shown){
+      const g = S.guesses[r], ev = evaluate(g, ans), d = [...show(g)];
+      for (let i=0;i<5;i++){
+        tiles[i].textContent = d[i] || g[i].toUpperCase();
+        tiles[i].dataset.s = r === revealing ? 't' : ev[i];
+        tiles[i].classList.remove('cursor');
+      }
+      row.setAttribute('aria-label', r === revealing ? '' : `${show(g)}: ` + ev.map((s, i) => `${d[i]} ${s==='c'?'certa':s==='p'?'fora do lugar':'não tem'}`).join(', '));
+    } else {
+      const isCur = r === S.guesses.length && sv < 0 && !S.done && revealing < 0;
+      if (isCur) row.classList.add('cur');
+      else if (sv >= 0 || S.done) row.classList.add('dead');
+      row.removeAttribute('aria-label');
+      for (let i=0;i<5;i++){
+        const ch = isCur ? cur[i] : '';
+        tiles[i].textContent = ch ? ch.toUpperCase() : '';
+        if (ch) tiles[i].dataset.s = 't'; else delete tiles[i].dataset.s;
+        tiles[i].classList.toggle('cursor', isCur && i === cursor);
+      }
+    }
+  });
+}
+function renderCur(popAt){
+  for (let b = 0; b < M.n; b++){
+    renderBoard(b);
+    if (popAt != null && !RM){
+      const row = boardsEl.children[b].querySelector('.row.cur'); if (!row) continue;
+      const t = row.children[popAt]; t.classList.remove('pop'); void t.offsetWidth; t.classList.add('pop');
+    }
+  }
+}
+// melhor estado conhecido de cada letra em cada quadro (sem a linha que está virando)
+function knowledge(){
+  return S.answers.map((a, b) => {
+    const m = {}, n = shownRows(b);
+    for (let r = 0; r < n; r++){
+      if (r === revealing) continue;
+      const g = S.guesses[r], ev = evaluate(g, a);
+      for (let i=0;i<5;i++) if (RANK[ev[i]] > RANK[m[g[i]]||'']) m[g[i]] = ev[i];
+    }
+    return m;
+  });
+}
+function renderKeys(){
+  if (!M) return;
+  const K = knowledge(), solved = S.answers.map((a,b) => solvedAt(b) >= 0 && solvedAt(b) !== revealing);
+  const q = kbEl.querySelectorAll('.key .q');
+  q.forEach(el => { el.style.gridTemplateColumns = M.n === 2 ? '1fr 1fr' : (layout.c === 4 ? 'repeat(4,1fr)' : '1fr 1fr'); });
+  kbEl.querySelectorAll('.key[data-k]').forEach(key => {
+    const L = key.dataset.k; if (L.length !== 1) return;
+    if (M.n === 1){ const s = K[0][L]; if (s) key.dataset.s = s; else delete key.dataset.s; key.setAttribute('aria-label', L.toUpperCase() + (s ? ' (' + ({c:'certa',p:'fora do lugar',a:'não tem'})[s] + ')' : '')); return; }
+    const is = key.querySelectorAll('.q i');
+    K.forEach((m, b) => { if (m[L]) is[b].dataset.s = m[L]; else delete is[b].dataset.s; });
+    const open = K.filter((m, b) => !solved[b]);
+    key.classList.toggle('dim', open.length > 0 && open.every(m => m[L] === 'a'));
+  });
+}
+function renderSide(){
+  const card = $('#sideCard'); if (!card || !M) return;
+  const used = S.guesses.length;
+  const m = stats(S.mode), st = streakOf(m);
+  card.innerHTML = `<h4>${M.name}${S.kind === 'daily' ? ' #' + S.day : ''}</h4>
+    <p class="sub">${S.kind === 'daily' ? 'Diário · igual pra todo mundo hoje' : 'Treino · palavra aleatória'} · ${M.n} palavra${M.n>1?'s':''}</p>
+    <div class="dots" aria-label="${used} de ${M.tries} tentativas usadas">${Array.from({length:M.tries}, (_, i) => `<i class="${i < used ? 'u' : ''}"></i>`).join('')}</div>
+    <div class="leg">
+      <span><i style="background:var(--c-ok)"></i>Letra certa no lugar certo</span>
+      <span><i style="background:var(--c-mid)"></i>Tem na palavra, lugar errado</span>
+      <span><i style="background:var(--c-no)"></i>Não tem na palavra</span>
+    </div>
+    <div class="kbd">🔥 Sequência no ${M.name.toLowerCase()} diário: <b>${st}</b><br>Atalhos: <kbd>Enter</kbd> envia · <kbd>←</kbd><kbd>→</kbd> movem o cursor · clique num quadradinho pra editar</div>`;
+}
+
+/* ---------------- entrada ---------------- */
+function nextCursor(i){
+  for (let j = i+1; j < 5; j++) if (!cur[j]) return j;
+  for (let j = 0; j < 5; j++) if (!cur[j]) return j;
+  return 5;
+}
+function press(k){
+  if (!S || busy || S.done || B.isModalOpen()) return;
+  if (k === 'enter') return submit();
+  if (k === 'back'){
+    if (cursor < 5 && cur[cursor]) cur[cursor] = '';
+    else if (cursor > 0){ cursor--; cur[cursor] = ''; }
+    B.sfx.tap(); renderCur(); return;
+  }
+  if (k === 'del'){ if (cursor < 5){ cur[cursor] = ''; renderCur(); } return; }
+  if (k === 'left'){ cursor = Math.max(0, cursor-1); renderCur(); return; }
+  if (k === 'right'){ cursor = Math.min(5, cursor+1); renderCur(); return; }
+  if (k === 'home'){ cursor = 0; renderCur(); return; }
+  if (k === 'end'){ cursor = 5; renderCur(); return; }
+  if (/^[a-z]$/.test(k)){
+    if (cursor > 4){ const e = cur.indexOf(''); if (e < 0) return; cursor = e; }
+    cur[cursor] = k; const at = cursor; cursor = nextCursor(cursor);
+    B.sfx.type(); renderCur(at);
+  }
+}
+kbEl.addEventListener('mousedown', e => e.preventDefault());   // não rouba o foco
+kbEl.addEventListener('click', e => {
+  const key = e.target.closest('.key'); if (!key) return;
+  B.idle.touch(); press(key.dataset.k);
+});
+boardsEl.addEventListener('click', e => {
+  const t = e.target.closest('.row.cur .tile'); if (!t || busy || S.done) return;
+  cursor = [...t.parentElement.children].indexOf(t); B.sfx.note(); renderCur();
+  if (cursorTalked === 0 || chance(.12)){ cursorTalked++; B.talk('termoCursor', null, 'smug', 4000); }
+});
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey || B.isModalOpen()) return;
+  const t = e.target, inCtl = t && t.closest && t.closest('button,a,input,textarea,select');
+  const k = e.key;
+  if (k === 'Enter'){ if (inCtl && !t.closest('#kb')) return; e.preventDefault(); flashKey('enter'); press('enter'); return; }
+  if (t && t.closest && t.closest('input,textarea')) return;
+  if (k === 'Backspace'){ e.preventDefault(); flashKey('back'); press('back'); return; }
+  if (k === 'Delete'){ e.preventDefault(); press('del'); return; }
+  if (k === 'ArrowLeft'){ e.preventDefault(); press('left'); return; }
+  if (k === 'ArrowRight'){ e.preventDefault(); press('right'); return; }
+  if (k === 'Home' && !inCtl){ press('home'); return; }
+  if (k === 'End' && !inCtl){ press('end'); return; }
+  if (k.length === 1){ const n = norm(k); if (/^[a-z]$/.test(n)){ e.preventDefault(); flashKey(n); press(n); } }
+});
+function flashKey(k){ const el = kbEl.querySelector(`[data-k="${k}"]`); if (!el) return; el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 110); }
+// clique de mouse não deixa foco preso em botão (senão o Enter físico "clica" nele de novo)
+document.addEventListener('click', e => { if (e.detail > 0){ const b = e.target.closest('button'); if (b && !b.closest('.bg-card')) b.blur(); } });
+
+function shake(){
+  B.sfx.err();
+  document.querySelectorAll('.row.cur').forEach(r => { r.classList.remove('shake'); void r.offsetWidth; r.classList.add('shake'); });
+}
+function announce(txt){ const sr = $('#sr'); sr.textContent = ''; setTimeout(() => sr.textContent = txt, 30); }
+
+/* ---------------- chute ---------------- */
+function submit(){
+  const word = cur.join('');
+  if (cur.some(c => !c)){ shake(); B.talk('termoCurta', null, 'smug', 3500); announce('Faltam letras.'); return; }
+  if (!DISP.has(word)){
+    shake(); B.glitch(); invalidRow++;
+    B.talk(invalidRow >= 2 && chance(.6) ? 'termoInvalidaDeNovo' : 'termoInvalida', { palavra: up(word) }, chance(.5) ? 'shock' : 'smug', 4500);
+    announce(up(word) + ' não é uma palavra válida.'); return;
+  }
+  if (S.guesses.includes(word)){ shake(); B.talk('termoRepetida', { palavra: show(word) }, 'smug', 4000); announce('Você já tentou ' + show(word) + '.'); return; }
+
+  const before = analyze(word);
+  if (!S.t0) S.t0 = Date.now();
+  S.guesses.push(word); invalidRow = 0;
+  cur = ['','','','','']; cursor = 0;
+  revealing = S.guesses.length - 1; busy = true;
+  save(); render();
+  flipRow(revealing, () => {
+    const idx = revealing; revealing = -1; busy = false;
+    const fin = finishedState();
+    if (fin){ S.done = true; S.won = fin === 'won'; S.t1 = Date.now(); save(); }
+    render(); after(word, idx, before, fin);
+  });
+}
+function flipRow(r, done){
+  const STAG = RM ? 0 : 230, FLIP = RM ? 0 : 500;
+  const jobs = [];
+  for (let b = 0; b < M.n; b++){
+    const sv = solvedAt(b); if (sv >= 0 && sv < r) continue;
+    const row = boardsEl.children[b].children[r + 1]; // +1 por causa do selo ✓
+    jobs.push({ row, ev: evaluate(S.guesses[r], S.answers[b]) });
+  }
+  for (let i = 0; i < 5; i++){
+    setTimeout(() => {
+      if (FLIP) B.sfx.flip();
+      jobs.forEach(j => { const t = j.row.children[i]; t.classList.remove('flip','pop'); if (FLIP){ void t.offsetWidth; t.classList.add('flip'); } });
+    }, i*STAG);
+    setTimeout(() => jobs.forEach(j => { j.row.children[i].dataset.s = j.ev[i]; }), i*STAG + FLIP/2);
+  }
+  setTimeout(() => { jobs.forEach(j => [...j.row.children].forEach(t => t.classList.remove('flip'))); done(); }, 4*STAG + FLIP + 40);
+}
+
+// o que o jogador já sabia ANTES deste chute (pra zoar vacilo)
+function analyze(word){
+  const K = knowledge(), open = S.answers.map((a, b) => b).filter(b => solvedAt(b) < 0);
+  const out = { cinza:null, ignVerde:null, teimoso:null, ignAmarelo:null };
+  for (const L of new Set(word)){
+    if (open.length && open.every(b => K[b][L] === 'a')){ out.cinza = L; break; }
+  }
+  if (M.n === 1 && S.guesses.length){
+    const a = S.answers[0];
+    S.guesses.forEach(g => {
+      const ev = evaluate(g, a);
+      for (let i=0;i<5;i++){
+        if (ev[i] === 'c' && word[i] !== g[i] && !out.ignVerde) out.ignVerde = g[i];
+        if (ev[i] === 'p' && word[i] === g[i] && !out.teimoso) out.teimoso = g[i];
+      }
+    });
+    for (const L in K[0]) if (K[0][L] === 'p' && !word.includes(L)){ out.ignAmarelo = L; break; }
+  }
+  const prevG = S.guesses.length ? Math.max(...open.map(b => evaluate(S.guesses[S.guesses.length-1], S.answers[b]).filter(s => s === 'c').length), 0) : 0;
+  out.prevGreens = prevG; out.solvedBefore = S.answers.map((a,b) => solvedAt(b) >= 0);
+  return out;
+}
+
+function after(word, idx, before, fin){
+  const disp = show(word);
+  // leitor de tela
+  announce(S.answers.map((a, b) => {
+    if (before.solvedBefore[b]) return '';
+    const ev = evaluate(word, a);
+    return (M.n > 1 ? `Quadro ${b+1}: ` : '') + [...disp].map((ch, i) => ch + ' ' + ({c:'certa',p:'fora do lugar',a:'não tem'})[ev[i]]).join(', ');
+  }).filter(Boolean).join('. '));
+
+  if (fin) return finish(fin === 'won');
+
+  const newly = S.answers.map((a,b) => b).filter(b => !before.solvedBefore[b] && solvedAt(b) === idx);
+  if (newly.length){
+    newly.forEach(b => { const bd = boardsEl.children[b]; bd.classList.remove('yay'); void bd.offsetWidth; bd.classList.add('yay'); });
+    B.sfx.good(); B.burst($('#burst'), pick(['UMA JÁ!','CAIU!','PAPOU!','BOA!']), '#3DDC84');
+    const left = S.answers.filter((a,b) => solvedAt(b) < 0).length;
+    B.talk('termoQuadroResolvido', { palavra: show(S.answers[newly[0]]), n: left }, 'happy', 5000);
+    return;
+  }
+  comment(word, idx, before);
+}
+
+function comment(word, idx, before){
+  const talk = (cat, vars, mood, hold) => B.talk(cat, vars, mood, hold || 5200);
+  const disp = show(word), left = M.tries - S.guesses.length;
+  const open = S.answers.map((a,b) => b).filter(b => solvedAt(b) < 0);
+  const evs = open.map(b => evaluate(word, S.answers[b]));
+  const score = evs.map(ev => ({ g: ev.filter(s => s==='c').length, y: ev.filter(s => s==='p').length }));
+  const best = score.slice().sort((a,b) => (b.g*10+b.y) - (a.g*10+a.y))[0] || { g:0, y:0 };
+
+  if (FEIAS.includes(word)) return talk('termoPalavrao', { palavra: disp }, 'shock');
+  if (word === 'termo') return talk('termoMeta', null, 'smug');
+
+  if (idx === 0){
+    const last = G.lastOpener; G.lastOpener = word; B.saveProfile();
+    if (word === last) return talk('termoAberturaDeNovo', { palavra: disp }, 'smug');
+    if (FAMOSAS.includes(word)) return talk('termoAbertura', { palavra: disp }, 'smug');
+    if (chance(.5)) return talk('termoPrimeiro', { palavra: disp }, 'talk');
+  }
+  if (left === 1) return talk('termoUltima', null, 'shock', 6500);
+
+  const f = before;
+  if (f.cinza && chance(.8)) return talk('termoCinza', { letra: f.cinza.toUpperCase() }, 'smug');
+  if (f.teimoso && chance(.75)) return talk('termoAmareloTeimoso', { letra: f.teimoso.toUpperCase() }, 'smug');
+  if (f.ignVerde && best.g < 4 && chance(.7)) return talk('termoIgnorouVerde', { letra: f.ignVerde.toUpperCase() }, 'shock');
+  if (f.ignAmarelo && chance(.55)) return talk('termoIgnorouAmarelo', { letra: f.ignAmarelo.toUpperCase() }, 'smug');
+
+  if (disp !== up(word) && chance(.28)) return talk('termoAcento', { palavra: disp }, 'happy');
+  const vowels = new Set([...word].filter(c => 'aeiou'.includes(c))).size;
+  if (idx > 0 && vowels >= 4 && chance(.6)) return talk('termoVogais', null, 'talk');
+  if (new Set(word).size < 5 && chance(.3)) return talk('termoLetraDupla', null, 'talk');
+
+  if (M.n > 1 && chance(.35)) return talk(M.n === 2 ? 'termoDuetoJogada' : 'termoQuartetoJogada', null, pick(['talk','smug']));
+  if (idx > 0 && best.g < before.prevGreens && before.prevGreens >= 2 && chance(.6)) return talk('termoPiorou', null, 'smug');
+
+  if (score.every(s => s.g === 0 && s.y === 0)) return talk('termoZero', null, pick(['dead','smug']));
+  if (best.g + best.y === 5 && best.g < 5) return talk('termoAnagrama', null, 'shock');
+  if (best.g === 0) return talk('termoSoAmarelo', { n: best.y }, 'talk');
+  talk('termoVerde' + Math.min(best.g, 4), null, best.g >= 3 ? 'shock' : best.g === 2 ? 'happy' : 'talk');
+}
+
+/* ---------------- fim de jogo ---------------- */
+let lastXP = 0;
+function finish(won){
+  const used = S.guesses.length, m = stats(S.mode), day = S.day;
+  let lostStreak = 0, streak = 0;
+  lastXP = 0;
+  if (!S.counted){
+    S.counted = true;
+    if (S.kind === 'daily'){
+      m.played++; lostStreak = streakOf(m);
+      if (won){
+        m.wins++; m.dist[used] = (m.dist[used]||0) + 1;
+        m.streak = (m.lastWinDay === day - 1) ? m.streak + 1 : (m.lastWinDay === day ? m.streak : 1);
+        m.max = Math.max(m.max, m.streak); m.lastWinDay = day; streak = m.streak; lostStreak = 0;
+      } else { m.dist.x = (m.dist.x||0) + 1; m.streak = 0; }
+      m.lastDay = day;
+      G.dailies = G.dailies || {}; G.dailies[S.mode] = { day, won };
+      if (S.mode === 'termo') G.lastDaily = { day, won };
+    } else { m.tp++; if (won) m.tw++; }
+    B.saveProfile();
+    lastXP = won ? M.xp + (M.tries - used)*5 : 5;
+    if (S.kind !== 'daily') lastXP = Math.round(lastXP * (won ? .7 : .4));
+    if (won) B.registerWin('termo');
+    B.gainXP(lastXP);
+    save();
+  }
+  const elapsed = Math.max(1, Math.round(((S.t1 || Date.now()) - (S.t0 || Date.now()))/1000));
+  if (won){
+    B.sfx.win(); B.confetti();
+    if (!RM) S.answers.forEach((a, b) => {
+      const row = boardsEl.children[b].children[solvedAt(b) + 1];
+      if (b === S.answers.findIndex((x, i) => solvedAt(i) === used - 1) || M.n === 1)
+        [...row.children].forEach((t, i) => setTimeout(() => t.classList.add('win'), i*90));
+    });
+    const words = M.n === 1 ? ({1:'DE PRIMEIRA!!',2:'GÊNIO!',3:'BRABO!',4:'BOA!',5:'UFA!',6:'NO SUFOCO!'})[used] : (M.n === 2 ? 'DUETOU!' : 'QUARTETOU!');
+    B.burst($('#burst'), words, '#FFD23F');
+    if (M.n === 1) B.talk('termoGanhou' + used, null, 'happy', 7000);
+    else if (used === M.tries) B.talk('termoGanhouLimite', null, 'happy', 7000);
+    else B.talk(M.n === 2 ? 'duetoGanhou' : 'quartetoGanhou', { n: used }, 'happy', 7000);
+    setTimeout(() => {
+      if (streak >= 2) B.talk('termoSequencia', { n: streak }, 'smug', 6000);
+      else if (elapsed < 60) B.talk('termoRapido', { n: elapsed }, 'shock', 6000);
+      else if (elapsed > 600) B.talk('termoDemorou', { n: Math.round(elapsed/60) }, 'smug', 6000);
+    }, 7600);
+  } else {
+    B.sfx.lose(); B.glitch();
+    B.burst($('#burst'), pick(['DEU RUIM','GAME OVER','F','AI AI AI']), '#FF4F9A');
+    const miss = S.answers.filter((a, b) => solvedAt(b) < 0).map(show).join(', ');
+    B.talk(M.n === 1 ? 'termoPerdeu' : M.n === 2 ? 'duetoPerdeu' : 'quartetoPerdeu', { palavra: miss }, 'dead', 8000);
+    if (lostStreak >= 2) setTimeout(() => B.talk('termoSequenciaPerdida', { n: lostStreak }, 'dead', 6000), 8200);
+  }
+  render();
+  setTimeout(() => { if (!B.isModalOpen() && S.done) openStats(S.mode, true); }, RM ? 400 : 2300);
+}
+
+function renderEnd(){
+  const done = S.done;
+  kbEl.hidden = done; endEl.hidden = !done;
+  if (!done){ clearInterval(renderEnd.t); return; }
+  const used = S.guesses.length;
+  const words = S.answers.map((a, b) => `<span class="${solvedAt(b) < 0 ? 'lost' : ''}">${show(a)}</span>`).join('');
+  const title = S.won ? (M.n === 1 ? `${used}/${M.tries}!` : `${used}/${M.tries}!`) : 'Não deu';
+  const daily = S.kind === 'daily';
+  endEl.innerHTML = `<div class="top"><h3>${S.won ? 'ACERTOU' : 'DEU RUIM'} <small style="font-size:.65em;color:var(--pink)">${title}</small></h3><div class="ans">${words}</div></div>
+    <p class="meta">${daily ? `Próximo diário em <b id="cd">--:--:--</b> · ` : ''}${daily ? 'Enquanto isso, o treino é infinito.' : 'Treino: palavra nova quando quiser.'}</p>
+    <div class="acts">
+      <button type="button" class="btn" data-end="share">Compartilhar</button>
+      <button type="button" class="btn cool" data-end="stats">Resultado</button>
+      <button type="button" class="btn primary" data-end="${daily ? 'treino' : 'nova'}">${daily ? 'Jogar treino' : 'Nova palavra'}</button>
+    </div>`;
+  clearInterval(renderEnd.t);
+  if (daily){ const tick = () => { const el = document.getElementById('cd'); if (el) el.textContent = countdown(); }; tick(); renderEnd.t = setInterval(tick, 1000); }
+}
+endEl.addEventListener('click', e => {
+  const b = e.target.closest('[data-end]'); if (!b) return; B.sfx.tap();
+  const a = b.dataset.end;
+  if (a === 'share') share(); else if (a === 'stats') openStats(S.mode, true);
+  else if (a === 'treino') switchTo(S.mode, 'treino'); else if (a === 'nova') newTreino();
+});
+function countdown(){
+  const d = new Date(), n = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+  const s = Math.max(0, Math.floor((n - d)/1000));
+  return [Math.floor(s/3600), Math.floor(s/60)%60, s%60].map(x => String(x).padStart(2,'0')).join(':');
+}
+
+/* ---------------- compartilhar ---------------- */
+function shareText(){
+  const EM = { c:'🟩', p:'🟨', a:'⬛' }, blank = '⬜⬜⬜⬜⬜';
+  const grid = b => { const out = [], n = shownRows(b); for (let r=0;r<n;r++) out.push(evaluate(S.guesses[r], S.answers[b]).map(s => EM[s]).join('')); return out; };
+  const scores = S.answers.map((a, b) => solvedAt(b) >= 0 ? solvedAt(b) + 1 : 'X');
+  const head = (S.kind === 'daily' ? `Fliperama Bugado · ${M.name} #${S.day}` : `Fliperama Bugado · ${M.name} (treino)`) + ` ${M.n === 1 ? scores[0] : scores.join('&')}/${M.tries}`;
+  let body;
+  if (M.n === 1) body = grid(0).join('\n');
+  else {
+    const G2 = S.answers.map((a,b) => grid(b));
+    const pair = (x, y) => { const h = Math.max(G2[x].length, G2[y].length), o = []; for (let r=0;r<h;r++) o.push((G2[x][r]||blank) + ' ' + (G2[y][r]||blank)); return o.join('\n'); };
+    body = M.n === 2 ? pair(0,1) : pair(0,1) + '\n\n' + pair(2,3);
+  }
+  const st = streakOf(stats(S.mode));
+  return head + (S.kind === 'daily' && S.won && st >= 2 ? ` 🔥${st}` : '') + '\n\n' + body + '\n\n' + location.origin + location.pathname;
+}
+async function share(){
+  const txt = shareText();
+  const ok = await B.copyText(txt);
+  if (ok){ B.toast('Copiado!', 'Resultado na área de transferência.'); B.talk('termoCompartilhou', null, 'happy', 4500); return; }
+  B.openModal(`<h2>Copia aí</h2><p class="sub">Não consegui copiar sozinho. Seleciona e copia:</p><textarea class="share-box" readonly>${txt}</textarea><div class="m-actions"><button class="btn primary" data-act="close">Fechou</button></div>`);
+  const ta = document.querySelector('.share-box'); if (ta){ ta.focus(); ta.select(); }
+}
+
+/* ---------------- modais ---------------- */
+let statsMode = 'termo', statsResult = false;
+function openStats(mode, result){
+  statsMode = mode || S.mode; statsResult = !!result && statsMode === S.mode && S.done;
+  const m = stats(statsMode), MM = MODES[statsMode];
+  const winPct = m.played ? Math.round(m.wins / m.played * 100) : 0;
+  const maxBar = Math.max(1, ...Object.values(m.dist));
+  const lastHi = (S.mode === statsMode && S.kind === 'daily' && S.done) ? (S.won ? String(S.guesses.length) : 'x') : null;
+  const rows = [...Array.from({length:MM.tries}, (_, i) => String(i+1)), 'x'].map(k => {
+    const v = m.dist[k] || 0;
+    return `<div class="dr"><span>${k === 'x' ? '💀' : k}</span><div class="bb ${k==='x'?'x':''} ${k===lastHi?'hi':''}" style="width:${Math.max(8, v/maxBar*100)}%">${v}</div></div>`;
+  }).join('');
+  let head = `<h2>Estatísticas</h2>`;
+  if (statsResult){
+    const used = S.guesses.length;
+    head = `<h2 class="big">${S.won ? (M.n === 1 ? ['','DE PRIMEIRA!','GÊNIO!','BRABO!','MANDOU BEM!','UFA!','NO SUFOCO!'][used] || 'ACERTOU!' : 'ACERTOU TUDO!') : 'DEU RUIM!'}</h2>
+      <p class="sub">${S.kind === 'daily' ? `${M.name} #${S.day}` : `${M.name} · treino`} · ${S.won ? `${used}/${M.tries} tentativas` : 'faltou pouco (ou muito)'}${lastXP ? ` · <b style="color:var(--violet)">+${lastXP} XP</b>` : ''}</p>
+      <div class="res-words">${S.answers.map((a,b) => `<span class="${solvedAt(b) < 0 ? 'lost' : ''}">${show(a)}</span>`).join('')}</div>`;
+  }
+  const tabs = `<div class="st-tabs" role="group" aria-label="Modo">${Object.keys(MODES).map(k => `<button class="btn" data-act="st-${k}" aria-pressed="${k===statsMode}">${MODES[k].name}</button>`).join('')}</div>`;
+  const daily = S.kind === 'daily';
+  const acts = [];
+  if (statsResult) acts.push(`<button class="btn hot" data-act="share">Compartilhar</button>`);
+  if (statsResult) acts.push(daily ? `<button class="btn primary" data-act="treino">Jogar treino</button>` : `<button class="btn primary" data-act="nova">Nova palavra</button>`);
+  acts.push(`<button class="btn" data-act="close">Fechar</button>`);
+  B.openModal(`${head}${tabs}
+    <div class="stat-grid">
+      <div class="stat"><b>${m.played}</b><span>Jogos</span></div>
+      <div class="stat"><b>${winPct}%</b><span>Vitórias</span></div>
+      <div class="stat"><b>${streakOf(m)}</b><span>Sequência</span></div>
+      <div class="stat"><b>${m.max}</b><span>Recorde</span></div>
+    </div>
+    <h3>Tentativas no diário (${MM.name})</h3>
+    <div class="dist">${rows}</div>
+    <p class="m-note">Treino: <b>${m.tp}</b> jogos, <b>${m.tw}</b> vitórias · Próximo diário em <b id="cd2">${countdown()}</b></p>
+    <div class="m-actions">${acts.join('')}</div>`);
+  clearInterval(openStats.t);
+  openStats.t = setInterval(() => { const el = document.getElementById('cd2'); if (!el) return clearInterval(openStats.t); el.textContent = countdown(); }, 1000);
+}
+Object.keys(MODES).forEach(k => B.onAct('st-' + k, () => openStats(k, statsResult && k === S.mode)));
+B.onAct('share', () => share());
+B.onAct('treino', () => { B.closeModal(true); switchTo(S.mode, 'treino'); });
+B.onAct('nova', () => { B.closeModal(true); newTreino(); });
+
+function openHelp(auto){
+  G.seenHelp = true; B.saveProfile();
+  B.openModal(`<h2>Como jogar Termo</h2>
+    <p class="sub">Descubra a palavra secreta de 5 letras. Você digita um chute, aperta ENTER e as letras mudam de cor pra te dar pistas.</p>
+    <div class="ex" aria-label="Exemplo: G verde"><i class="c">G</i><i>A</i><i>T</i><i>O</i><i>S</i></div>
+    <p><b>Verde</b>: a letra G está na palavra e no lugar certo.</p>
+    <div class="ex" aria-label="Exemplo: I amarelo"><i>P</i><i>I</i><i class="p">L</i><i>H</i><i>A</i></div>
+    <p><b>Amarelo</b>: o L está na palavra, mas em outro lugar.</p>
+    <div class="ex" aria-label="Exemplo: M cinza"><i>T</i><i>E</i><i>R</i><i class="a">M</i><i>O</i></div>
+    <p><b>Cinza</b>: o M não aparece na palavra. Em lugar nenhum. Esquece ele.</p>
+    <h3>O que mais eu preciso saber</h3>
+    <ul>
+      <li>🎯 <span>Só vale palavra que existe (plural e verbo conjugado valem). Palavra inventada não gasta tentativa, só a tua dignidade.</span></li>
+      <li>✍️ <span>Não precisa de acento nem cedilha: digita <b>acoes</b> e eu mostro <b>AÇÕES</b>. C vale Ç, A vale Ã.</span></li>
+      <li>🔁 <span>Letras podem se repetir na resposta. Se aparecer um amarelo e um cinza da mesma letra, a palavra só tem uma dela.</span></li>
+      <li>👆 <span>Clica num quadradinho da linha atual pra escrever direto nele. No PC: setas movem, Backspace apaga, Enter envia.</span></li>
+      <li>👯 <span><b>Dueto</b>: 2 palavras ao mesmo tempo, 7 chances. <b>Quarteto</b>: 4 palavras, 9 chances. Cada chute vale pra todos os quadros; as teclas mostram um pedacinho de cor pra cada quadro.</span></li>
+      <li>📅 <span><b>Diário</b>: a mesma palavra pra todo mundo, uma por dia, com sequência e estatística. <b>Treino</b>: palavra aleatória infinita.</span></li>
+      <li>⭐ <span>Ganhar dá XP pro teu nível no Fliperama. Quanto menos tentativas, mais XP.</span></li>
+    </ul>
+    <div class="m-actions"><button class="btn primary" data-act="close">Bora!</button></div>`);
+  if (auto !== true) B.talk('termoAjuda', null, 'smug', 4500);
+}
+
+/* ---------------- trocar modo / treino ---------------- */
+function switchTo(mode, kind, quiet){
+  if (busy) return;
+  const changedMode = !S || S.mode !== mode, prevKind = S && S.kind;
+  load(mode, kind); build();
+  if (quiet) return;
+  if (S.done && S.kind === 'daily') B.talk(S.won ? 'termoDiarioFeito' : 'termoDiarioPerdido', null, S.won ? 'smug' : 'dead', 6000);
+  else if (kind === 'treino' && (prevKind !== 'treino' || !changedMode) && !S.guesses.length) B.talk('termoTreino', null, 'happy', 5000);
+  else if (changedMode) B.talk('termoModo' + M.name, null, mode === 'termo' ? 'talk' : 'shock', 5500);
+  else if (S.guesses.length) B.talk('termoVoltou', null, 'smug', 5000);
+  else B.talk('termoOi', null, 'talk', 5000);
+}
+function newTreino(){
+  if (busy) return;
+  if (S.kind !== 'treino'){ switchTo(S.mode, 'treino'); return; }
+  const abandoned = !S.done && S.guesses.length > 0 ? S.answers.filter((a,b) => solvedAt(b) < 0).map(show).join(', ') : null;
+  B.store.set(skey(S.mode, 'treino'), null);
+  load(S.mode, 'treino'); build();
+  if (abandoned) B.talk('termoNovaPalavra', { palavra: abandoned }, 'smug', 6000);
+  else B.talk('termoTreino', null, 'happy', 5000);
+}
+document.querySelector('.modes').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b || busy) return;
+  if (b.dataset.mode && b.dataset.mode !== S.mode){ B.sfx.tap(); switchTo(b.dataset.mode, S.kind); }
+  else if (b.dataset.kind && b.dataset.kind !== S.kind){ B.sfx.tap(); switchTo(S.mode, b.dataset.kind); }
+});
+
+/* ---------------- início ---------------- */
+B.mountBar(document.getElementById('bar'), { title:'Termo', color:'#3DDC84', buttons:[
+  { id:'btnNova', icon:'shuffle', label:'Nova palavra (treino)', onClick: () => newTreino() },
+  { id:'btnHelp', icon:'help', label:'Como jogar', onClick: () => openHelp() },
+  { id:'btnStats', icon:'stats', label:'Estatísticas', onClick: () => { openStats(S.mode, S.done); B.talk('termoStats', null, 'smug', 4000); } },
+  { id:'btnSom', icon: B.profile().sound ? 'on' : 'off', label:'Som liga/desliga', onClick: () => { B.setSound(!B.profile().sound); document.getElementById('btnSom').innerHTML = B.ICON[B.profile().sound ? 'on' : 'off']; } }
+]});
+B.mountMascot(document.getElementById('mascot'), { pokeCat:'cutucarTermo' });
+const wide = matchMedia('(min-width:880px)');
+const onWide = () => { B.setStack(wide.matches); fit(); };
+wide.addEventListener ? wide.addEventListener('change', onWide) : wide.addListener(onWide);
+onWide();
+
+const ui = B.store.get(UIKEY) || {};
+const startMode = MODES[ui.mode] ? ui.mode : 'termo', startKind = ui.kind === 'treino' ? 'treino' : 'daily';
+switchTo(startMode, startKind, true);
+requestAnimationFrame(fit);
+if (S.done && S.kind === 'daily') B.talk(S.won ? 'termoDiarioFeito' : 'termoDiarioPerdido', null, S.won ? 'smug' : 'dead', 6000);
+else if (S.guesses.length) B.talk('termoVoltou', null, 'smug', 5500);
+else if (S.kind === 'treino') B.talk('termoTreino', null, 'happy', 5000);
+else B.talk('termoOi', null, 'talk', 5500);
+if (!G.seenHelp) setTimeout(() => openHelp(true), 500);
+
+B.chatter({ active: () => S && !S.done && !busy, idleCat:'termoParadoMix', randomCat:'termoMisto' });
+// parado com a palavra pela metade: fala antes do "parado" genérico
+setInterval(() => {
+  if (!S || S.done || busy || document.hidden || B.isModalOpen()) return;
+  if (!B.idle.said && cur.some(Boolean) && Date.now() - B.idle.last > 22000){ B.idle.said = true; B.talk('termoParadoMeio', null, 'smug', 6000); }
+}, 1000);
+})();
+</script>
+</body></html>

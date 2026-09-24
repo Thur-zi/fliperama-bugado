@@ -1,25 +1,44 @@
-# Sudoku Bugado
+# Fliperama Bugado
 
-Um sudoku cartoon pra iniciante, com um mascote sarcástico (o **Bugado**) que comenta cada jogada sua.
-Tem combos, XP, níveis, recordes, dias seguidos e 12 conquistas escondidas.
+Um fliperama de joguinhos diários com o **Bugado**, um mascote sarcástico que comenta cada jogada sua e quase nunca repete fala.
 
-## Jogar
+**Jogar:** https://thur-zi.github.io/fliperama-bugado/
 
-**Online:** https://thur-zi.github.io/sudoku-bugado/
+## Cartuchos
 
-Ou localmente: é um arquivo só, abre o `index.html` no navegador. Funciona no PC e no celular.
-
-**Teclado:** `1`–`9` coloca · setas andam · `Backspace` apaga · `N` lápis · `Z` desfaz · `H` dica
-
-## Dificuldades
-
-| Nível | O que esperar |
+| Jogo | O que é |
 | --- | --- |
-| Bebê | Praticamente pronto. Impossível errar. (Você vai errar.) |
-| Normal | Sudoku de verdade. Sem rodinha, mas com capacete. |
-| Tô Me Achando | Pra quem ganhou duas e já quer fazer tatuagem. |
-| Sofrência | Não. Sério. Você não tá pronto. Mas vai, né. |
+| Sudoku | Números de 1 a 9, com lápis, dica que explica o truque e 4 dificuldades (de Bebê a Sofrência). |
+| Termo | A palavra de 5 letras em 6 chutes. Tem Dueto e Quarteto. |
+| Conexo | 16 palavras, 4 grupos escondidos. |
+| Contexto | A palavra secreta pela proximidade de sentido. |
+| Pokémon | Quem é esse Pokémon? Compara geração, tipos, altura, peso… |
+| Dragon Ball | Quem é esse guerreiro? Raça, saga, poder… |
 
-Os três primeiros sempre dão pra resolver só com "candidato único" e "único lugar". A Sofrência é o nível difícil de verdade.
+Termo, Conexo, Contexto, Pokémon e Dragon Ball têm desafio **diário** (igual pra todo mundo no dia) e modo **infinito**.
 
-O progresso fica salvo no navegador (localStorage), separado em cada aparelho.
+O XP é um só pra todos os jogos. Os títulos vão de "Estagiário do Fliperama" até "Isso Não Existe", e ganhar alguma coisa em dias seguidos acende o foguinho de sequência. O progresso fica salvo no navegador (localStorage), separado em cada aparelho.
+
+## Rodar localmente
+
+É um site estático, sem build. Os jogos carregam arquivos com `fetch`, então use o servidorzinho incluso em vez de abrir o HTML direto:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File serve.ps1
+```
+
+e abra http://localhost:5178/
+
+## Estrutura
+
+- `shared/base.css`: visual cartoon (cores, botões, modal, mascote)
+- `shared/bugado.js`: perfil/XP, mascote, sons, sorteio de falas sem repetição
+- `shared/falas.js`: falas gerais do Bugado (cada jogo tem as suas em `falas-*.js`)
+- uma pasta por jogo
+
+## Créditos dos dados
+
+- Contexto: vetores de palavras [fastText](https://fasttext.cc/docs/en/crawl-vectors.html) (Facebook, CC BY-SA 3.0), filtrados pelo léxico de [fserb/pt-br](https://github.com/fserb/pt-br).
+- Pokémon: dados do Pokémon Showdown e sprites do [PokéAPI](https://github.com/PokeAPI/sprites). Pokémon © Nintendo/Game Freak.
+- Dragon Ball: imagens da [Dragon Ball API](https://dragonball-api.com). Dragon Ball © Akira Toriyama/Toei.
+- Projeto de fã, sem fins lucrativos.

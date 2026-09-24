@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2A1650">
+<title>Quem é esse Pokémon? · Fliperama Bugado</title>
+<meta name="description" content="Adivinhe o Pokémon secreto pelas pistas de tipo, geração, altura, peso, cor e evolução. Diário, Fácil, Infinito e Silhueta.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+:root{--c0:50px;--gap:4px;--dexred:#E3263F;--bad:#FF5A5A}
+
+/* ---------- layout ---------- */
+.layout{display:grid;gap:8px;margin-top:4px}
+#mascot{position:sticky;top:0;z-index:20;padding:6px 0 8px;background:linear-gradient(var(--night) 78%,rgba(42,22,80,0))}
+.game{min-width:0;width:100%;max-width:760px;margin:0 auto}
+@media (min-width:880px){
+  .layout{grid-template-columns:240px minmax(0,1fr);gap:24px;align-items:start;margin-top:14px}
+  #mascot{top:14px;padding:0;background:none}
+}
+
+/* ---------- modos ---------- */
+.modes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.mode{height:42px;padding:0 2px;font-size:15px;background:var(--paper2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mode[aria-pressed="true"]{background:var(--sun);transform:translateY(-2px) rotate(-1.5deg);box-shadow:0 5px 0 var(--ink)}
+.mode[aria-pressed="true"]:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+
+/* ---------- pokédex (painel) ---------- */
+.dex{position:relative;margin-top:12px;background:var(--paper);color:var(--ink);border:4px solid var(--ink);border-radius:20px;box-shadow:6px 6px 0 var(--pink)}
+.dex-top{display:flex;align-items:center;gap:7px;padding:8px 12px;background:var(--dexred);border-bottom:4px solid var(--ink);border-radius:16px 16px 0 0}
+.lens{flex:none;width:34px;height:34px;border-radius:50%;border:3px solid var(--ink);background:radial-gradient(circle at 34% 32%,#fff 0 13%,#8fe8ff 15% 28%,#1f8fe0 58%,#0d4f9c);box-shadow:0 0 0 3px #fff,0 0 0 5.5px var(--ink)}
+.led{flex:none;width:12px;height:12px;border-radius:50%;border:2.5px solid var(--ink)}
+.led.r{background:#ff7b7b}.led.y{background:var(--sun)}.led.g{background:var(--green)}
+.lens+.led{margin-left:6px}
+.dex-top h1{margin:0 0 0 4px;min-width:0;font-family:var(--display);font-weight:400;font-size:clamp(19px,6.2vw,28px);letter-spacing:.04em;line-height:1.05;color:var(--sun);-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;text-shadow:2px 2px 0 var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dex-body{padding:12px}
+.meta{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:13px;color:var(--text-ink);min-width:0}
+.meta #modeDesc{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meta .count{margin-left:auto;flex:none}
+.meta .pill{flex:none}
+
+/* ---------- silhueta ---------- */
+.stage{position:relative;height:172px;margin-bottom:12px;border:3px solid var(--ink);border-radius:14px;overflow:hidden;display:grid;place-items:center;background:repeating-conic-gradient(from 0deg at 50% 50%,#FFD23F 0deg 9deg,#FFB02E 9deg 18deg)}
+.stage::after{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(255,255,255,.55),transparent 55%);pointer-events:none}
+.stage img{position:relative;z-index:1;width:160px;height:160px;object-fit:contain;filter:brightness(0);transition:filter .9s ease,transform .7s cubic-bezier(.3,1.6,.5,1);-webkit-user-drag:none;user-select:none}
+.stage.reveal img{filter:brightness(1) drop-shadow(3px 4px 0 rgba(27,16,48,.45));transform:scale(1.08)}
+.stage .q{position:absolute;z-index:2;left:10px;top:6px;font-family:var(--display);font-size:24px;letter-spacing:.04em;color:#fff;-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;text-shadow:2px 2px 0 var(--ink);transform:rotate(-6deg)}
+
+/* ---------- busca + autocomplete ---------- */
+.search{position:relative;display:flex;gap:8px}
+.search input{flex:1;min-width:0;height:52px;border:3px solid var(--ink);border-radius:14px;padding:0 14px;background:#fff;color:var(--ink);font-size:17px;font-weight:800;box-shadow:inset 0 3px 0 rgba(27,16,48,.08)}
+.search input::placeholder{color:#9a8bb8}
+.search input.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+.search .go{flex:none;width:56px;height:52px;display:grid;place-items:center;padding:0}
+.search .go svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.ac{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:30;margin:0;padding:4px;list-style:none;background:var(--paper);border:3px solid var(--ink);border-radius:14px;box-shadow:4px 4px 0 var(--ink);max-height:min(330px,46vh);overflow:auto;overscroll-behavior:contain}
+.ac li{display:flex;align-items:center;gap:10px;padding:2px 8px 2px 2px;border-radius:10px;cursor:pointer;color:var(--ink)}
+.ac li[aria-selected="true"]{background:var(--sun);box-shadow:inset 0 0 0 2.5px var(--ink)}
+.ac img{flex:none;width:44px;height:44px;image-rendering:pixelated}
+.ac b{min-width:0;font-family:var(--chunky);font-weight:400;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ac .num{margin-left:auto;flex:none;font-family:var(--chunky);font-size:12px;color:#6b5a90}
+.ac .empty{cursor:default;padding:10px;font-size:14px;color:var(--text-ink)}
+
+/* ---------- dicas ---------- */
+.hints{display:flex;gap:8px;margin-top:10px}
+.hints .btn{flex:1 1 0;min-width:0;height:44px;padding:0 6px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;overflow:hidden}
+.hints .btn svg{flex:none;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.hints .btn.ready{background:var(--cyan);animation:wig 1.3s ease-in-out 3}
+.hints .btn.used{background:var(--green)}
+.hints .btn.hot{background:var(--pink)}
+@keyframes wig{25%{transform:rotate(-3deg) scale(1.04)}75%{transform:rotate(3deg) scale(1.04)}}
+.hint-out{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.hint-out:not(:empty){margin-top:10px}
+.hint-out .ty{font-size:13px;padding:3px 9px;border-width:2.5px}
+.hint-out .pill b{font-family:var(--display);font-weight:400;font-size:18px;letter-spacing:.05em}
+
+/* ---------- resultado (fim de rodada) ---------- */
+.res{display:flex;align-items:center;gap:12px}
+.res-art{flex:none;width:96px;height:96px;object-fit:contain;border:3px solid var(--ink);border-radius:14px;background:repeating-conic-gradient(from 0deg at 50% 50%,#FFD23F 0deg 12deg,#FFB02E 12deg 24deg)}
+.res-txt{min-width:0;display:flex;flex-direction:column;gap:2px}
+.res-txt small{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6b5a90}
+.res-txt b{font-family:var(--display);font-weight:400;font-size:32px;letter-spacing:.03em;line-height:1;color:var(--violet);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res-txt span{font-size:13px;color:var(--text-ink)}
+.res-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.res-actions .btn{flex:1 1 120px;height:46px;font-size:15px}
+.next-in{margin:12px 0 0;font-size:13px;color:var(--text-ink);text-align:center}
+.next-in b{font-family:var(--chunky);font-weight:400;font-size:16px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.linkish{appearance:none;background:none;border:0;padding:0;font:inherit;font-weight:900;color:var(--violet);text-decoration:underline;cursor:pointer}
+.linkish:focus-visible,.ac li:focus-visible{outline:3px solid var(--cyan);outline-offset:2px;border-radius:4px}
+
+/* ---------- tabela de chutes ---------- */
+.board{margin-top:16px}
+.heads,.row{display:grid;grid-template-columns:var(--c0) repeat(7,minmax(0,1fr));gap:var(--gap)}
+.heads span{font-family:var(--chunky);font-size:10.5px;letter-spacing:.02em;text-align:center;color:var(--muted);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:5px}
+.rows{display:flex;flex-direction:column;gap:7px}
+.poke,.tile{min-height:56px;border:2.5px solid var(--ink);border-radius:10px;box-shadow:0 3px 0 var(--ink)}
+.poke{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:0 1px 3px;background:var(--paper2);color:var(--ink)}
+.poke img{width:44px;height:44px;margin:-4px 0 -3px;image-rendering:pixelated}
+.poke span{max-width:100%;font-size:8.5px;line-height:1.05;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;overflow:hidden;padding:3px 1px;color:var(--ink);text-align:center;line-height:1}
+.tile.g{background:var(--green)}
+.tile.y{background:var(--sun)}
+.tile.r{background:var(--bad)}
+.tile .v{font-family:var(--chunky);font-weight:400;font-size:15px;font-variant-numeric:tabular-nums}
+.tile .v.long{font-size:11.5px}
+.tile small{font-size:9px;font-weight:900}
+.ty{display:inline-block;max-width:100%;padding:2px 3px;border:2px solid var(--ink);border-radius:6px;background:var(--tc);color:#fff;font-family:var(--chunky);font-size:10px;letter-spacing:.02em;-webkit-text-stroke:2.5px var(--ink);paint-order:stroke fill;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ty.none{background:#E6DEF5;color:#6b5a90;-webkit-text-stroke:0}
+.sw{display:block;flex:none;width:20px;height:20px;border-radius:50%;border:2.5px solid var(--ink);background:var(--sw);box-shadow:inset -3px -3px 0 rgba(0,0,0,.15)}
+.arr{display:block;flex:none;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent}
+.arr.up{border-bottom:9px solid var(--ink)}
+.arr.down{border-top:9px solid var(--ink)}
+.lg{display:none}
+.row.win .tile{animation-name:tile-in,win-glow;animation-duration:.5s,1.2s;animation-delay:var(--d,0ms),calc(var(--d,0ms) + 900ms)}
+@keyframes win-glow{50%{transform:translateY(-5px)}}
+.pop{animation:tile-in .5s cubic-bezier(.3,1.6,.5,1) both;animation-delay:var(--d,0ms)}
+@keyframes tile-in{0%{transform:perspective(300px) rotateY(90deg) scale(.5);opacity:0}100%{transform:none;opacity:1}}
+.empty-board{margin:0;padding:16px;border:3px dashed rgba(187,167,228,.5);border-radius:16px;text-align:center;font-size:14px;color:var(--muted)}
+
+/* modo silhueta: só nomes */
+.slist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px}
+.sitem{display:flex;align-items:center;gap:6px;min-width:0;padding:2px 10px 2px 2px;background:var(--bad);color:var(--ink);border:2.5px solid var(--ink);border-radius:10px;box-shadow:0 3px 0 var(--ink)}
+.sitem.ok{background:var(--green)}
+.sitem img{flex:none;width:40px;height:40px;image-rendering:pixelated}
+.sitem b{min-width:0;font-family:var(--chunky);font-weight:400;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sitem i{margin-left:auto;font-style:normal;font-family:var(--chunky);font-size:16px}
+
+@media (min-width:560px){
+  :root{--c0:66px;--gap:6px}
+  .lg{display:inline}.sm{display:none}
+  small.lg{display:block}
+  .poke,.tile{min-height:68px}
+  .poke img{width:56px;height:56px}
+  .poke span{font-size:10px}
+  .tile .v{font-size:19px}.tile .v.long{font-size:16px}
+  .tile small{font-size:10.5px}
+  .ty{font-size:12px;padding:2px 5px}
+  .heads span{font-size:12px}
+  .sw{width:22px;height:22px}
+}
+
+/* ---------- burst ---------- */
+.burst-layer{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:45}
+.burst-layer .burst{top:42%}
+
+/* ---------- modais ---------- */
+.wc-top{display:flex;align-items:center;gap:7px;margin:-20px -20px 14px;padding:10px 14px;background:var(--dexred);border-bottom:4px solid var(--ink);border-radius:18px 18px 0 0}
+.wc-top .lens{width:28px;height:28px}
+.wc-top b{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:.08em;color:#fff;-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;margin-left:4px}
+.wc-top .num{margin-left:auto;font-family:var(--chunky);font-size:19px;color:var(--sun);-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill}
+.wc-screen{position:relative;height:200px;display:grid;place-items:center;overflow:hidden;border:3px solid var(--ink);border-radius:16px;background:repeating-conic-gradient(from 0deg at 50% 50%,#FFD23F 0deg 9deg,#FFB02E 9deg 18deg)}
+.wc-screen img{width:190px;height:190px;object-fit:contain;filter:drop-shadow(3px 4px 0 rgba(27,16,48,.45));animation:art-in .8s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes art-in{from{transform:scale(.3) rotate(-12deg);opacity:0}}
+.bg-card h2.wc-name{text-align:center;margin-top:12px;overflow-wrap:anywhere}
+.wc-types{display:flex;justify-content:center;gap:6px;margin-top:6px}
+.wc-types .ty{font-size:14px;padding:3px 10px;border-width:2.5px}
+.wc-data{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:6px;margin-top:12px}
+.wc-data div{background:#fff;border:2.5px solid var(--ink);border-radius:10px;padding:6px 4px;text-align:center}
+.wc-data span{display:block;font-size:10.5px;font-weight:800;letter-spacing:.04em;color:#6b5a90;text-transform:uppercase}
+.wc-data b{font-family:var(--chunky);font-weight:400;font-size:16px;color:var(--ink)}
+.st-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:10px}
+.st-tabs .btn{height:38px;padding:0 2px;font-size:13px;background:var(--paper2)}
+.st-tabs .btn.on{background:var(--sun)}
+.dist{display:flex;flex-direction:column;gap:5px}
+.dist-row{display:grid;grid-template-columns:46px 1fr;align-items:center;gap:8px;font-family:var(--chunky);font-size:13px;color:var(--ink)}
+.dist-row i{display:block;min-width:30px;height:22px;padding:0 7px;border:2.5px solid var(--ink);border-radius:7px;background:var(--violet);color:#fff;font-style:normal;text-align:right;line-height:17px;font-size:12px}
+.dist-row i.hot{background:var(--pink)}
+.demo{flex:none;display:inline-grid;place-items:center;width:30px;height:30px;border:2.5px solid var(--ink);border-radius:8px;font-family:var(--chunky);font-size:15px;color:var(--ink)}
+.demo.g{background:var(--green)}.demo.y{background:var(--sun)}.demo.r{background:var(--bad)}
+.bg-card li .demo{align-self:center}
+.bg-card li{align-items:center}
+.bg-card .stat-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.bg-card .stat-grid.four .stat span{font-size:10px;letter-spacing:0}
+</style>
+</head><body>
+<div class="wrap">
+  <header id="bar"></header>
+  <div class="layout">
+    <div id="mascot"></div>
+    <main class="game">
+      <nav class="modes" aria-label="Modos de jogo">
+        <button class="btn mode" type="button" data-mode="diario" aria-pressed="true">Diário</button>
+        <button class="btn mode" type="button" data-mode="facil" aria-pressed="false">Fácil</button>
+        <button class="btn mode" type="button" data-mode="infinito" aria-pressed="false">Infinito</button>
+        <button class="btn mode" type="button" data-mode="silhueta" aria-pressed="false">Silhueta</button>
+      </nav>
+
+      <section class="dex" aria-label="Pokédex">
+        <div class="dex-top"><span class="lens"></span><span class="led r"></span><span class="led y"></span><span class="led g"></span><h1>Quem é esse Pokémon?</h1></div>
+        <div class="dex-body">
+          <div class="meta"><span class="pill sun" id="modeTag">Diário</span><span id="modeDesc"></span><span class="pill count" id="count">0 chutes</span></div>
+          <div class="stage" id="stage" hidden><span class="q">?</span><img id="stageImg" alt="Silhueta do Pokémon secreto" width="160" height="160" draggable="false"></div>
+          <div id="play">
+            <form class="search" id="form" autocomplete="off" role="search">
+              <input id="guess" type="text" inputmode="search" enterkeyhint="go" spellcheck="false" autocapitalize="off" autocorrect="off"
+                placeholder="Digita um Pokémon…" aria-label="Nome do Pokémon" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="ac">
+              <button class="btn primary go" type="submit" aria-label="Chutar"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h6M15 12h6"/><circle cx="12" cy="12" r="3"/></svg></button>
+              <ul class="ac" id="ac" role="listbox" aria-label="Sugestões" hidden></ul>
+            </form>
+            <div class="hints" id="hints"></div>
+            <div class="hint-out" id="hintOut"></div>
+          </div>
+          <div id="result" hidden></div>
+        </div>
+      </section>
+
+      <section class="board" id="board" aria-label="Seus chutes"></section>
+    </main>
+  </div>
+</div>
+<div class="burst-layer" aria-hidden="true"><div class="burst" id="burst"></div></div>
+
+<script src="../shared/falas.js"></script><script src="../shared/bugado.js"></script>
+<script src="pokedex.js"></script><script src="falas-pokemon.js"></script>
+<script>
+(() => {
+'use strict';
+const B = window.Bugado;
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const idOf = s => B.normalize(s).replace(/[^a-z0-9]/g, '');
+const SPR = n => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${n}.png`;
+const ART = n => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${n}.png`;
+const pad = n => '#' + String(n).padStart(3, '0');
+const fmt = x => Number(x).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+const plural = (n, a, b) => `${n} ${n === 1 ? a : b}`;
+const coarse = matchMedia('(pointer: coarse)').matches;
+
+/* ---------------- dados ---------------- */
+const TYPES = {
+  normal:['Normal','#A8A77A','NOR'], fogo:['Fogo','#EE8130','FOG'], agua:['Água','#6390F0','ÁGU'], planta:['Planta','#5FBD3A','PLA'],
+  eletrico:['Elétrico','#E8B50C','ELÉ'], gelo:['Gelo','#5CC9C3','GEL'], lutador:['Lutador','#C22E28','LUT'], venenoso:['Venenoso','#A33EA1','VEN'],
+  terrestre:['Terrestre','#D6A93E','TER'], voador:['Voador','#8F75E8','VOA'], psiquico:['Psíquico','#F95587','PSÍ'], inseto:['Inseto','#98AE17','INS'],
+  pedra:['Pedra','#B6A136','PED'], fantasma:['Fantasma','#735797','FAN'], dragao:['Dragão','#6F35FC','DRA'], sombrio:['Sombrio','#705746','SOM'],
+  metalico:['Metálico','#9E9EBA','MET'], fada:['Fada','#E27FB4','FAD']
+};
+const COLORS = { Preto:'#2E2A36', Azul:'#3D7BFF', Marrom:'#9A6233', Cinza:'#A3A3A8', Verde:'#3FBF5A', Rosa:'#FF9FD0', Roxo:'#8E55D9', Vermelho:'#E8383D', Branco:'#FFFFFF', Amarelo:'#FFD83A' };
+const tName = t => t ? TYPES[t][0] : 'Nenhum';
+
+const DEX = (window.POKEDEX || []).map(r => ({ num:r[0], name:r[1], gen:r[2], t1:r[3], t2:r[4], h:r[5], w:r[6], color:r[7], stage:r[8], key:idOf(r[1]) }));
+const BYNUM = new Map(DEX.map(p => [p.num, p]));
+const STARTERS = new Set();
+[1,152,252,387,495,650,722,810,906].forEach(b => { for (let i = 0; i < 9; i++) STARTERS.add(b + i); });
+const LEGEND = new Set([144,145,146,150,151,243,244,245,249,250,251,772,773,905,1007,1008,1024,1025]);
+[[377,386],[480,494],[638,649],[716,721],[785,809],[888,898],[1001,1004],[1014,1017]].forEach(([a,b]) => { for (let i = a; i <= b; i++) LEGEND.add(i); });
+
+const COLS = [
+  { k:'gen',   short:'Ger.',   full:'Geração' },
+  { k:'t1',    short:'Tipo 1', full:'Tipo 1' },
+  { k:'t2',    short:'Tipo 2', full:'Tipo 2' },
+  { k:'h',     short:'Alt.',   full:'Altura' },
+  { k:'w',     short:'Peso',   full:'Peso' },
+  { k:'color', short:'Cor',    full:'Cor' },
+  { k:'stage', short:'Evo',    full:'Estágio de evolução' }
+];
+
+const MODES = {
+  diario:  { label:'Diário',   daily:true,  sil:false, seed:0x51ED27, desc:'Mesmo Pokémon pra todo mundo hoje' },
+  facil:   { label:'Fácil',    daily:true,  sil:false, seed:0xFACE12, gens:3, desc:'Só gerações 1 a 3 · diário' },
+  infinito:{ label:'Infinito', daily:false, sil:false, desc:'Sorteio aleatório · XP pela metade' },
+  silhueta:{ label:'Silhueta', daily:false, sil:true,  desc:'Só a sombra · chute pelo nome' }
+};
+const POOLS = {}; Object.keys(MODES).forEach(m => { POOLS[m] = MODES[m].gens ? DEX.filter(p => p.gen <= MODES[m].gens) : DEX; });
+const PERMS = {};
+function dailySecret(m, day){
+  if (!PERMS[m]) PERMS[m] = B.shuffle(POOLS[m].map(p => p.num), B.rng(MODES[m].seed));
+  const a = PERMS[m]; return a[((day % a.length) + a.length) % a.length];
+}
+const HINTS = {
+  normal:[ { id:'sil', at:5, label:'Silhueta' }, { id:'letra', at:10, label:'1ª letra' } ],
+  sil:   [ { id:'tipos', at:5, label:'Tipos' },  { id:'letra', at:10, label:'1ª letra' } ]
+};
+const EYE = '<svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+
+/* ---------------- estado ---------------- */
+const MODE_KEY = 'fliperama.pokemon.mode';
+const skey = m => `fliperama.pokemon.${m}.${MODES[m].daily ? 'daily' : 'cur'}`;
+let S = null;
+const MODE = () => MODES[S.mode];
+const SECRET = () => BYNUM.get(S.secret);
+
+function fresh(m){
+  const day = B.dayNumber(); let secret;
+  if (MODES[m].daily) secret = dailySecret(m, day);
+  else {
+    const pool = POOLS[m], prev = S && S.mode === m ? S.secret : 0;
+    do { secret = pool[Math.floor(Math.random() * pool.length)].num; } while (secret === prev && pool.length > 1);
+  }
+  return { mode:m, day, secret, guesses:[], hints:[], done:false, won:false, xp:0, rewarded:false };
+}
+function load(m){
+  const st = B.store.get(skey(m));
+  if (st && BYNUM.has(st.secret) && Array.isArray(st.guesses)){
+    st.hints = st.hints || []; st.mode = m;
+    if (MODES[m].daily ? st.day === B.dayNumber() : !st.done) return st;
+  }
+  return fresh(m);
+}
+const save = () => B.store.set(skey(S.mode), S);
+
+/* ---------------- estatísticas ---------------- */
+const BUCKETS = ['1','2','3','4','5','6-7','8-10','11-15','16+'];
+const bucketOf = n => n <= 5 ? String(n) : n <= 7 ? '6-7' : n <= 10 ? '8-10' : n <= 15 ? '11-15' : '16+';
+function G(){ const g = B.game('pokemon'); g.modes = g.modes || {}; return g; }
+function MS(m){ const g = G(); g.modes[m] = Object.assign({ played:0, wins:0, guesses:0, best:0, streak:0, maxStreak:0, lastDay:null, dist:{} }, g.modes[m] || {}); return g.modes[m]; }
+function streakShown(m){ const s = MS(m), d = B.dayNumber(); return MODES[m].daily ? ((s.lastDay === d || s.lastDay === d - 1) ? s.streak : 0) : s.streak; }
+
+/* ---------------- comparação ---------------- */
+function compare(p, s){
+  const num = (a, b) => a === b ? { s:'g' } : { s:'r', a: b > a ? 'up' : 'down' };
+  return [
+    num(p.gen, s.gen),
+    { s: p.t1 === s.t1 ? 'g' : (s.t2 && p.t1 === s.t2) ? 'y' : 'r' },
+    { s: p.t2 === s.t2 ? 'g' : (p.t2 && p.t2 === s.t1) ? 'y' : 'r' },
+    num(p.h, s.h), num(p.w, s.w),
+    { s: p.color === s.color ? 'g' : 'r' },
+    num(p.stage, s.stage)
+  ];
+}
+function typeHTML(t){
+  if (!t) return '<span class="ty none"><span class="lg">Nenhum</span><span class="sm">—</span></span>';
+  const [nm, c, ab] = TYPES[t];
+  return `<span class="ty" style="--tc:${c}"><span class="lg">${nm}</span><span class="sm">${ab}</span></span>`;
+}
+const typeFull = t => t ? `<span class="ty" style="--tc:${TYPES[t][1]}">${TYPES[t][0]}</span>` : '<span class="ty none">Nenhum</span>';
+function cellInner(k, p){
+  switch (k){
+    case 'gen': return `<b class="v">${p.gen}</b>`;
+    case 't1': return typeHTML(p.t1);
+    case 't2': return typeHTML(p.t2);
+    case 'h': { const v = fmt(p.h); return `<b class="v${v.length >= 4 ? ' long' : ''}">${v}</b><small>m</small>`; }
+    case 'w': { const v = fmt(p.w); return `<b class="v${v.length >= 4 ? ' long' : ''}">${v}</b><small>kg</small>`; }
+    case 'color': return `<i class="sw" style="--sw:${COLORS[p.color] || '#999'}"></i><small class="lg">${p.color}</small>`;
+    case 'stage': return `<b class="v">${p.stage}</b>`;
+  }
+}
+function cellText(k, p){
+  switch (k){
+    case 'gen': return `Geração ${p.gen}`;
+    case 't1': return `Tipo 1: ${tName(p.t1)}`;
+    case 't2': return `Tipo 2: ${tName(p.t2)}`;
+    case 'h': return `Altura ${fmt(p.h)} m`;
+    case 'w': return `Peso ${fmt(p.w)} kg`;
+    case 'color': return `Cor ${p.color}`;
+    case 'stage': return `Estágio ${p.stage}`;
+  }
+}
+const ST_TXT = { g:'certo', y:'existe na outra posição', r:'errado' };
+function rowHTML(p, cmp, anim){
+  const cls = anim ? ' pop' : '';
+  const win = cmp.every(c => c.s === 'g');
+  const cells = COLS.map((c, i) => {
+    const r = cmp[i];
+    const arrTxt = r.a === 'up' ? ', o secreto é maior' : r.a === 'down' ? ', o secreto é menor' : '';
+    const label = `${cellText(c.k, p)}: ${ST_TXT[r.s]}${arrTxt}`;
+    return `<div class="tile ${r.s}${cls}" style="--d:${(i + 1) * 120}ms" role="cell" title="${esc(label)}" aria-label="${esc(label)}">${cellInner(c.k, p)}${r.a ? `<i class="arr ${r.a}"></i>` : ''}</div>`;
+  }).join('');
+  return `<div class="row${win ? ' win' : ''}" role="row"><div class="poke${cls}" role="rowheader" title="${esc(p.name)} ${pad(p.num)}"><img src="${SPR(p.num)}" alt="" width="96" height="96" loading="lazy"><span>${esc(p.name)}</span></div>${cells}</div>`;
+}
+function sitemHTML(p, anim){
+  const ok = p.num === S.secret;
+  return `<div class="sitem${ok ? ' ok' : ''}${anim ? ' pop' : ''}"><img src="${SPR(p.num)}" alt="" width="96" height="96" loading="lazy"><b>${esc(p.name)}</b><i aria-label="${ok ? 'certo' : 'errado'}">${ok ? '✓' : '✗'}</i></div>`;
+}
+
+/* ---------------- render ---------------- */
+function renderModes(){ document.querySelectorAll('.mode').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === S.mode))); }
+function renderMeta(){
+  const m = MODE();
+  $('#modeTag').textContent = m.daily ? `${m.label} #${S.day}` : m.label;
+  $('#modeDesc').textContent = m.desc;
+  $('#count').textContent = plural(S.guesses.length, 'chute', 'chutes');
+}
+function renderStage(){
+  const m = MODE(), st = $('#stage');
+  const show = m.sil || S.hints.includes('sil') || (S.done && m.sil);
+  st.hidden = !show;
+  if (!show) return;
+  const img = $('#stageImg'), src = ART(S.secret);
+  if (img.getAttribute('src') !== src){ st.classList.remove('reveal'); img.src = src; }
+  st.classList.toggle('reveal', S.done);
+  img.alt = S.done ? SECRET().name : 'Silhueta do Pokémon secreto';
+}
+function wrongCount(){ return S.guesses.length - (S.won ? 1 : 0); }
+function renderHints(){
+  const m = MODE(), box = $('#hints'), out = $('#hintOut');
+  if (S.done){ box.innerHTML = ''; out.innerHTML = ''; return; }
+  const wrong = wrongCount();
+  let html = HINTS[m.sil ? 'sil' : 'normal'].map(h => {
+    const used = S.hints.includes(h.id), ready = wrong >= h.at;
+    const icon = used ? '' : ready ? (h.id === 'sil' ? EYE : B.ICON.star) : B.ICON.lock;
+    const txt = used ? `✓ ${h.label}` : ready ? `${h.label} <small>−10 XP</small>` : `${h.label} · ${h.at - wrong}`;
+    const aria = used ? `Dica ${h.label} usada` : ready ? `Usar dica: ${h.label} (custa 10 XP)` : `Dica ${h.label} bloqueada: faltam ${h.at - wrong} chutes errados`;
+    return `<button type="button" class="btn${used ? ' used' : ready ? ' ready' : ''}" data-hint="${h.id}" ${used || !ready ? 'disabled' : ''} aria-label="${aria}">${icon}<span>${txt}</span></button>`;
+  }).join('');
+  if (!m.daily) html += `<button type="button" class="btn" id="giveUp" aria-label="Desistir desta rodada">Desistir</button>`;
+  box.innerHTML = html;
+  const s = SECRET(); const chips = [];
+  if (S.hints.includes('tipos')) chips.push(typeFull(s.t1), s.t2 ? typeFull(s.t2) : '<span class="ty none">só um tipo</span>');
+  if (S.hints.includes('letra')) chips.push(`<span class="pill sun">Começa com <b>${esc(s.name[0])}</b></span>`);
+  out.innerHTML = chips.join('');
+}
+function renderResult(){
+  const r = $('#result'); $('#play').hidden = S.done; r.hidden = !S.done;
+  if (!S.done){ r.innerHTML = ''; return; }
+  const s = SECRET(), n = S.guesses.length, m = MODE();
+  r.innerHTML = `<div class="res">${$('#stage').hidden ? `<img class="res-art" src="${ART(s.num)}" alt="${esc(s.name)}" width="96" height="96">` : ''}
+    <div class="res-txt"><small>${S.won ? 'Capturado!' : 'Você desistiu. Era:'}</small><b>${esc(s.name)}</b>
+    <span>${pad(s.num)} · ${plural(n, 'chute', 'chutes')}${S.won ? ` · +${S.xp} XP` : ''}</span></div></div>
+    <div class="res-actions"><button class="btn" type="button" data-r="card">Ver ficha</button>
+    ${S.won ? '<button class="btn cool" type="button" data-r="share">Compartilhar</button>' : ''}
+    ${m.daily ? '<button class="btn" type="button" data-r="stats">Estatísticas</button>' : '<button class="btn primary" type="button" data-r="next">Nova rodada</button>'}</div>
+    ${m.daily ? `<p class="next-in">Próximo Pokémon em <b id="countdown">--:--:--</b><br>ou joga o <button class="linkish" type="button" data-r="inf">Infinito</button> enquanto isso</p>` : ''}`;
+  tickCountdown();
+}
+function renderBoard(){
+  const b = $('#board'), list = [...S.guesses].reverse().map(n => BYNUM.get(n));
+  if (MODE().sil){
+    b.innerHTML = `<div class="slist" id="rows">${list.map(p => sitemHTML(p, false)).join('')}</div>`;
+  } else {
+    const s = SECRET();
+    b.innerHTML = `<div class="heads" aria-hidden="true"><span title="Pokémon">Poké</span>${COLS.map(c => `<span title="${c.full}">${c.short}</span>`).join('')}</div>
+      <div class="rows" id="rows" role="table" aria-label="Chutes, o mais novo em cima">${list.map(p => rowHTML(p, compare(p, s), false)).join('')}</div>`;
+  }
+  if (!S.guesses.length) b.insertAdjacentHTML('beforeend', `<p class="empty-board" id="emptyBoard">${MODE().sil ? 'Seus chutes aparecem aqui.' : 'Seus chutes aparecem aqui, o mais novo em cima. Verde = igual, amarelo = tipo na outra posição, seta = o secreto é maior ou menor.'}</p>`);
+}
+function renderAll(){ renderModes(); renderMeta(); renderStage(); renderHints(); renderResult(); renderBoard(); }
+
+/* ---------------- autocomplete ---------------- */
+const input = $('#guess'), acEl = $('#ac');
+let opts = [], act = -1;
+function search(q){
+  const k = idOf(q); if (!k) return [];
+  const used = new Set(S.guesses), starts = [], has = [], isNum = /^\d+$/.test(k);
+  for (const p of POOLS[S.mode]){
+    if (used.has(p.num)) continue;
+    if (isNum){ if (String(p.num).startsWith(k)) starts.push(p); continue; }
+    if (p.key.startsWith(k)) starts.push(p); else if (p.key.includes(k)) has.push(p);
+  }
+  return starts.concat(has).slice(0, 40);
+}
+function openList(){
+  const q = input.value.trim();
+  opts = search(q); act = opts.length ? 0 : -1;
+  if (!q){ closeList(); return; }
+  acEl.innerHTML = opts.length
+    ? opts.map((p, i) => `<li role="option" id="ac-${i}" data-i="${i}" aria-selected="${i === act}"><img src="${SPR(p.num)}" alt="" width="96" height="96" loading="lazy"><b>${esc(p.name)}</b><span class="num">${pad(p.num)}</span></li>`).join('')
+    : `<li class="empty" role="option" aria-disabled="true">Nenhum Pokémon ${MODE().gens ? 'das gerações 1–3 ' : ''}com esse nome${S.guesses.length ? ' (ou você já chutou)' : ''}.</li>`;
+  acEl.hidden = false; input.setAttribute('aria-expanded', 'true'); syncAct();
+}
+function closeList(){ acEl.hidden = true; acEl.innerHTML = ''; opts = []; act = -1; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); }
+function syncAct(){
+  acEl.querySelectorAll('li[data-i]').forEach(li => li.setAttribute('aria-selected', String(+li.dataset.i === act)));
+  if (act >= 0){ input.setAttribute('aria-activedescendant', 'ac-' + act); const li = document.getElementById('ac-' + act); if (li) li.scrollIntoView({ block:'nearest' }); }
+  else input.removeAttribute('aria-activedescendant');
+}
+input.addEventListener('input', () => { B.sfx.type(); openList(); });
+input.addEventListener('focus', () => { if (input.value.trim()) openList(); });
+input.addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== input) closeList(); }, 150));
+input.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+    if (acEl.hidden) openList();
+    if (!opts.length) return;
+    e.preventDefault();
+    act = (act + (e.key === 'ArrowDown' ? 1 : -1) + opts.length) % opts.length; syncAct();
+  } else if (e.key === 'Escape'){ if (!acEl.hidden){ e.preventDefault(); e.stopPropagation(); closeList(); } }
+  else if (e.key === 'Tab') closeList();
+});
+acEl.addEventListener('pointerdown', e => e.preventDefault());
+acEl.addEventListener('click', e => { const li = e.target.closest('li[data-i]'); if (li) choose(opts[+li.dataset.i]); });
+$('#form').addEventListener('submit', e => {
+  e.preventDefault();
+  if (S.done) return;
+  const q = input.value.trim(); if (!q) { input.focus(); return; }
+  if (!opts.length) opts = search(q);
+  if (opts.length){ choose(opts[act >= 0 && act < opts.length ? act : 0]); return; }
+  const dup = POOLS[S.mode].find(p => p.key === idOf(q) && S.guesses.includes(p.num));
+  B.sfx.err(); input.classList.remove('shake'); void input.offsetWidth; input.classList.add('shake');
+  if (dup) B.talk('pkRepetido', { pokemon:dup.name }, 'smug', 4500);
+  else B.talk('pkNaoExiste', null, 'smug', 4500);
+});
+function choose(p){
+  if (!p) return;
+  input.value = ''; closeList();
+  if (coarse) input.blur(); else input.focus();
+  guess(p);
+}
+
+/* ---------------- jogada ---------------- */
+let talkT = 0, pendingWin = 0;
+function guess(p){
+  if (S.done || S.guesses.includes(p.num)) return;
+  const s = SECRET(), m = MODE();
+  S.guesses.push(p.num);
+  const n = S.guesses.length, win = p.num === S.secret;
+  if (win){ S.done = true; S.won = true; }
+  if (S.mode === 'diario' && !win && n === 1){ G().lastDaily = { day:S.day, won:false }; B.saveProfile(); }
+  save();
+  const empty = $('#emptyBoard'); if (empty) empty.remove();
+  const rows = $('#rows');
+  let cmp = null;
+  if (m.sil) rows.insertAdjacentHTML('afterbegin', sitemHTML(p, true));
+  else { cmp = compare(p, s); rows.insertAdjacentHTML('afterbegin', rowHTML(p, cmp, true)); revealSfx(cmp); }
+  const first = rows.firstElementChild; if (first) first.scrollIntoView({ block:'nearest', behavior: B.RM ? 'auto' : 'smooth' });
+  renderMeta();
+  const delay = B.RM ? 200 : m.sil ? 420 : COLS.length * 120 + 520;
+  clearTimeout(talkT);
+  if (win){
+    renderHints(); B.say('…', 'shock', 1500);
+    pendingWin = setTimeout(onWin, delay);
+  } else {
+    if (m.sil) B.sfx.meh();
+    talkT = setTimeout(() => { react(p, cmp, n); afterWrong(n); }, delay);
+    renderHints();
+  }
+}
+function revealSfx(cmp){
+  if (B.RM) return;
+  cmp.forEach((c, i) => setTimeout(() => { if (c.s === 'g') B.sfx.place(i + 3); else if (c.s === 'y') B.sfx.note(); else B.sfx.tap(); }, (i + 1) * 120 + 180));
+  if (cmp.every(c => c.s === 'r')) setTimeout(() => B.sfx.meh(), COLS.length * 120 + 400);
+}
+function afterWrong(n){
+  const h = HINTS[MODE().sil ? 'sil' : 'normal'].find(x => x.at === wrongCount());
+  if (h && !S.done){ B.toast('Dica liberada!', `${h.label} disponível (−10 XP)`); B.sfx.hint(); renderHints(); }
+}
+function features(p, s, cmp){
+  const f = { greens: cmp.filter(c => c.s === 'g').length, tipo:'' };
+  f.allRed = cmp.every(c => c.s === 'r');
+  f.bothTypes = cmp[1].s === 'g' && cmp[2].s === 'g' && !!p.t2;
+  f.typeRight = cmp[1].s === 'g' || (cmp[2].s === 'g' && !!p.t2);
+  f.typeYellow = cmp[1].s === 'y' || cmp[2].s === 'y';
+  f.genRight = cmp[0].s === 'g';
+  f.colorRight = cmp[5].s === 'g';
+  f.hRatio = Math.max(p.h, s.h) / Math.max(.01, Math.min(p.h, s.h));
+  f.wRatio = Math.max(p.w, s.w) / Math.max(.01, Math.min(p.w, s.w));
+  f.close = f.hRatio <= 1.2 && f.wRatio <= 1.25 && !(p.h === s.h && p.w === s.w);
+  if (f.bothTypes) f.tipo = `${tName(s.t1)}/${tName(s.t2)}`;
+  else if (f.typeRight) f.tipo = tName(cmp[1].s === 'g' ? p.t1 : p.t2);
+  if (f.typeYellow && !f.typeRight) f.tipo = tName(cmp[1].s === 'y' ? p.t1 : p.t2);
+  return f;
+}
+function react(p, cmp, n){
+  const s = SECRET(), m = MODE(), R = Math.random();
+  const vars = { pokemon:p.name, n, tipo:'', geracao:p.gen, cor:p.color };
+  const hasEsp = !!(window.PK_ESP && window.PK_ESP[p.key]);
+  const hintNow = HINTS[m.sil ? 'sil' : 'normal'].some(h => h.at === n);
+  let cat = null, mood = 'talk';
+  if (hintNow && R < .5) { cat = 'pkDicaLiberada'; mood = 'smug'; }
+  else if ([5,10,15,20].includes(n)) { cat = 'pkMarco' + n; mood = 'smug'; }
+  else if (n > 20 && n % 5 === 0) { cat = 'pkMarcoMuito'; mood = 'shock'; }
+  else if (p.key === 'pikachu') { cat = 'pkPikachu'; mood = 'smug'; }
+  else if (hasEsp && R < .6) { cat = 'pk@' + p.key; mood = 'smug'; }
+  else if (m.sil) { cat = n === 1 && R < .3 ? 'pkPrimeiro' : 'pkSilhuetaErro'; mood = 'smug'; }
+  else if (n === 1 && R < .45) cat = 'pkPrimeiro';
+  else if (STARTERS.has(p.num) && R < .55) cat = 'pkInicial';
+  else if (LEGEND.has(p.num) && R < .55) { cat = 'pkLendario'; mood = 'shock'; }
+  else {
+    const f = features(p, s, cmp); vars.tipo = f.tipo;
+    const opt = [];
+    if (f.greens >= 5) opt.push(['pkQuase', 6, 'shock']);
+    if (f.allRed) opt.push(['pkTudoVermelho', 6, 'dead']);
+    if (f.bothTypes) opt.push(['pkTiposCertos', 4, 'happy']);
+    else if (f.typeRight) opt.push(['pkTipoCerto', 3, 'happy']);
+    if (f.typeYellow && !f.typeRight) opt.push(['pkTipoTrocado', 3, 'shock']);
+    if (f.genRight) opt.push(['pkGeracaoCerta', 2, 'happy']);
+    else if (!f.allRed || R < .3) opt.push([s.gen > p.gen ? 'pkGeracaoSobe' : 'pkGeracaoDesce', 1.2, 'smug']);
+    if (f.close) opt.push(['pkPertoTamanho', 3, 'shock']);
+    if (f.hRatio >= 3) opt.push([s.h > p.h ? 'pkMaior' : 'pkMenor', 2, 'smug']);
+    if (f.wRatio >= 4) opt.push([s.w > p.w ? 'pkMaisPesado' : 'pkMaisLeve', 2, 'smug']);
+    if (f.colorRight) opt.push(['pkCorCerta', 1, 'happy']);
+    opt.push(['pkMisto', 1.3, 'talk']);
+    const tot = opt.reduce((a, o) => a + o[1], 0); let r = Math.random() * tot;
+    const pick = opt.find(o => (r -= o[1]) < 0) || opt[opt.length - 1];
+    cat = pick[0]; mood = pick[2];
+  }
+  B.talk(cat, vars, mood, 5500);
+  if (mood === 'dead' || mood === 'shock') B.glitch();
+}
+
+/* ---------------- vitória / derrota ---------------- */
+function reward(quiet){
+  if (S.rewarded) return;
+  const n = S.guesses.length, m = MODE();
+  let xp = Math.max(10, 50 - 3 * (n - 1)) - 10 * S.hints.length;
+  xp = Math.max(5, xp); if (!m.daily) xp = Math.round(xp / 2);
+  S.xp = xp; S.rewarded = true; save();
+  const st = MS(S.mode), g = G();
+  st.played++; st.wins++; st.guesses += n; st.best = st.best ? Math.min(st.best, n) : n;
+  const b = bucketOf(n); st.dist[b] = (st.dist[b] || 0) + 1; st.lastBucket = b;
+  if (m.daily){ st.streak = st.lastDay === S.day ? st.streak : st.lastDay === S.day - 1 ? st.streak + 1 : 1; st.lastDay = S.day; }
+  else st.streak++;
+  st.maxStreak = Math.max(st.maxStreak, st.streak);
+  g.played = (g.played || 0) + 1;
+  if (S.mode === 'diario') g.lastDaily = { day:S.day, won:true, guesses:n };
+  B.saveProfile();
+  B.gainXP(xp, { quiet });
+  B.registerWin('pokemon');
+}
+function onWin(){
+  const s = SECRET(), n = S.guesses.length, m = MODE();
+  reward(false);
+  B.sfx.win(); B.confetti(); B.glitch('boing');
+  const txt = `É O ${s.name.toUpperCase()}!`, el = $('#burst');
+  el.style.fontSize = Math.max(26, Math.min(64, Math.floor(innerWidth * .9 / (txt.length * .5)))) + 'px';
+  B.burst(el, txt, '#FFD23F');
+  let cat = n === 1 ? 'pkVitoria1' : n <= 3 ? 'pkVitoriaRapida' : n <= 9 ? 'pkVitoria' : 'pkVitoriaSofrida';
+  if (m.sil && n > 1 && Math.random() < .6) cat = 'pkSilhuetaVitoria';
+  B.talk(cat, { pokemon:s.name, n }, n === 1 ? 'shock' : 'happy', 9000);
+  renderAll();
+  setTimeout(() => { if (S.done && S.won && S.secret === s.num && !B.isModalOpen()) openCard(); }, 1700);
+}
+let giveUpArm = 0;
+function giveUp(btn){
+  if (S.done || MODE().daily) return;
+  if (!giveUpArm){
+    giveUpArm = setTimeout(() => { giveUpArm = 0; if (btn.isConnected){ btn.textContent = 'Desistir'; btn.classList.remove('hot'); } }, 3500);
+    btn.textContent = 'Certeza?'; btn.classList.add('hot'); B.talk('pkDesistirConfirma', null, 'shock', 3500); return;
+  }
+  clearTimeout(giveUpArm); giveUpArm = 0; clearTimeout(talkT);
+  S.done = true; S.won = false; S.gaveUp = true; save();
+  const st = MS(S.mode); st.played++; st.streak = 0; G().played = (G().played || 0) + 1; B.saveProfile();
+  B.sfx.lose(); B.glitch();
+  B.talk('pkDesistiu', { pokemon:SECRET().name }, 'dead', 7000);
+  renderAll();
+}
+function newRound(){
+  if (MODE().daily) return;
+  clearTimeout(talkT); clearTimeout(pendingWin);
+  S = fresh(S.mode); save(); renderAll();
+  B.talk(MODE().sil ? (Math.random() < .5 ? 'pkSilhuetaInicio' : 'pkNovaRodada') : 'pkNovaRodada', null, 'happy', 5000);
+  if (!coarse) input.focus();
+}
+function useHint(id){
+  if (S.done || S.hints.includes(id)) return;
+  S.hints.push(id); save(); B.sfx.hint();
+  renderHints(); renderStage();
+  if (id === 'sil'){ B.talk('pkDicaSilhueta', null, 'shock', 5500); $('#stage').scrollIntoView({ block:'nearest', behavior: B.RM ? 'auto' : 'smooth' }); }
+  else if (id === 'letra') B.talk('pkDicaLetra', null, 'smug', 5500);
+  else B.talk('pkDicaTipo', null, 'smug', 5500);
+}
+
+/* ---------------- compartilhar ---------------- */
+function shareText(){
+  const m = MODE(), s = SECRET(), n = S.guesses.length;
+  let rows = S.guesses.map(num => {
+    if (m.sil) return num === S.secret ? '🟩' : '🟥';
+    return compare(BYNUM.get(num), s).map(c => c.s === 'g' ? '🟩' : c.s === 'y' ? '🟨' : c.a === 'up' ? '⬆️' : c.a === 'down' ? '⬇️' : '🟥').join('');
+  });
+  let body;
+  if (m.sil){ const out = []; for (let i = 0; i < rows.length; i += 10) out.push(rows.slice(i, i + 10).join('')); body = out.join('\n'); }
+  else body = rows.length > 12 ? [...rows.slice(0, 5), `… +${rows.length - 10} chutes …`, ...rows.slice(-5)].join('\n') : rows.join('\n');
+  const title = m.daily ? `Fliperama Bugado · Pokémon${S.mode === 'facil' ? ' Fácil' : ''} #${S.day}` : `Fliperama Bugado · Pokémon (${m.label})`;
+  const extra = S.hints.length ? ` · 💡${S.hints.length}` : '';
+  return `${title}\n${plural(n, 'chute', 'chutes')}${extra}\n${body}\n${location.origin}${location.pathname}`;
+}
+async function share(){
+  const ok = await B.copyText(shareText());
+  B.toast(ok ? 'Copiado!' : 'Não deu pra copiar', ok ? 'Cola no grupo e humilha geral.' : 'O navegador bloqueou. Tenta de novo.');
+}
+
+/* ---------------- modais ---------------- */
+function openCard(){
+  const s = SECRET(), n = S.guesses.length, m = MODE();
+  const data = [['Geração', s.gen], ['Altura', fmt(s.h) + ' m'], ['Peso', fmt(s.w) + ' kg'], ['Cor', s.color], ['Estágio', s.stage]];
+  B.openModal(`<div class="wc-top"><span class="lens"></span><span class="led r"></span><span class="led y"></span><span class="led g"></span><b>POKÉDEX</b><span class="num">${pad(s.num)}</span></div>
+    <div class="wc-screen"><img src="${ART(s.num)}" alt="${esc(s.name)}" width="190" height="190"></div>
+    <h2 class="big wc-name">${esc(s.name)}!</h2>
+    <div class="wc-types">${typeFull(s.t1)}${s.t2 ? typeFull(s.t2) : ''}</div>
+    <div class="wc-data">${data.map(([a, b]) => `<div><span>${a}</span><b>${b}</b></div>`).join('')}</div>
+    ${S.won ? `<div class="stat-grid four"><div class="stat"><b>${n}</b><span>chutes</span></div><div class="stat"><b>+${S.xp}</b><span>XP</span></div><div class="stat"><b>${S.hints.length}</b><span>dicas</span></div><div class="stat"><b>${streakShown(S.mode)}</b><span>sequência</span></div></div>`
+      : `<p class="sub" style="text-align:center">Fica pra próxima. Pelo menos agora você nunca mais esquece ele.</p>`}
+    <div class="m-actions">${S.won ? '<button class="btn cool" type="button" data-act="share">Compartilhar</button>' : ''}${m.daily ? '<button class="btn" type="button" data-act="stats">Estatísticas</button>' : '<button class="btn primary" type="button" data-act="next">Nova rodada</button>'}<button class="btn" type="button" data-act="close">Fechar</button></div>`);
+}
+function openStats(m){
+  const s = MS(m), cur = S.mode === m && S.won ? S.lastBucket || bucketOf(S.guesses.length) : null;
+  const avg = s.wins ? (s.guesses / s.wins).toFixed(1).replace('.', ',') : '–';
+  const max = Math.max(1, ...BUCKETS.map(b => s.dist[b] || 0));
+  const tabs = Object.keys(MODES).map(k => `<button class="btn${k === m ? ' on' : ''}" type="button" data-act="st-${k}" aria-pressed="${k === m}">${MODES[k].label}</button>`).join('');
+  const bars = BUCKETS.map(b => { const v = s.dist[b] || 0; return `<div class="dist-row"><span>${b}</span><i class="${b === cur ? 'hot' : ''}" style="width:${Math.max(9, v / max * 100)}%">${v}</i></div>`; }).join('');
+  B.openModal(`<h2>Estatísticas</h2><p class="sub">Por modo. O Bugado anota tudo, inclusive o que você queria esquecer.</p>
+    <div class="st-tabs">${tabs}</div>
+    <div class="stat-grid"><div class="stat"><b>${s.played}</b><span>jogos</span></div><div class="stat"><b>${s.wins}</b><span>vitórias</span></div><div class="stat"><b>${avg}</b><span>média</span></div>
+    <div class="stat"><b>${s.best || '–'}</b><span>melhor</span></div><div class="stat"><b>${streakShown(m)}</b><span>sequência</span></div><div class="stat"><b>${s.maxStreak}</b><span>recorde</span></div></div>
+    <h3>Chutes até acertar</h3><div class="dist">${bars}</div>
+    <p class="sub" style="margin-top:12px">${MODES[m].daily ? 'Sequência = dias seguidos acertando.' : 'Sequência = rodadas seguidas sem desistir.'}</p>
+    <div class="m-actions"><button class="btn primary" type="button" data-act="close">Fechar</button></div>`);
+}
+function openHelp(){
+  B.openModal(`<h2>Quem é esse Pokémon?</h2><p class="sub">Descobre o Pokémon secreto. Chute quantas vezes quiser — cada chute mostra o quanto ele parece com o secreto.</p>
+    <h3>As cores</h3>
+    <ul><li><span class="demo g">✓</span><span>Verde: igualzinho ao secreto.</span></li>
+    <li><span class="demo y">~</span><span>Amarelo: o secreto tem esse tipo, mas na outra posição (Tipo 1 ↔ Tipo 2).</span></li>
+    <li><span class="demo r">✗</span><span>Vermelho: não bate.</span></li>
+    <li><span class="demo r"><i class="arr up"></i></span><span>Seta pra cima: o valor do secreto é <b>maior</b>. Pra baixo: <b>menor</b>.</span></li></ul>
+    <h3>As colunas</h3>
+    <p><b>Ger.</b> geração (1–9) · <b>Tipo 1 / Tipo 2</b> (ou nenhum) · <b>Alt.</b> altura em metros · <b>Peso</b> em kg · <b>Cor</b> da Pokédex · <b>Evo</b> estágio de evolução (1, 2 ou 3). No celular os tipos vêm abreviados: FOG = Fogo, ÁGU = Água, PSÍ = Psíquico…</p>
+    <h3>Modos</h3>
+    <ul><li><span class="pill sun">Diário</span><span>Um Pokémon por dia, igual pra todo mundo.</span></li>
+    <li><span class="pill sun">Fácil</span><span>Diário só com as gerações 1 a 3.</span></li>
+    <li><span class="pill">Infinito</span><span>Sorteio aleatório, joga quanto quiser (XP pela metade).</span></li>
+    <li><span class="pill pink">Silhueta</span><span>Só a sombra, chute pelo nome. O clássico do intervalo do desenho.</span></li></ul>
+    <h3>Dicas e XP</h3>
+    <p>Depois de 5 chutes errados libera a silhueta; depois de 10, a primeira letra. Cada dica custa 10 XP. Vitória vale até 50 XP (−3 por chute extra).</p>
+    <p>Teclado: digita, <kbd>↑</kbd> <kbd>↓</kbd> escolhe, <kbd>Enter</kbd> chuta, <kbd>/</kbd> volta pra busca.</p>
+    <div class="m-actions"><button class="btn primary" type="button" data-act="close">Bora!</button></div>`);
+}
+B.onAct('share', share);
+B.onAct('next', () => { B.closeModal(true); newRound(); });
+B.onAct('stats', () => openStats(S.mode));
+Object.keys(MODES).forEach(k => B.onAct('st-' + k, () => openStats(k)));
+
+/* ---------------- relógio do diário ---------------- */
+function tickCountdown(){
+  const el = document.getElementById('countdown'); if (!el) return;
+  const now = new Date(), next = new Date(now); next.setHours(24, 0, 0, 0);
+  const t = Math.max(0, Math.floor((next - now) / 1000));
+  el.textContent = [Math.floor(t / 3600), Math.floor(t / 60) % 60, t % 60].map(x => String(x).padStart(2, '0')).join(':');
+  if (MODE().daily && S.day !== B.dayNumber() && !B.isModalOpen()){ S = load(S.mode); renderAll(); greet(); }
+}
+setInterval(tickCountdown, 1000);
+
+/* ---------------- modos ---------------- */
+function greet(){
+  const m = MODE(), n = S.guesses.length;
+  if (S.done && m.daily) B.talk('pkDiarioFeito', null, 'smug', 6000);
+  else if (n) B.talk('pkRetomou', { n }, 'talk', 5500);
+  else B.talk(m.sil ? 'pkSilhuetaInicio' : S.mode === 'diario' ? 'pkInicioDiario' : S.mode === 'facil' ? 'pkInicioFacil' : 'pkInicioInfinito', null, 'happy', 6000);
+}
+function setMode(m){
+  if (!MODES[m] || (S && S.mode === m)) return;
+  clearTimeout(talkT); clearTimeout(pendingWin);
+  if (S && S.won && !S.rewarded) reward(true);
+  if (S) save();
+  S = load(m); B.store.set(MODE_KEY, m);
+  input.value = ''; closeList();
+  renderAll(); greet();
+}
+document.querySelector('.modes').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b){ B.sfx.tap(); setMode(b.dataset.mode); } });
+$('#hints').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b || b.disabled) return;
+  B.sfx.tap();
+  if (b.id === 'giveUp') giveUp(b); else if (b.dataset.hint) useHint(b.dataset.hint);
+});
+$('#result').addEventListener('click', e => {
+  const b = e.target.closest('[data-r]'); if (!b) return; B.sfx.tap();
+  const r = b.dataset.r;
+  if (r === 'card') openCard(); else if (r === 'share') share(); else if (r === 'next') newRound();
+  else if (r === 'stats') openStats(S.mode); else if (r === 'inf') setMode('infinito');
+});
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement !== input && !B.isModalOpen() && !S.done){ e.preventDefault(); input.focus(); }
+});
+
+/* ---------------- montagem ---------------- */
+const P = B.profile();
+B.mountBar($('#bar'), { title:'Pokémon', color:'#FFD23F', buttons:[
+  { id:'btnHelp', icon:'help', label:'Como jogar', onClick: openHelp },
+  { id:'btnStats', icon:'stats', label:'Estatísticas', onClick: () => openStats(S.mode) },
+  { id:'btnSound', icon: P.sound ? 'on' : 'off', label:'Som', onClick: () => { B.setSound(!B.profile().sound); $('#btnSound').innerHTML = B.ICON[B.profile().sound ? 'on' : 'off']; } }
+]});
+B.mountMascot($('#mascot'), { pokeCat:'cutucarPokemon' });
+const wide = matchMedia('(min-width: 880px)');
+const applyStack = () => B.setStack(wide.matches);
+(wide.addEventListener ? wide.addEventListener('change', applyStack) : wide.addListener(applyStack)); applyStack();
+
+if (!DEX.length){ B.say('A Pokédex não carregou. Recarrega a página, treinador.', 'dead', 60000); return; }
+const startMode = MODES[B.store.get(MODE_KEY)] ? B.store.get(MODE_KEY) : 'diario';
+S = load(startMode);
+if (S.won && !S.rewarded) reward(true);
+renderAll();
+B.chatter({ active: () => !S.done, idleCat:'pkParado', randomCat:'pkAleatorio' });
+const firstTime = !B.store.get('fliperama.pokemon.seenHelp');
+if (firstTime){ B.store.set('fliperama.pokemon.seenHelp', 1); openHelp(); }
+setTimeout(greet, 350);
+})();
+</script>
+</body></html>
