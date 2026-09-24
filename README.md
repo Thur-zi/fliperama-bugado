@@ -47,6 +47,8 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
 
 e abra http://localhost:5178/
 
+Antes de subir mudanças pro GitHub, rode `versao.ps1`: ele troca o `?v=` dos arquivos em todas as páginas, pra ninguém pegar página nova com script velho do cache.
+
 ## Estrutura
 
 - `shared/base.css`: visual cartoon (cores, botões, modal, mascote)

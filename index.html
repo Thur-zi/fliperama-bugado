@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
-<link rel="stylesheet" href="shared/base.css">
+<link rel="stylesheet" href="shared/base.css?v=2609241402">
 <style>
 .hub{display:grid;gap:14px;grid-template-areas:"top" "mascot" "carts" "foot"}
 .top{grid-area:top;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -116,11 +116,13 @@
   <p class="foot-note">Feito com amor e muitos bugs. Progresso salvo neste navegador. · <button type="button" id="bReset">zerar tudo</button></p>
 </div>
 
-<script src="shared/falas.js"></script>
-<script src="shared/bugado.js"></script>
+<script src="shared/falas.js?v=2609241402"></script>
+<script src="shared/bugado.js?v=2609241402"></script>
 <script>
 (() => {
 const B = Bugado;
+if (!B.peekGame) B.peekGame = id => (B.profile().games || {})[id] || {}; // núcleo antigo em cache
+if (!B.syncProfile) B.syncProfile = () => {};
 
 const GAMES = [
   { id:'sudoku', href:'sudoku/', name:'Sudoku', color:'#2EE6D6', daily:false,
