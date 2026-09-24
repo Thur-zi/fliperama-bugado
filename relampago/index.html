@@ -1,0 +1,761 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2A1650">
+<title>Relâmpago · Fliperama Bugado</title>
+<meta name="description" content="Quem é esse Pokémon? Contra o relógio: 60 segundos, uma silhueta, quatro nomes. Gen 1, todas as gerações, Dragon Ball, Mistureba e Desafio do Dia.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+:root{--ray1:#FFD23F;--ray2:#FFB02E;--blue:#3D7BFF}
+
+/* ---------- layout ---------- */
+.wrap{padding-block:8px 20px}
+.layout{display:grid;gap:8px;margin-top:4px}
+#mascot .bg-bubble{min-height:62px}
+.game{min-width:0;width:100%;max-width:720px;margin:0 auto}
+@media (min-width:880px){
+  .layout{grid-template-columns:240px minmax(0,1fr);gap:24px;align-items:start;margin-top:14px}
+  #mascot{position:sticky;top:14px}
+  #mascot .bg-bubble{min-height:84px}
+}
+
+/* ---------- a "TV" ---------- */
+.tv{position:relative;background:var(--paper);color:var(--ink);border:4px solid var(--ink);border-radius:22px;box-shadow:6px 6px 0 var(--red);padding:9px}
+
+/* ---------- HUD ---------- */
+.hud{position:relative;display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.tv:not(.playing) .hud,.tv:not(.playing) .answers{display:none}
+.tv.playing .menu{display:none}
+.timer{position:relative;flex:1;min-width:0;height:36px;border:3px solid var(--ink);border-radius:99px;background:#3b2766;overflow:hidden}
+.timer i{position:absolute;inset:0;background:var(--cyan);transform-origin:0 50%;transition:background-color .3s}
+.timer.mid i{background:var(--sun)}
+.timer.low i{background:var(--red)}
+.timer b{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:.06em;line-height:1;color:#fff;-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;font-variant-numeric:tabular-nums}
+.timer.low{animation:tick .5s ease-in-out infinite alternate}
+@keyframes tick{to{transform:scale(1.04)}}
+.chipbox{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:54px;height:40px;padding:0 8px;border:3px solid var(--ink);border-radius:12px;background:#fff;box-shadow:0 3px 0 var(--ink);line-height:1}
+.chipbox b{font-family:var(--chunky);font-weight:400;font-size:20px;font-variant-numeric:tabular-nums}
+.chipbox small{font-size:9.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#6b5a90}
+.chipbox.bump{animation:bump .3s cubic-bezier(.3,1.8,.5,1)}
+@keyframes bump{40%{transform:scale(1.18) rotate(-4deg)}}
+.combo.lv2{background:var(--cyan)}
+.combo.lv3{background:var(--pink)}
+.combo.lv4{background:var(--sun);animation:hot .6s ease-in-out infinite alternate}
+.combo.lv2 small,.combo.lv3 small,.combo.lv4 small{color:var(--ink)}
+@keyframes hot{to{transform:rotate(-4deg) scale(1.06)}}
+.quit{width:36px;height:36px;border-radius:10px;box-shadow:0 3px 0 var(--ink)}
+.quit.armed{background:var(--pink)}
+.fl{position:absolute;top:-4px;z-index:8;pointer-events:none;font-family:var(--display);font-size:24px;letter-spacing:.03em;white-space:nowrap;-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;text-shadow:2px 2px 0 var(--ink)}
+
+/* ---------- palco (bumper do desenho) ---------- */
+.stage{position:relative;height:clamp(196px,36svh,330px);border:3px solid var(--ink);border-radius:16px;overflow:hidden;isolation:isolate;background:var(--ray2);user-select:none;-webkit-user-select:none}
+.tv:not(.playing) .stage{height:clamp(176px,29svh,300px)}
+@media (min-width:880px){
+  .stage{height:clamp(300px,calc(100vh - 330px),440px)}
+  .tv:not(.playing) .stage{height:clamp(220px,calc(100vh - 480px),320px)}
+  .ans{min-height:64px}
+}
+.sun{position:absolute;left:50%;top:50%;width:max(260%,900px);aspect-ratio:1;transform:translate(-50%,-50%);z-index:-2;
+  background:repeating-conic-gradient(from 0deg,var(--ray1) 0deg 10deg,var(--ray2) 10deg 20deg);animation:spin 50s linear infinite}
+.stage::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 50% 52%,rgba(255,255,255,.75),rgba(255,255,255,.18) 34%,transparent 62%);pointer-events:none}
+@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.stage.db{--ray1:#FFA24A;--ray2:#FF6E2E}
+.stage.bad{--ray1:#FF9CC3;--ray2:#FF5E9E}
+.stage.ok{--ray1:#B8F5D0;--ray2:#5EE39A}
+.stage.bad{animation:shake .42s}
+@keyframes shake{20%{transform:translateX(-7px) rotate(-1deg)}45%{transform:translateX(6px) rotate(1deg)}70%{transform:translateX(-3px)}}
+.st-title{position:absolute;left:10px;top:8px;z-index:3;margin:0;font-family:var(--display);font-weight:400;font-size:clamp(19px,5.6vw,32px);line-height:.92;letter-spacing:.03em;color:#fff;-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:3px 3px 0 var(--blue);transform:rotate(-5deg);transform-origin:0 0;pointer-events:none}
+.pic-box{position:absolute;inset:15% 8% 13%;z-index:1}
+.pic{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:brightness(0);transition:filter .3s ease,transform .45s cubic-bezier(.3,1.6,.5,1);-webkit-user-drag:none;pointer-events:none}
+.pic.in{animation:pic-in .32s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pic-in{from{transform:scale(.55);opacity:0}}
+.stage.rev .pic{filter:brightness(1) drop-shadow(3px 4px 0 rgba(27,16,48,.5));transform:scale(1.06)}
+.stage.idle .pic{animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-6px) rotate(-2deg)}}
+.st-name{position:absolute;left:50%;bottom:8px;z-index:4;max-width:96%;transform:translateX(-50%) rotate(-2deg);font-family:var(--display);font-weight:400;font-size:clamp(24px,7.4vw,44px);line-height:1.1;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px;color:var(--sun);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:3px 3px 0 var(--ink);opacity:0;pointer-events:none}
+.stage.rev .st-name{opacity:1;animation:name-in .35s cubic-bezier(.3,1.6,.5,1)}
+.stage.bad .st-name{color:#fff;text-shadow:3px 3px 0 var(--pink)}
+@keyframes name-in{from{transform:translateX(-50%) rotate(-2deg) scale(.4);opacity:0}}
+.flash{position:absolute;inset:0;z-index:5;background:#fff;opacity:0;pointer-events:none}
+.cd{position:absolute;inset:0;z-index:6;display:grid;place-items:center;font-family:var(--display);font-size:clamp(88px,27vw,170px);line-height:1;color:#fff;-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;text-shadow:6px 6px 0 var(--red);pointer-events:none}
+.cd:empty{display:none}
+.cd.go{color:var(--sun)}
+.st-load{position:absolute;right:8px;bottom:8px;z-index:6}
+.stage .burst{top:42%;font-size:clamp(34px,10vw,58px)}
+/* estado de menu: logo */
+.logo{position:absolute;left:50%;bottom:6px;z-index:4;display:none;align-items:center;gap:2px;transform:translateX(-50%) rotate(-3deg);font-family:var(--display);font-weight:400;font-size:clamp(42px,13vw,76px);line-height:1;letter-spacing:.03em;white-space:nowrap;color:var(--red);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:4px 4px 0 var(--ink);pointer-events:none}
+.logo svg{width:.72em;height:.72em;flex:none;margin-top:-.06em}
+.stage.idle .logo{display:flex}
+.stage.idle .st-name{display:none}
+.tagline{position:absolute;right:8px;top:9px;z-index:4;transform:rotate(4deg)}
+.stage:not(.idle) .tagline{display:none}
+
+/* ---------- respostas ---------- */
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+.ans{position:relative;min-width:0;min-height:58px;padding:6px 8px 6px 36px;display:flex;align-items:center;font-size:clamp(15px,4.3vw,19px);line-height:1.05;text-align:left;overflow-wrap:anywhere;hyphens:auto;background:#fff}
+.ans kbd{position:absolute;left:7px;top:50%;transform:translateY(-50%);font-size:12px;background:var(--paper2)}
+.ans span{min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.answers.lock .ans{pointer-events:none}
+.answers.done .ans:not(.ok):not(.bad){opacity:.45}
+.ans.ok{background:var(--green);animation:bump .35s cubic-bezier(.3,1.8,.5,1)}
+.ans.bad{background:var(--red);color:#fff}
+.ans.bad kbd{color:var(--ink)}
+@media (hover:none){ .ans{padding-left:10px;justify-content:center;text-align:center} .ans kbd{display:none} }
+@media (hover:hover){ .ans:hover{background:var(--paper2)} .ans.ok:hover{background:var(--green)} .ans.bad:hover{background:var(--red)} }
+
+/* ---------- menu ---------- */
+.menu{margin-top:10px}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mode{min-width:0;min-height:60px;padding:6px 10px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;text-align:left;background:var(--paper2)}
+.mode b{font-family:var(--chunky);font-weight:400;font-size:18px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.mode small{font-family:var(--body);font-size:11.5px;font-weight:800;color:#6b5a90;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.mode small em{font-style:normal;color:var(--ink)}
+.mode[aria-pressed="true"]{background:var(--sun);transform:translateY(-2px) rotate(-1deg);box-shadow:0 5px 0 var(--ink)}
+.mode[aria-pressed="true"] small{color:var(--text-ink)}
+.mode[aria-pressed="true"]:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.play{width:100%;height:60px;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--red);color:#fff;font-family:var(--display);font-size:32px;letter-spacing:.06em;-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;text-shadow:2px 2px 0 var(--ink)}
+.play small{font-family:var(--chunky);font-size:13px;letter-spacing:.02em;-webkit-text-stroke:0;text-shadow:none;background:var(--paper);color:var(--ink);border:2px solid var(--ink);border-radius:99px;padding:1px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:48%}
+.daily{margin-top:12px;display:flex;align-items:center;gap:10px;padding:9px 10px 9px 12px;background:var(--violet);color:#fff;border:3px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--ink)}
+.daily .bolt{flex:none;width:38px;height:38px;display:grid;place-items:center;border:2.5px solid var(--ink);border-radius:50%;background:var(--sun)}
+.daily .bolt svg{width:22px;height:22px}
+.daily .txt{flex:1;min-width:0;line-height:1.15}
+.daily .txt b{display:block;font-family:var(--chunky);font-weight:400;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.daily .txt span{font-size:12px;color:#E4DBFF}
+.daily .acts{flex:none;display:flex;gap:6px}
+.daily .btn{height:42px;padding:0 12px;font-size:15px}
+.daily .icon-btn{width:42px;height:42px}
+
+/* ---------- burst por cima do modal ---------- */
+.burst-layer{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:55}
+.burst-layer .burst{top:30%}
+
+/* ---------- modais ---------- */
+.res-top{text-align:center}
+.bg-card .res-top h2.big{display:inline-block}
+.res-score{display:flex;align-items:baseline;justify-content:center;gap:6px;margin:4px 0 0}
+.res-score b{font-family:var(--display);font-weight:400;font-size:76px;line-height:1;color:var(--red);-webkit-text-stroke:2.5px var(--ink);paint-order:stroke fill;text-shadow:4px 4px 0 var(--sun)}
+.res-score span{font-family:var(--chunky);font-size:22px;color:var(--ink)}
+.res-note{margin:2px 0 0;text-align:center;font-size:14px!important}
+.res-note .pill{margin:2px}
+.missed{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px}
+.miss{min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 4px 6px;background:#fff;border:2.5px solid var(--ink);border-radius:10px;box-shadow:0 2px 0 var(--ink)}
+.miss img{width:60px;height:60px;object-fit:contain}
+.miss.pk img{image-rendering:pixelated}
+.miss.db img{object-position:50% 0}
+.miss b{max-width:100%;font-family:var(--chunky);font-weight:400;font-size:13px;line-height:1.1;text-align:center;color:var(--ink);overflow-wrap:anywhere}
+.clean{margin:0;padding:12px;border:3px dashed #cbb8ef;border-radius:12px;text-align:center}
+.st-list{display:flex;flex-direction:column;gap:6px}
+.st-row{display:grid;grid-template-columns:minmax(0,1.3fr) auto minmax(0,1fr);align-items:center;gap:8px;padding:6px 10px;background:#fff;border:2.5px solid var(--ink);border-radius:12px}
+.st-row b{font-family:var(--chunky);font-weight:400;font-size:15px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-row .best{font-family:var(--display);font-size:26px;line-height:1;color:var(--red);-webkit-text-stroke:1px var(--ink);paint-order:stroke fill}
+.st-row small{font-size:11.5px;font-weight:800;color:#6b5a90;text-align:right}
+.bg-card li .pill{flex:none}
+.bg-card li{align-items:center}
+</style>
+</head><body>
+<div class="wrap">
+  <header id="bar"></header>
+  <div class="layout">
+    <div id="mascot"></div>
+    <main class="game">
+      <section class="tv" id="tv" aria-label="Relâmpago">
+        <div class="hud" id="hud">
+          <div class="timer" id="timer" role="timer" aria-label="Tempo restante"><i id="tFill"></i><b id="tNum">60</b></div>
+          <div class="chipbox score" id="score"><b id="sNum">0</b><small>pts</small></div>
+          <div class="chipbox combo" id="combo"><b id="cMult">x1</b><small id="cStreak">combo 0</small></div>
+          <button class="icon-btn quit" type="button" id="quit" aria-label="Parar a rodada" title="Parar a rodada"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+        </div>
+
+        <div class="stage idle" id="stage">
+          <div class="sun" aria-hidden="true"></div>
+          <p class="st-title" id="stTitle" aria-hidden="true">QUEM É ESSE<br>POKÉMON?</p>
+          <span class="pill pink tagline" aria-hidden="true">60 segundos</span>
+          <div class="pic-box" id="picBox"></div>
+          <div class="st-name" id="stName" aria-live="polite"></div>
+          <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 32"><path d="M14 1 2 18h8l-3 13 14-19h-8l4-11z" fill="#FFD23F" stroke="#1B1030" stroke-width="2.4" stroke-linejoin="round"/></svg>RELÂMPAGO</div>
+          <div class="flash" id="flash"></div>
+          <div class="cd" id="cd" aria-live="assertive"></div>
+          <span class="pill st-load" id="stLoad" hidden>carregando…</span>
+          <div class="burst" id="stBurst" aria-hidden="true"></div>
+        </div>
+
+        <div class="answers lock" id="answers" role="group" aria-label="Opções de resposta">
+          <button class="btn ans" type="button" data-i="0"><kbd>1</kbd><span>?</span></button>
+          <button class="btn ans" type="button" data-i="1"><kbd>2</kbd><span>?</span></button>
+          <button class="btn ans" type="button" data-i="2"><kbd>3</kbd><span>?</span></button>
+          <button class="btn ans" type="button" data-i="3"><kbd>4</kbd><span>?</span></button>
+        </div>
+
+        <div class="menu" id="menu">
+          <nav class="modes" id="modes" aria-label="Modos de jogo"></nav>
+          <button class="btn play" type="button" id="play">VALENDO! <small id="playSub">Gen 1</small></button>
+          <div class="daily" id="daily"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="burst-layer" aria-hidden="true"><div class="burst" id="burst"></div></div>
+
+<script src="../shared/falas.js"></script><script src="../shared/bugado.js"></script>
+<script src="../pokemon/pokedex.js"></script><script src="../dragonball/personagens.js"></script>
+<script src="falas-relampago.js"></script>
+<script>
+(() => {
+'use strict';
+const B = window.Bugado;
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const keyOf = s => B.normalize(s).replace(/[^a-z0-9]/g, '');
+const ART = n => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${n}.png`;
+const SPR = n => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${n}.png`;
+const RM = B.RM;
+const GAME = 'relampago';
+const ROUND = 60, BONUS = 1.5, PENALTY = 3, FAST = 1.5;
+const BOLT = '<svg viewBox="0 0 24 32" aria-hidden="true"><path d="M14 1 2 18h8l-3 13 14-19h-8l4-11z" fill="#FFD23F" stroke="#1B1030" stroke-width="2.4" stroke-linejoin="round"/></svg>';
+
+/* ---------------- dados ---------------- */
+const DEX = (window.POKEDEX || []).map(r => ({ kind:'pk', num:r[0], name:r[1], gen:r[2], t1:r[3], t2:r[4], h:r[5], color:r[7], stage:r[8], key:keyOf(r[1]), img:ART(r[0]), spr:SPR(r[0]) }));
+const DBC = (window.DB_CHARS || []).filter(c => c.img).map(c => ({ kind:'db', name:c.nome, key:keyOf(c.nome), img:c.img, spr:c.img, raca:c.raca, afil:c.afiliacao, estreia:c.estreia, genero:c.genero, cabelo:c.cabelo }));
+const MODES = {
+  gen1:  { label:'Gen 1',          title:'Geração 1',         sub:'151 clássicos',       jitter:3.2, start:'rlInicioGen1' },
+  todas: { label:'Todas',          title:'Todas as gerações', sub:'1025 Pokémon',        jitter:2.3, start:'rlInicioTodas' },
+  db:    { label:'Dragon Ball',    title:'Dragon Ball',       sub:`${DBC.length} guerreiros`, jitter:2.4, start:'rlInicioDB' },
+  mix:   { label:'Mistureba',      title:'Mistureba',         sub:'Pokémon + DB',        jitter:2.6, start:'rlInicioMix' },
+  diario:{ label:'Desafio do Dia', title:'Desafio do Dia',    sub:'Gen 1–4',             jitter:2.6, start:'rlInicioDiario', daily:true }
+};
+const PLAY_MODES = ['gen1', 'todas', 'db', 'mix'];
+const POOLS = { gen1:DEX.filter(p => p.gen === 1), todas:DEX, db:DBC, diario:DEX.filter(p => p.gen <= 4) };
+const ESP = window.RL_ESP || {};
+
+/* ---------------- parecidos (pra escolher as opções erradas) ---------------- */
+const shares = (a, b) => a.t1 === b.t1 || a.t1 === b.t2 || (!!a.t2 && (a.t2 === b.t1 || a.t2 === b.t2));
+// mesma linha evolutiva (aproximação: números vizinhos, mesma geração, tipo em comum e estágio na ordem certa)
+const sameLine = (a, b) => a.kind === 'pk' && b.kind === 'pk' && a !== b && a.gen === b.gen && Math.abs(a.num - b.num) <= 2
+  && a.stage !== b.stage && (a.num - b.num) * (a.stage - b.stage) > 0 && shares(a, b);
+function sim(a, b){
+  let s = 0;
+  if (a.kind === 'db'){
+    if (a.raca === b.raca) s += 2; if (a.afil === b.afil) s += 1.3; if (a.estreia === b.estreia) s += 1;
+    if (a.genero === b.genero) s += 1.6; if (a.cabelo === b.cabelo) s += .5; return s;
+  }
+  if (a.t1 === b.t1) s += 2; else if (shares(a, b)) s += 1.3;
+  if (a.gen === b.gen) s += 1;
+  const hr = Math.max(a.h, b.h) / Math.max(.1, Math.min(a.h, b.h));
+  if (hr < 1.5) s += 1; else if (hr < 2.2) s += .4;
+  if (a.color === b.color) s += .6;
+  if (sameLine(a, b)) s += 1.2;
+  return s;
+}
+function makeQ(item, pool, rnd, jitter){
+  const sc = [];
+  for (const p of pool){ if (p === item || p.name === item.name) continue; sc.push([sim(item, p) + rnd() * jitter, p]); }
+  sc.sort((x, y) => y[0] - x[0]);
+  const opts = [item];
+  for (const [, p] of sc){ if (opts.length === 4) break; if (!opts.some(o => o.name === p.name)) opts.push(p); }
+  return { item, opts: B.shuffle(opts, rnd) };
+}
+// fila de perguntas: embaralha o conjunto e só repete depois de passar por todos
+function makeFeed(mode, rnd){
+  const J = MODES[mode].jitter;
+  if (mode === 'mix'){
+    let pk = [], db = [];
+    return () => {
+      if (!pk.length) pk = B.shuffle(DEX.slice(), rnd);
+      if (!db.length) db = B.shuffle(DBC.slice(), rnd);
+      const useDb = DBC.length > 4 && rnd() < .32;
+      return useDb ? makeQ(db.pop(), DBC, rnd, J) : makeQ(pk.pop(), DEX, rnd, J);
+    };
+  }
+  const pool = POOLS[mode]; let bag = [];
+  return () => { if (!bag.length) bag = B.shuffle(pool.slice(), rnd); return makeQ(bag.pop(), pool, rnd, J); };
+}
+const dailySeed = day => ((day * 2654435761) ^ 0x5EED5) >>> 0;
+const art = it => it.kind === 'db' && it.genero === 'Feminino' ? 'A' : 'O';
+const multOf = s => s >= 10 ? 4 : s >= 6 ? 3 : s >= 3 ? 2 : 1;
+
+/* ---------------- persistência ---------------- */
+const MODE_KEY = 'fliperama.relampago.mode', DKEY = 'fliperama.relampago.daily', HELP_KEY = 'fliperama.relampago.seenHelp';
+function G(){ const g = B.game(GAME); g.modes = g.modes || {}; return g; }
+function MS(m){ const g = G(); g.modes[m] = Object.assign({ played:0, best:0, correct:0, answered:0, bestCombo:0 }, g.modes[m] || {}); return g.modes[m]; }
+function daily(){
+  const d = B.store.get(DKEY), day = B.dayNumber();
+  return d && d.day === day ? d : { day, started:false, done:false, score:0, correct:0, total:0, bestCombo:0 };
+}
+const saveDaily = d => B.store.set(DKEY, d);
+// abandonou o diário no meio (fechou a aba)? vale o que fez até ali
+(function fixAbandoned(){
+  const d = daily();
+  if (d.started && !d.done){ d.done = true; saveDaily(d); G().lastDaily = { day:d.day, won:d.score >= 10, score:d.score }; B.saveProfile(); }
+})();
+
+/* ---------------- elementos ---------------- */
+const tv = $('#tv'), stage = $('#stage'), picBox = $('#picBox'), stName = $('#stName'), stTitle = $('#stTitle');
+const answersEl = $('#answers'), ansBtns = [...answersEl.querySelectorAll('.ans')];
+const timerEl = $('#timer'), tFill = $('#tFill'), tNum = $('#tNum');
+
+/* ---------------- estado ---------------- */
+let mode = PLAY_MODES.includes(B.store.get(MODE_KEY)) ? B.store.get(MODE_KEY) : 'gen1';
+let phase = 'menu';   // menu | count | wait | ask | reveal | over
+let R = null, tokenSeq = 0, lastTalk = 0, endTalkT = [], quitArm = 0;
+
+/* ---------------- fala durante o jogo ---------------- */
+function playTalk(cat, vars, mood = 'talk', prio = false, hold = 4200){
+  const now = Date.now();
+  if (!prio && now - lastTalk < 2000) return false;
+  lastTalk = now;
+  if (R){ R.since = 0; R.gap = 2 + (Math.random() < .5 ? 1 : 0); }
+  B.talk(cat, vars, mood, hold);
+  if (mood === 'shock' || mood === 'dead') B.glitch();
+  return true;
+}
+function comment(ok, item, pick, t, lost){
+  R.since++;
+  const vars = { nome:item.name, errado:pick.name, n:R.streak };
+  const esp = !!ESP[item.key], due = R.since >= R.gap, r = Math.random();
+  if (ok){
+    const s = R.streak;
+    if (s === 3) return playTalk('rlCombo3', vars, 'happy', true);
+    if (s === 6) return playTalk('rlCombo6', vars, 'happy', true);
+    if (s === 10) return playTalk('rlCombo10', vars, 'shock', true);
+    if (s > 10 && s % 5 === 0) return playTalk('rlComboMais', vars, 'happy', true);
+    if (!due) return;
+    let cat;
+    if (esp && r < .45) cat = 'rl@' + item.key;
+    else if (t < FAST && r < .75) cat = 'rlRapido';
+    else if (t > 4.5 && r < .8) cat = 'rlDevagar';
+    else if (item.kind === 'db') cat = r < .7 ? 'rlDbAcerto' : 'rlAcertoNome';
+    else cat = r < .5 ? 'rlAcerto' : 'rlAcertoNome';
+    playTalk(cat, vars, t < FAST ? 'shock' : 'happy');
+  } else {
+    if (lost >= 4) return playTalk('rlComboQuebrou', { ...vars, n:lost }, 'dead', true);
+    const evo = sameLine(item, pick);
+    if (evo && (due || r < .7)) return playTalk('rlConfundiuEvo', vars, 'shock', true);
+    if (!due && !(esp && r < .3)) return;
+    let cat;
+    if (esp && r < .35) cat = 'rl@' + item.key;
+    else if (item.kind === 'pk' && pick.kind === 'pk' && shares(item, pick) && r < .6) cat = 'rlConfundiuTipo';
+    else if (item.kind === 'db') cat = pick.kind === 'db' && item.raca === pick.raca && r < .5 ? 'rlDbConfundiu' : 'rlDbErro';
+    else cat = 'rlErro';
+    playTalk(cat, vars, Math.random() < .4 ? 'dead' : 'smug');
+  }
+}
+
+/* ---------------- HUD ---------------- */
+function renderClock(){
+  const L = Math.max(0, R ? R.left : ROUND);
+  tFill.style.transform = `scaleX(${Math.min(1, L / ROUND)})`;
+  tNum.textContent = L < 10 ? L.toFixed(1).replace('.', ',') : String(Math.ceil(L));
+  timerEl.classList.toggle('mid', L <= 20 && L > 10);
+  timerEl.classList.toggle('low', L <= 10);
+}
+function bump(el){ if (RM) return; el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+function renderHud(bumpScore){
+  const s = R ? R.score : 0, st = R ? R.streak : 0, m = multOf(st);
+  $('#sNum').textContent = s;
+  $('#cMult').textContent = 'x' + m;
+  $('#cStreak').textContent = 'combo ' + st;
+  const c = $('#combo'); c.classList.remove('lv2', 'lv3', 'lv4'); if (m > 1) c.classList.add('lv' + m);
+  if (bumpScore) bump($('#score'));
+  renderClock();
+}
+function floatText(anchor, text, color){
+  const hud = $('#hud'), el = document.createElement('span');
+  el.className = 'fl'; el.textContent = text; el.style.color = color;
+  el.style.left = (anchor.offsetLeft + anchor.offsetWidth / 2) + 'px';
+  hud.appendChild(el);
+  const k = RM ? [{ opacity:1, transform:'translateX(-50%)' }, { opacity:0, transform:'translateX(-50%)' }]
+    : [{ opacity:0, transform:'translate(-50%,10px) scale(.6)' }, { opacity:1, transform:'translate(-50%,-14px) scale(1.1)', offset:.3 }, { opacity:0, transform:'translate(-50%,-34px) scale(1)' }];
+  el.animate(k, { duration:900, easing:'ease-out' }).onfinish = () => el.remove();
+}
+function flash(strong){
+  $('#flash').animate([{ opacity: RM ? .35 : (strong ? .95 : .8) }, { opacity:0 }], { duration: RM ? 200 : 380, easing:'ease-out' });
+}
+
+/* ---------------- imagens (pré-carrega 3 à frente, pula as que falham) ---------------- */
+function prep(q){
+  const el = new Image(), e = { q, el, st:'loading', cb:null, to:0 };
+  el.alt = 'Silhueta misteriosa'; el.draggable = false; el.decoding = 'async';
+  const done = st => { if (e.st !== 'loading') return; e.st = st; clearTimeout(e.to); if (e.cb) e.cb(); };
+  el.onload = () => done('ok'); el.onerror = () => done('err');
+  e.to = setTimeout(() => done('err'), 8000);
+  el.src = q.item.img;
+  return e;
+}
+function fill(){ while (R.ahead.length < 3) R.ahead.push(prep(R.feed())); }
+function advance(){
+  if (!R) return;
+  fill();
+  const e = R.ahead.shift(); fill();
+  if (e.st === 'ok') return show(e);
+  if (e.st === 'err') return skip();
+  phase = 'wait'; answersEl.classList.add('lock');
+  const tk = R.token;
+  const slow = setTimeout(() => {
+    if (!R || R.token !== tk || phase !== 'wait') return;
+    $('#stLoad').hidden = false;
+    if (!R.saidLoad){ R.saidLoad = true; playTalk('rlCarregando', null, 'smug', true); }
+  }, 700);
+  e.cb = () => {
+    clearTimeout(slow);
+    if (!R || R.token !== tk || phase !== 'wait') return;
+    $('#stLoad').hidden = true;
+    if (e.st === 'ok') show(e); else skip();
+  };
+}
+function skip(){
+  if (++R.fails >= 8){ netFail(); return; }
+  advance();
+}
+function netFail(){
+  const r = R;
+  playTalk('rlSemInternet', null, 'dead', true, 9000);
+  if (r.total > 0){ endRound('net'); return; }
+  if (r.official){ const d = daily(); d.started = false; saveDaily(d); }   // não queima a tentativa oficial
+  R = null; toMenu();
+}
+
+/* ---------------- rodada ---------------- */
+function setTitle(kind){ stTitle.innerHTML = kind === 'db' ? 'QUEM É ESSE<br>GUERREIRO?' : 'QUEM É ESSE<br>POKÉMON?'; }
+function show(e){
+  const q = e.q, kind = q.item.kind;
+  R.cur = q; R.askT = 0; R.fails = 0;
+  e.el.className = 'pic' + (RM ? '' : ' in');
+  picBox.replaceChildren(e.el);
+  stage.classList.remove('rev', 'ok', 'bad', 'idle');
+  stage.classList.toggle('db', kind === 'db');
+  setTitle(kind);
+  stName.textContent = '';
+  q.opts.forEach((o, i) => { const b = ansBtns[i]; b.className = 'btn ans'; b.querySelector('span').textContent = o.name; });
+  answersEl.classList.remove('lock', 'done');
+  phase = 'ask';
+  if (R.mode === 'mix' && R.lastKind && R.lastKind !== kind && Math.random() < .35) playTalk('rlMixTroca', null, 'shock');
+  R.lastKind = kind;
+}
+function answer(i){
+  if (phase !== 'ask' || !R) return;
+  const q = R.cur, item = q.item, pick = q.opts[i], ok = pick === item, t = R.askT;
+  phase = 'reveal'; R.total++; R.revOk = ok;
+  answersEl.classList.add('lock', 'done');
+  ansBtns[q.opts.indexOf(item)].classList.add('ok');
+  const img = picBox.querySelector('img'); if (img) img.alt = item.name;
+  stName.textContent = `${ok ? 'É' : 'ERA'} ${art(item)} ${item.name.toUpperCase()}!`;
+  stage.classList.add('rev', ok ? 'ok' : 'bad');
+  let lost = 0;
+  if (ok){
+    const prevMult = multOf(R.streak);
+    R.streak++; R.correct++;
+    const m = multOf(R.streak); R.score += m; R.bestCombo = Math.max(R.bestCombo, R.streak);
+    const before = R.left; R.left = Math.min(ROUND, R.left + BONUS);
+    flash(true); B.sfx.place(Math.min(R.streak, 14));
+    floatText($('#score'), '+' + m, '#FFD23F');
+    if (R.left - before > .05) floatText(timerEl, '+' + String(Math.round((R.left - before) * 10) / 10).replace('.', ',') + 's', '#3DDC84');
+    if (m > prevMult){ setTimeout(() => B.sfx.unit(), 120); B.burst($('#stBurst'), `COMBO x${m}!`, m === 4 ? '#FFD23F' : m === 3 ? '#FF4F9A' : '#2EE6D6'); bump($('#combo')); }
+    renderHud(true);
+  } else {
+    lost = R.streak; R.streak = 0;
+    R.left = Math.max(0, R.left - PENALTY);
+    ansBtns[i].classList.add('bad');
+    B.sfx.err(); flash(false);
+    if (!R.missed.some(x => x.key === item.key && x.kind === item.kind)) R.missed.push(item);
+    floatText(timerEl, '−3s', '#FF3B3B');
+    if (lost >= 3) bump($('#combo'));
+    renderHud(false);
+  }
+  if (R.official){ const d = daily(); Object.assign(d, { score:R.score, correct:R.correct, total:R.total, bestCombo:R.bestCombo }); saveDaily(d); }
+  comment(ok, item, pick, t, lost);
+  const tk = R.token;
+  setTimeout(() => {
+    if (!R || R.token !== tk) return;
+    if (R.left <= 0) return timeUp(true);
+    advance();
+  }, ok ? (RM ? 480 : 640) : 1250);
+}
+function timeUp(afterReveal){
+  if (!R || phase === 'over') return;
+  phase = 'over';
+  answersEl.classList.add('lock');
+  const cur = R.cur;
+  if (!afterReveal && cur){   // a última ficou sem resposta: mostra quem era (entra na lista pra estudar)
+    const item = cur.item;
+    answersEl.classList.add('done');
+    ansBtns[cur.opts.indexOf(item)].classList.add('ok');
+    stName.textContent = `ERA ${art(item)} ${item.name.toUpperCase()}!`;
+    stage.classList.add('rev', 'bad');
+    if (!R.missed.some(x => x.key === item.key && x.kind === item.kind)) R.missed.push(item);
+  }
+  B.tone(330, .5, 'sawtooth', .06, 0, 110);
+  B.burst($('#stBurst'), 'TEMPO!', '#FFFFFF');
+  playTalk('rlTempo', null, 'shock', true);
+  const tk = R.token;
+  setTimeout(() => { if (R && R.token === tk) endRound('time'); }, 1400);
+}
+
+/* relógio */
+// rAF deixa a barra lisa; o setInterval garante que o relógio anda mesmo onde o rAF não roda
+let lastT = performance.now();
+function loop(){ requestAnimationFrame(loop); step(); }
+setInterval(step, 100);
+function step(){
+  const t = performance.now();
+  const dt = Math.min(.25, Math.max(0, (t - lastT) / 1000)); lastT = t;
+  // o relógio corre na pergunta e no "flash" do acerto; pausa na contagem, carregando imagem e mostrando o erro
+  const running = phase === 'ask' || (phase === 'reveal' && R && R.revOk);
+  if (!R || !running || document.hidden || B.isModalOpen()) return;
+  R.left -= dt; if (phase === 'ask') R.askT += dt;
+  if (R.left <= 10 && !R.said10 && R.total > 0){ R.said10 = true; playTalk('rlUltimos10', null, 'shock', true, 3500); }
+  const sec = Math.ceil(R.left);
+  if (sec <= 5 && sec > 0 && sec !== R.lastTick){ R.lastTick = sec; B.tone(sec === 1 ? 1320 : 990, .06, 'square', .035); }
+  if (R.left <= 0){ R.left = 0; renderClock(); timeUp(phase === 'reveal'); return; }
+  renderClock();
+}
+requestAnimationFrame(loop);
+
+function start(m, official){
+  if (phase !== 'menu') return;
+  B.closeModal(true);
+  endTalkT.forEach(clearTimeout); endTalkT = [];
+  const isDaily = m === 'diario', day = B.dayNumber();
+  const rnd = isDaily ? B.rng(dailySeed(day)) : Math.random;
+  R = { mode:m, daily:isDaily, official:isDaily && !!official, day, feed:makeFeed(m, rnd), ahead:[], cur:null,
+    left:ROUND, score:0, streak:0, bestCombo:0, correct:0, total:0, missed:[], askT:0, fails:0,
+    said10:false, saidLoad:false, lastTick:0, since:0, gap:2, lastKind:null, token:++tokenSeq };
+  if (R.official){
+    saveDaily({ day, started:true, done:false, score:0, correct:0, total:0, bestCombo:0 });
+    G().lastDaily = { day, won:false, score:0 }; B.saveProfile();
+  }
+  fill();
+  disarmQuit();
+  tv.classList.add('playing');
+  stage.classList.remove('idle', 'rev', 'ok', 'bad', 'db');
+  setTitle(m === 'db' ? 'db' : 'pk');
+  picBox.replaceChildren(); stName.textContent = '';
+  ansBtns.forEach(b => { b.className = 'btn ans'; b.querySelector('span').textContent = '?'; });
+  answersEl.classList.add('lock'); answersEl.classList.remove('done');
+  renderHud(false);
+  if (tv.getBoundingClientRect().top < 0 || innerWidth < 880) window.scrollTo({ top:0, behavior: RM ? 'auto' : 'smooth' });
+  playTalk(isDaily ? (R.official ? 'rlInicioDiario' : 'rlDiarioTreino') : MODES[m].start, null, 'happy', true, 3500);
+  phase = 'count';
+  const cd = $('#cd'), steps = ['3', '2', '1', 'JÁ!'], tk = R.token;
+  steps.forEach((s, k) => setTimeout(() => {
+    if (!R || R.token !== tk) return;
+    cd.textContent = s; cd.classList.toggle('go', k === 3);
+    if (!RM) cd.animate([{ transform:'scale(1.8)', opacity:0 }, { transform:'scale(1)', opacity:1, offset:.35 }, { transform:'scale(.9)', opacity:1 }], { duration:480, easing:'cubic-bezier(.3,1.6,.5,1)' });
+    if (k < 3) B.tone(660, .12, 'square', .05); else B.sfx.hint();
+  }, k * 520));
+  setTimeout(() => { if (!R || R.token !== tk) return; cd.textContent = ''; advance(); }, steps.length * 520);
+}
+
+/* parar no meio (dois toques) */
+function disarmQuit(){ clearTimeout(quitArm); quitArm = 0; $('#quit').classList.remove('armed'); }
+function quit(){
+  if (!R || phase === 'over' || phase === 'menu') return;
+  if (!quitArm){
+    $('#quit').classList.add('armed');
+    quitArm = setTimeout(disarmQuit, 3000);
+    playTalk('rlSairConfirma', null, 'shock', true, 3000); return;
+  }
+  disarmQuit();
+  if (R.total === 0 && !R.official){ R = null; B.talk('rlSair', null, 'smug', 5000); toMenu(); return; }
+  endRound('quit');
+}
+
+/* ---------------- fim ---------------- */
+function tierCat(s){ return s < 5 ? 'rlFim0' : s < 15 ? 'rlFim1' : s < 30 ? 'rlFim2' : s < 50 ? 'rlFim3' : 'rlFim4'; }
+function endRound(reason){
+  const r = R; if (!r) return;
+  R = null; phase = 'menu';
+  const g = G(), key = r.daily ? 'diario' : r.mode, ms = MS(key);
+  ms.played++; ms.correct += r.correct; ms.answered += r.total; ms.bestCombo = Math.max(ms.bestCombo, r.bestCombo);
+  g.played = (g.played || 0) + 1; g.correct = (g.correct || 0) + r.correct; g.answered = (g.answered || 0) + r.total;
+  g.bestCombo = Math.max(g.bestCombo || 0, r.bestCombo);
+  const prevBest = ms.best || 0, countsBest = !r.daily || r.official;
+  if (countsBest && r.score > prevBest) ms.best = r.score;
+  const record = countsBest && r.score > prevBest && prevBest > 0;   // a 1ª rodada só marca o recorde, sem festa
+  if (r.official){
+    const d = Object.assign(daily(), { started:true, done:true, score:r.score, correct:r.correct, total:r.total, bestCombo:r.bestCombo });
+    saveDaily(d);
+    g.lastDaily = { day:r.day, won:r.score >= 10, score:r.score };
+  }
+  let xp = r.daily && !r.official ? Math.floor(r.score / 2) : r.score;
+  xp = Math.min(150, xp);
+  if (record) xp += 15;
+  if (r.official) xp += 10;
+  B.saveProfile();
+  const win = r.score >= 15 || (r.official && r.score >= 10);
+  toMenu(true);
+  openResult(r, { record, prevBest, xp, reason, win });
+  // fala: tempo/recorde/faixa → depois comenta os erros (ou o diário)
+  const pts = r.score;
+  if (reason === 'quit') B.talk('rlSair', null, 'smug', 6000);
+  else B.talk(record ? 'rlRecorde' : tierCat(pts), { pts }, record || pts >= 15 ? 'happy' : 'smug', 8000);
+  if (record){ B.sfx.win(); B.confetti(); setTimeout(() => B.burst($('#burst'), 'RECORDE!', '#FFD23F'), 250); }
+  else if (win) B.sfx.win(); else B.sfx.meh();
+  const later = [];
+  if (r.official) later.push(() => B.talk('rlDiarioFeito', { pts }, 'happy', 8000));
+  if (r.missed.length){ const x = r.missed[Math.floor(Math.random() * r.missed.length)]; later.push(() => B.talk('rlErrosLista', { nome:x.name, n:r.missed.length }, 'smug', 8000)); }
+  else if (r.total >= 5) later.push(() => B.talk('rlSemErros', null, 'shock', 8000));
+  later.forEach((f, k) => endTalkT.push(setTimeout(() => { if (phase === 'menu') f(); }, 7000 + k * 7500)));
+  if (xp > 0) B.gainXP(xp);
+  if (win) B.registerWin(GAME);
+}
+function missHTML(it){
+  return `<div class="miss ${it.kind}"><img src="${esc(it.spr)}" alt="" width="60" height="60" loading="lazy" onerror="this.style.visibility='hidden'"><b>${esc(it.name)}</b></div>`;
+}
+function openResult(r, o){
+  const acc = r.total ? Math.round(r.correct / r.total * 100) : 0;
+  const head = o.record ? 'RECORDE!' : o.reason === 'quit' ? 'FUGIU!' : o.reason === 'net' ? 'SEM SINAL!' : 'TEMPO!';
+  const modeName = r.daily ? `Desafio do Dia #${r.day}${r.official ? '' : ' · treino'}` : MODES[r.mode].title;
+  const notes = [`<span class="pill sun">+${o.xp} XP</span>`];
+  if (o.record) notes.push(`<span class="pill pink">antes: ${o.prevBest}</span>`);
+  if (o.win) notes.push('<span class="pill">vitória!</span>');
+  if (r.daily && !r.official) notes.push('<span class="pill">não vale pro placar</span>');
+  const miss = r.missed.slice(0, 30);
+  B.openModal(`<div class="res-top"><h2 class="big">${head}</h2><p class="sub">${esc(modeName)}</p></div>
+    <div class="res-score"><b>${r.score}</b><span>pts</span></div>
+    <p class="res-note">${notes.join(' ')}</p>
+    <div class="stat-grid"><div class="stat"><b>${r.correct}/${r.total}</b><span>acertos</span></div><div class="stat"><b>${r.bestCombo}</b><span>melhor combo</span></div><div class="stat"><b>${acc}%</b><span>precisão</span></div></div>
+    <h3>${miss.length ? 'Quem te enganou (decora essas caras!)' : 'Quem te enganou'}</h3>
+    ${miss.length ? `<div class="missed">${miss.map(missHTML).join('')}</div>` : `<p class="clean">${r.total ? 'Ninguém! Rodada limpinha.' : 'Ninguém… você nem respondeu nada.'}</p>`}
+    <div class="m-actions"><button class="btn primary" type="button" data-act="again">${r.daily ? 'Treinar de novo' : 'De novo!'}</button>
+    <button class="btn cool" type="button" data-act="share">Compartilhar</button>
+    <button class="btn" type="button" data-act="close">Menu</button></div>`);
+  lastResult = r;
+}
+let lastResult = null;
+function shareText(r){
+  const url = location.origin + location.pathname;
+  const extra = `Melhor combo: ${r.bestCombo} · ${r.correct}/${r.total} acertos`;
+  if (r.daily) return `Fliperama Bugado · Relâmpago #${r.day}: ${r.score} pts ⚡\n${extra}\n${url}`;
+  return `Fliperama Bugado · Relâmpago (${MODES[r.mode].title}): ${r.score} pts ⚡\n${extra}\n${url}`;
+}
+async function share(r){
+  if (!r) return;
+  const ok = await B.copyText(shareText(r));
+  B.toast(ok ? 'Copiado!' : 'Não deu pra copiar', ok ? 'Cola no grupo e humilha geral.' : 'O navegador bloqueou. Tenta de novo.');
+}
+B.onAct('again', () => { const r = lastResult; B.closeModal(true); if (r) start(r.daily ? 'diario' : r.mode, false); });
+B.onAct('share', () => share(lastResult));
+
+/* ---------------- menu ---------------- */
+let previewTok = 0;
+const FAVS = [25, 6, 1, 4, 7, 150, 94, 143, 133, 54, 39, 52, 131, 149];
+function preview(){
+  const tk = ++previewTok;
+  let it;
+  if (mode === 'db') it = DBC[Math.floor(Math.random() * DBC.length)];
+  else if (mode === 'mix') it = Math.random() < .4 && DBC.length ? DBC[Math.floor(Math.random() * DBC.length)] : DEX[Math.floor(Math.random() * DEX.length)];
+  else if (mode === 'todas') it = DEX[Math.floor(Math.random() * DEX.length)];
+  else it = DEX[FAVS[Math.floor(Math.random() * FAVS.length)] - 1];
+  if (!it) return;
+  const img = new Image(); img.alt = ''; img.draggable = false;
+  img.onload = () => { if (tk !== previewTok || phase !== 'menu') return; img.className = 'pic' + (RM ? '' : ' in'); picBox.replaceChildren(img); };
+  img.src = it.img;
+  stage.classList.toggle('db', it.kind === 'db');
+  setTitle(it.kind);
+}
+function toMenu(keepStage){
+  phase = 'menu'; disarmQuit();
+  tv.classList.remove('playing');
+  $('#cd').textContent = ''; $('#stLoad').hidden = true;
+  if (!keepStage){ stage.classList.remove('rev', 'ok', 'bad'); }
+  stage.classList.add('idle'); stage.classList.remove('rev', 'ok', 'bad');
+  stName.textContent = '';
+  preview(); renderMenu();
+}
+function renderMenu(){
+  $('#modes').innerHTML = PLAY_MODES.map(k => {
+    const m = MODES[k], best = MS(k).best;
+    return `<button class="btn mode" type="button" data-mode="${k}" aria-pressed="${k === mode}"><b>${m.label}</b><small>${m.sub}${best ? ` · recorde <em>${best}</em>` : ''}</small></button>`;
+  }).join('');
+  $('#playSub').textContent = MODES[mode].title;
+  const d = daily();
+  $('#daily').innerHTML = d.done
+    ? `<span class="bolt">${BOLT}</span><div class="txt"><b>Desafio do Dia #${d.day}</b><span>Feito: <b style="display:inline;font-size:14px">${d.score} pts</b> · combo ${d.bestCombo}</span></div>
+       <div class="acts"><button class="icon-btn" type="button" data-d="share" aria-label="Compartilhar o resultado do desafio" title="Compartilhar">${B.ICON.share}</button><button class="btn" type="button" data-d="train">Treinar</button></div>`
+    : `<span class="bolt">${BOLT}</span><div class="txt"><b>Desafio do Dia #${d.day}</b><span>Gen 1–4 · mesma sequência pra todos · 1 tentativa</span></div>
+       <div class="acts"><button class="btn primary" type="button" data-d="play">Jogar</button></div>`;
+}
+function setMode(k){
+  if (!MODES[k] || k === mode || phase !== 'menu') return;
+  mode = k; B.store.set(MODE_KEY, k);
+  renderMenu(); preview();
+  B.talk('rlModo', { modo:MODES[k].title }, 'smug', 4500);
+}
+$('#modes').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b){ B.sfx.tap(); setMode(b.dataset.mode); } });
+$('#play').addEventListener('click', () => { B.sfx.tap(); start(mode, false); });
+$('#daily').addEventListener('click', e => {
+  const b = e.target.closest('[data-d]'); if (!b) return; B.sfx.tap();
+  const d = daily();
+  if (b.dataset.d === 'play'){ if (d.done){ renderMenu(); return; } start('diario', true); }
+  else if (b.dataset.d === 'share') share({ daily:true, official:true, day:d.day, score:d.score, bestCombo:d.bestCombo, correct:d.correct, total:d.total });
+  else if (b.dataset.d === 'train'){ B.talk('rlDiarioJaFoi', { pts:d.score }, 'smug', 3500); setTimeout(() => start('diario', false), 900); }
+});
+answersEl.addEventListener('click', e => { const b = e.target.closest('.ans'); if (b) answer(+b.dataset.i); });
+$('#quit').addEventListener('click', () => { B.sfx.tap(); quit(); });
+document.addEventListener('keydown', e => {
+  if (B.isModalOpen() || e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+  if (phase === 'ask' && /^[1-4]$/.test(e.key)){ e.preventDefault(); answer(+e.key - 1); return; }
+  if (phase === 'menu' && e.key === 'Enter' && (!document.activeElement || document.activeElement === document.body)){ e.preventDefault(); start(mode, false); }
+});
+// virou o dia com a página aberta: atualiza o cartão do diário
+setInterval(() => { if (phase === 'menu'){ const d = daily(), el = $('#daily b'); if (el && !el.textContent.includes('#' + d.day)) renderMenu(); } }, 30000);
+
+/* ---------------- modais: ajuda e estatísticas ---------------- */
+function openHelp(){
+  B.openModal(`<h2>Relâmpago</h2><p class="sub">“Quem é esse Pokémon?” contra o relógio. Aparece a sombra, você escolhe o nome. Rápido.</p>
+    <h3>Como funciona</h3>
+    <ul><li><span class="pill sun">60 s</span><span>A rodada dura 60 segundos. Responde o máximo que der.</span></li>
+    <li><span class="pill">+1,5 s</span><span>Acertou: +1 ponto e ganha 1,5 segundo.</span></li>
+    <li><span class="pill pink">−3 s</span><span>Errou: perde 3 segundos, o combo zera e eu mostro quem era.</span></li></ul>
+    <h3>Combo</h3>
+    <p>Acertos seguidos multiplicam os pontos: <b>x2</b> a partir de 3, <b>x3</b> a partir de 6 e <b>x4</b> a partir de 10. Um erro e volta pro x1.</p>
+    <h3>Modos</h3>
+    <ul><li><span class="pill sun">Gen 1</span><span>Os 151 clássicos. Começa por aqui.</span></li>
+    <li><span class="pill">Todas</span><span>Os 1025 Pokémon. Pra quem jogou até o Scarlet.</span></li>
+    <li><span class="pill pink">Dragon Ball</span><span>Guerreiros pela sombra (quem tem foto).</span></li>
+    <li><span class="pill">Mistureba</span><span>Pokémon e Dragon Ball misturados.</span></li>
+    <li><span class="pill sun">Diário</span><span>Mesma sequência pra todo mundo (Gen 1–4). Uma tentativa oficial por dia; depois é só treino.</span></li></ul>
+    <h3>XP</h3>
+    <p>1 XP por ponto, +15 quando bate recorde, +10 no desafio oficial. Fez 15 pontos (ou 10 no diário)? Conta como vitória pra tua sequência de dias.</p>
+    <p>No PC: <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> respondem, <kbd>Enter</kbd> começa. No fim, a lista de quem te enganou é teu dever de casa.</p>
+    <div class="m-actions"><button class="btn primary" type="button" data-act="close">Bora!</button></div>`);
+}
+function openStats(){
+  const g = G(), acc = g.answered ? Math.round((g.correct || 0) / g.answered * 100) : 0;
+  const rows = [...PLAY_MODES, 'diario'].map(k => {
+    const s = MS(k), a = s.answered ? Math.round(s.correct / s.answered * 100) + '%' : '–';
+    return `<div class="st-row"><b>${MODES[k].label}</b><span class="best" title="Recorde">${s.best || '–'}</span><small>${s.played} ${s.played === 1 ? 'rodada' : 'rodadas'} · ${a}</small></div>`;
+  }).join('');
+  B.openModal(`<h2>Estatísticas</h2><p class="sub">Recorde por modo. O do diário só conta a tentativa oficial.</p>
+    <div class="stat-grid"><div class="stat"><b>${g.played || 0}</b><span>rodadas</span></div><div class="stat"><b>${g.correct || 0}</b><span>acertos</span></div><div class="stat"><b>${acc}%</b><span>precisão</span></div><div class="stat"><b>${g.bestCombo || 0}</b><span>maior combo</span></div></div>
+    <h3>Recordes</h3><div class="st-list">${rows}</div>
+    <div class="m-actions"><button class="btn primary" type="button" data-act="close">Fechar</button></div>`);
+}
+
+/* ---------------- montagem ---------------- */
+const P = B.profile();
+B.mountBar($('#bar'), { title:'Relâmpago', color:'#FF3B3B', buttons:[
+  { id:'btnHelp', icon:'help', label:'Como jogar', onClick: openHelp },
+  { id:'btnStats', icon:'stats', label:'Estatísticas', onClick: openStats },
+  { id:'btnSound', icon: P.sound ? 'on' : 'off', label:'Som', onClick: () => { B.setSound(!B.profile().sound); $('#btnSound').innerHTML = B.ICON[B.profile().sound ? 'on' : 'off']; } }
+]});
+B.mountMascot($('#mascot'), { pokeCat:'cutucarRelampago' });
+const wide = matchMedia('(min-width: 880px)');
+const applyStack = () => B.setStack(wide.matches);
+(wide.addEventListener ? wide.addEventListener('change', applyStack) : wide.addListener(applyStack)); applyStack();
+
+if (!DEX.length){ B.say('A Pokédex não carregou. Recarrega a página, treinador.', 'dead', 60000); return; }
+toMenu();
+B.chatter({ active: () => phase === 'menu' });
+if (!B.store.get(HELP_KEY)){ B.store.set(HELP_KEY, 1); openHelp(); }
+setTimeout(() => {
+  const d = daily();
+  if (d.done && Math.random() < .35) B.talk('rlDiarioJaFoi', { pts:d.score }, 'smug', 6000);
+  else B.talk('rlOi', null, 'happy', 6000);
+}, 350);
+})();
+</script>
+</body></html>

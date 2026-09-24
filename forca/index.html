@@ -1,0 +1,1098 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2A1650">
+<title>Forca Bugada · Fliperama Bugado</title>
+<meta name="description" content="Forca Bugada: adivinhe a palavra letra por letra antes que o mascote seja apagado pedaço por pedaço. Desafio do Dia e modo Infinito.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+:root{ --kh:48px; --peach:#FFB38A; --bsod:#0B63D6; }
+html,body{overflow-x:hidden}
+.fc{height:100vh;height:100dvh;min-height:560px;display:flex;flex-direction:column;gap:7px;padding-block:8px 10px}
+.fc > *{min-width:0}
+#bar{flex:none}
+#side{flex:none;display:flex;flex-direction:column}
+#mascot{flex:none}
+#mascot .bg-bubble{min-height:0;height:62px;overflow:hidden}
+#mascot .bg-bubble p{font-size:13px;line-height:1.24}
+#mascot .bg-bubble p.long{font-size:12px;line-height:1.2}
+.side-card{display:none}
+main{flex:1;min-height:0;display:flex;flex-direction:column;gap:7px}
+
+/* ---------- modos ---------- */
+.modes{flex:none;display:flex;gap:8px;justify-content:space-between;align-items:center;min-width:0}
+.seg{flex:none;display:flex;gap:2px;padding:3px;background:var(--deep);border:3px solid var(--ink);border-radius:13px;box-shadow:0 3px 0 var(--ink)}
+.seg button{appearance:none;border:0;background:none;color:var(--muted);font-family:var(--chunky);font-size:14px;letter-spacing:.02em;padding:5px 9px;border-radius:9px;cursor:pointer;white-space:nowrap;transition:background-color .15s,color .15s}
+.seg button:hover{color:var(--paper)}
+.seg button[aria-pressed="true"]{background:var(--peach);color:var(--ink);box-shadow:0 2px 0 var(--ink)}
+.seg button:focus-visible{outline:3px solid var(--cyan);outline-offset:1px}
+.seg .n{font-size:11px;opacity:.75;margin-left:2px}
+.prog{display:flex;gap:5px;align-items:center;min-width:0}
+.prog i{width:16px;height:16px;border-radius:5px;border:2.5px solid var(--ink);background:#3a2b5c;box-shadow:0 2px 0 var(--ink);display:grid;place-items:center;font-style:normal;font-size:9px;line-height:1}
+.prog i.cur{background:var(--paper);transform:translateY(-2px) scale(1.12)}
+.prog i.w{background:var(--green)} .prog i.p{background:var(--sun)} .prog i.l{background:var(--pink)}
+.catbtn{min-width:0;display:flex;align-items:center;gap:6px;height:36px;padding:0 10px 0 8px;font-size:14px;white-space:nowrap;overflow:hidden}
+.catbtn .dot{flex:none;width:12px;height:12px;border-radius:50%;border:2px solid var(--ink);background:var(--c,var(--peach))}
+.catbtn .nm{overflow:hidden;text-overflow:ellipsis}
+.catbtn .stk{flex:none;font-family:var(--body);font-weight:900;font-size:12px;color:#8a3a00}
+.catbtn .ar{flex:none;font-size:10px}
+
+/* ---------- dica ---------- */
+.hint{flex:none;display:flex;align-items:center;gap:8px;min-height:38px;padding:5px 10px 5px 6px;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:14px;box-shadow:3px 3px 0 var(--ink)}
+.hint .tag2{align-self:flex-start;margin-top:2px;white-space:nowrap}
+.hint p{margin:0;min-width:0;flex:1;font-size:13.5px;line-height:1.25;color:var(--text-ink);text-wrap:pretty}
+.hint p b{font-family:var(--chunky);font-weight:400;color:var(--violet);font-size:14.5px}
+.hint p .fr{display:block;margin-top:2px;font-size:12px;font-weight:800;color:#6b5a90;font-style:italic}
+.hint p .lock{font-size:11.5px;color:#8c7cae;font-weight:800}
+.hint.fresh{animation:fc-hintin .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes fc-hintin{from{transform:scale(.94) rotate(-1deg);opacity:.3}}
+
+/* ---------- palco: o Bugado grandão ---------- */
+#stage{flex:1;min-height:90px;position:relative;container-type:size}
+#big{position:absolute;inset:0;width:100%;height:100%;overflow:visible;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#big:focus-visible{outline:3px solid var(--cyan);outline-offset:-3px;border-radius:14px}
+#big .bob{animation:fc-bob 3.2s ease-in-out infinite}
+@keyframes fc-bob{50%{transform:translateY(-2.5px)}}
+#big .act,#big .head,#big .jorge,#big .earL,#big .earR,#big .px,#big .spin,#big .eyesN{transform-box:fill-box;transform-origin:center}
+#big .eyesShock,#big .eyesHappy,#big .eyesBroken,#big .mouthOpen,#big .mouthO,#big .m404,#big .blush,#big .sweat,#big .scan{display:none}
+#big .eyesN{animation:bg-blink 4.5s infinite}
+#big .spin{animation:fc-spin 1s steps(8) infinite}
+@keyframes fc-spin{to{transform:rotate(360deg)}}
+/* dano acumulado */
+#big.s1 .earL{display:none}
+#big.s2 .earR{display:none}
+#big.s2 .sweat,#big.s3 .sweat{display:inline}
+#big.s3 .jorge{transform:translate(-6px,88px) rotate(45deg)}
+#big.s3 .jorge rect{fill:#7d6d9c;animation:none}
+#big.s4 .eyesN{display:none} #big.s4 .eyesBroken{display:inline}
+#big.s4 .sweat{display:none}
+#big.s5 .head{filter:url(#fcRgb)} #big.s5 .scan{display:inline}
+#big.s5 .act{animation:fc-jit 2.6s steps(1) infinite}
+@keyframes fc-jit{0%,86%,100%{transform:none}88%{transform:translate(2px,0) skewX(-4deg)}91%{transform:translate(-3px,1px)}94%{transform:translate(1px,-1px) skewX(3deg)}}
+#big.s6 .mouthN{display:none} #big.s6 .m404{display:inline}
+/* reações rápidas */
+#big.ouch:not(.s4) .eyesN{display:none} #big.ouch:not(.s4) .eyesShock{display:inline}
+#big.ouch:not(.s6) .mouthN{display:none} #big.ouch:not(.s6) .mouthO{display:inline}
+#big.yay:not(.s4) .eyesN{display:none} #big.yay:not(.s4) .eyesHappy{display:inline}
+#big.yay:not(.s6) .mouthN{display:none} #big.yay:not(.s6) .mouthOpen{display:inline}
+#big.win .eyesN,#big.win .mouthN{display:none}
+#big.win .eyesHappy,#big.win .mouthOpen,#big.win .blush{display:inline}
+/* animações de transição */
+#big.hit{animation:fc-hitf .5s steps(2)}
+@keyframes fc-hitf{0%{filter:drop-shadow(-5px 0 0 rgba(255,79,154,.9)) drop-shadow(5px 0 0 rgba(46,230,214,.9))}50%{filter:drop-shadow(6px 0 0 rgba(255,79,154,.9)) drop-shadow(-6px 0 0 rgba(46,230,214,.9))}100%{filter:none}}
+#big.hit .act{animation:fc-hit .5s steps(4)}
+@keyframes fc-hit{0%{transform:translate(4px,-2px)}25%{transform:translate(-5px,1px) skewX(8deg)}50%{transform:translate(3px,2px) skewX(-6deg)}75%{transform:translate(-2px,0)}100%{transform:none}}
+#big.hop .act{animation:fc-hop .5s cubic-bezier(.3,1.8,.5,1)}
+@keyframes fc-hop{35%{transform:translateY(-7px) scale(1.04,.97)}70%{transform:translateY(1px) scale(.98,1.03)}}
+#big.j3 .jorge{animation:fc-fall 1.1s cubic-bezier(.5,0,.7,.4) both}
+@keyframes fc-fall{0%{transform:none}12%{transform:translate(0,-6px)}62%{transform:translate(-4px,88px) rotate(20deg)}74%{transform:translate(-5px,78px) rotate(34deg)}86%{transform:translate(-6px,88px) rotate(45deg)}93%{transform:translate(-6px,85px) rotate(45deg)}100%{transform:translate(-6px,88px) rotate(45deg)}}
+#big.j4 .eyesBroken{animation:fc-flick .6s steps(2)}
+#big.j6 .m404{animation:fc-flick .6s steps(2)}
+@keyframes fc-flick{0%,40%{opacity:0}20%,60%,100%{opacity:1}}
+#big.j5 .head{animation:fc-tear .7s steps(4)}
+@keyframes fc-tear{0%{transform:translate(-6px,0) skewX(14deg)}33%{transform:translate(5px,0) skewX(-10deg)}66%{transform:translate(-3px,0)}100%{transform:none}}
+#big .px{animation:fc-px 1.05s steps(6) var(--d,0s) forwards}
+@keyframes fc-px{0%{transform:none;opacity:1}25%{opacity:1}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--r));opacity:0}}
+#big.win .act{animation:fc-win .9s cubic-bezier(.3,1.6,.5,1)}
+@keyframes fc-win{0%{transform:scale(.92,1.06)}30%{transform:translateY(-10px) scale(1.06,.95) rotate(-3deg)}60%{transform:translateY(2px) rotate(2deg)}100%{transform:none}}
+#big.rec1 .earL{animation:fc-popin .55s .15s cubic-bezier(.3,1.8,.5,1) both}
+#big.rec2 .earR{animation:fc-popin .55s .3s cubic-bezier(.3,1.8,.5,1) both}
+#big.rec3 .jorge{animation:fc-rise .8s .1s cubic-bezier(.3,1.5,.5,1) both}
+#big.rec .head{animation:fc-recomp .7s steps(5)}
+@keyframes fc-popin{0%{transform:scale(0) rotate(-40deg);opacity:0}100%{transform:none;opacity:1}}
+@keyframes fc-rise{0%{transform:translate(-6px,88px) rotate(45deg)}100%{transform:none}}
+@keyframes fc-recomp{0%{filter:url(#fcRgb);opacity:.4;transform:scaleY(.1)}40%{opacity:.8;transform:scaleY(1.06)}100%{filter:none;opacity:1;transform:none}}
+
+/* barra de integridade (vertical, na lateral do palco) */
+.meter{position:absolute;left:max(0px,calc(50% - min(32cqw,35cqh) - 30px));top:50%;transform:translateY(-50%);height:min(92%,250px);width:30px;display:flex;flex-direction:column;align-items:center;gap:4px;z-index:2;pointer-events:none}
+.meter .lbl{flex:none;font-family:var(--chunky);font-size:9.5px;letter-spacing:.1em;color:var(--muted)}
+.meter .segs{flex:1;width:20px;display:flex;flex-direction:column-reverse;gap:3px;padding:3px;background:var(--deep);border:2.5px solid var(--ink);border-radius:8px;box-shadow:0 3px 0 var(--ink)}
+.meter .segs i{flex:1;border-radius:3px;background:var(--green);transition:background-color .3s,opacity .3s}
+.meter[data-lv="mid"] .segs i{background:var(--sun)}
+.meter[data-lv="low"] .segs i{background:var(--pink)}
+.meter .segs i.off{background:#2b1a4d!important;opacity:.8}
+.meter b{flex:none;font-family:var(--chunky);font-weight:400;font-size:12px;color:var(--paper);text-shadow:1px 1px 0 var(--ink)}
+.meter.bump .segs{animation:fc-bump .45s}
+@keyframes fc-bump{30%{transform:translateX(-3px) rotate(-4deg)}60%{transform:translateX(3px) rotate(3deg)}}
+
+/* tela azul */
+.bsod{position:absolute;inset:2% 0;z-index:3;display:flex;align-items:center;justify-content:center;background:var(--bsod);color:#fff;border:3px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--ink);overflow:hidden;font-family:'Segoe UI',var(--body);font-weight:600;animation:fc-crt .5s ease-out}
+.bsod::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 2px,transparent 2px 4px);pointer-events:none}
+@keyframes fc-crt{0%{transform:scale(1,.02);filter:brightness(3)}45%{transform:scale(1,.02)}70%{transform:scale(1,1.04)}100%{transform:none;filter:none}}
+.bsod .in{position:relative;width:100%;max-width:520px;padding:0 7% 0 max(38px,7%);font-size:clamp(10px,5.2cqh,16px);line-height:1.3}
+.bsod .sad{font-size:3.4em;line-height:1;margin-bottom:.15em;font-weight:300}
+.bsod p{margin:0 0 .45em}
+.bsod .t1{font-size:1.25em;font-weight:700}
+.bsod .ans{font-family:var(--chunky);font-size:1.5em;letter-spacing:.04em;color:#FFD23F;text-shadow:2px 2px 0 rgba(0,0,0,.35);word-break:break-word}
+.bsod .t3{font-size:.85em;opacity:.85}
+.bsod.pic .in{padding-right:calc(min(40%,44cqh,180px) + 3%)}
+
+/* polaroide do Pokémon / guerreiro */
+.polar{position:absolute;right:1%;top:4%;z-index:4;width:min(40%,44cqh,180px);margin:0;padding:6px 6px 4px;background:#fff;border:3px solid var(--ink);border-radius:8px;box-shadow:4px 4px 0 var(--ink);transform:rotate(5deg);animation:fc-polar .6s cubic-bezier(.3,1.6,.5,1)}
+@keyframes fc-polar{from{transform:rotate(-20deg) scale(.2);opacity:0}}
+.polar img{display:block;width:100%;aspect-ratio:1;object-fit:contain;background:radial-gradient(circle,#FFF7E6,#F4EBFF)}
+.polar figcaption{font-family:var(--chunky);font-size:12px;line-height:1.1;color:var(--ink);text-align:center;padding-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- palavra ---------- */
+#word{flex:none;display:flex;flex-wrap:wrap;justify-content:center;align-content:center;column-gap:var(--sp,18px);row-gap:var(--rg,8px);min-height:36px;padding-top:2px}
+.wd{display:flex;gap:var(--g,4px)}
+.tl{font-style:normal;--bw:max(2px,calc(var(--t,40px)*.07));width:var(--t,40px);height:var(--t,40px);display:grid;place-items:center;font-family:var(--chunky);font-size:calc(var(--t,40px)*.6);line-height:1;color:transparent;background:rgba(20,10,42,.65);border:var(--bw) solid var(--ink);border-radius:calc(var(--t,40px)*.2);box-shadow:0 calc(var(--bw)*1.3) 0 var(--ink),inset 0 calc(var(--t,40px)*-.1) 0 rgba(46,230,214,.45);user-select:none;-webkit-user-select:none}
+.tl[data-s]{color:var(--ink);background:var(--paper);box-shadow:0 calc(var(--bw)*1.3) 0 var(--ink)}
+.tl[data-s="h"]{background:var(--sun)}
+.tl[data-s="m"]{background:var(--pink);color:var(--ink)}
+.tl.fx{width:calc(var(--t,40px)*.5);background:none;border-color:transparent;box-shadow:none;color:var(--paper)}
+.tl.fx.dg{width:var(--t,40px);background:#4A3A6E;color:var(--paper);border-color:var(--ink);box-shadow:0 calc(var(--bw)*1.3) 0 var(--ink)}
+.tl.flip{animation:fc-flip .42s ease-in-out}
+@keyframes fc-flip{0%{transform:rotateX(0)}50%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
+.tl.pop{animation:fc-tpop .35s cubic-bezier(.3,1.7,.5,1) both}
+@keyframes fc-tpop{from{transform:scale(.3) translateY(10px);opacity:0}}
+.tl.dance{animation:fc-dance .7s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes fc-dance{30%{transform:translateY(-35%) rotate(-7deg)}60%{transform:translateY(6%)}}
+
+/* ---------- teclado ---------- */
+#kb{flex:none;display:flex;flex-direction:column;gap:6px;width:100%;max-width:560px;margin:0 auto;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.kr{display:flex;gap:5px;justify-content:center}
+.key{flex:1 1 0;min-width:0;height:var(--kh);position:relative;padding:0;border:2.5px solid var(--ink);border-radius:10px;background:var(--paper);color:var(--ink);box-shadow:0 3px 0 var(--ink);font-family:var(--chunky);font-size:19px;cursor:pointer;overflow:hidden;transition:transform .06s,box-shadow .06s,background-color .25s,color .25s}
+.key:active,.key.hit{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.key:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+.key[data-s="c"]{background:var(--green)}
+.key[data-s="h"]{background:var(--sun)}
+.key[data-s="a"]{background:#35264f;color:#7f70a0;box-shadow:0 1px 0 var(--ink);transform:translateY(2px);cursor:default}
+.key[data-s="a"]::after{content:"";position:absolute;inset:20% 24%;background:linear-gradient(to top right,transparent calc(50% - 1.6px),var(--pink) calc(50% - 1.6px),var(--pink) calc(50% + 1.6px),transparent calc(50% + 1.6px)),linear-gradient(to top left,transparent calc(50% - 1.6px),var(--pink) calc(50% - 1.6px),var(--pink) calc(50% + 1.6px),transparent calc(50% + 1.6px));opacity:.85}
+.key[data-s="c"],.key[data-s="h"]{cursor:default}
+.key.shake{animation:fc-kshake .35s}
+@keyframes fc-kshake{25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
+.key.dica{flex:1.9 1 0;background:var(--pink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1;font-size:15px}
+.key.dica small{font-family:var(--body);font-size:9.5px;font-weight:900;letter-spacing:.02em}
+.key.dica[aria-disabled="true"]{background:#8a6a9a;color:#3a2d58;cursor:default}
+
+/* ---------- painel de fim ---------- */
+.endp{flex:none;width:100%;max-width:560px;margin:0 auto;height:calc(var(--kh)*3 + 12px);display:flex;flex-direction:column;justify-content:center;gap:6px;padding:8px 12px;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--pink);animation:bg-popin .35s cubic-bezier(.3,1.6,.5,1);overflow:hidden}
+.endp.won{box-shadow:4px 4px 0 var(--green)}
+.endp .top{display:flex;align-items:baseline;gap:8px;min-width:0;flex-wrap:wrap;row-gap:0}
+.endp h3{margin:0;font-family:var(--display);font-weight:400;font-size:27px;letter-spacing:.03em;line-height:1;color:var(--violet);white-space:nowrap}
+.endp h3.lost{color:var(--bsod)}
+.endp .ans{font-family:var(--chunky);font-size:15px;padding:1px 8px;border:2.5px solid var(--ink);border-radius:8px;background:var(--green);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.endp .ans.lost{background:var(--pink)}
+.endp .meta{margin:0;font-size:12.5px;color:var(--text-ink);line-height:1.3}
+.endp .meta b{font-family:var(--chunky);font-weight:400;color:var(--violet)}
+.endp .acts{display:flex;gap:8px}
+.endp .acts .btn{flex:1 1 0;min-width:0;height:44px;font-size:15px;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.endp .acts .btn.big{flex:1.6 1 0}
+
+/* ---------- modais ---------- */
+.m-note{margin:12px 0 0;font-size:13px;color:#6b5a90;font-weight:800}
+.m-note b{font-family:var(--chunky);font-weight:400;color:var(--violet)}
+.cat-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.cat-list .btn{display:flex;align-items:center;gap:10px;height:auto;min-height:54px;padding:8px 12px;text-align:left;font-size:17px}
+.cat-list .btn .dot{flex:none;width:18px;height:18px;border-radius:50%;border:2.5px solid var(--ink);background:var(--c)}
+.cat-list .btn span{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.1}
+.cat-list .btn small{font-family:var(--body);font-weight:800;font-size:12px;color:#6b5a90;margin-top:2px}
+.cat-list .btn em{flex:none;font-style:normal;font-family:var(--body);font-weight:900;font-size:12px;color:#6b5a90;text-align:right;line-height:1.2}
+.cat-list .btn[aria-pressed="true"]{background:var(--c);}
+.res-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.res-list div{display:flex;align-items:center;gap:8px;background:#fff;border:2.5px solid var(--ink);border-radius:10px;padding:5px 9px}
+.res-list .em{flex:none;font-size:18px;width:24px;text-align:center}
+.res-list .w{flex:1;min-width:0;font-family:var(--chunky);font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res-list .c{flex:none;font-size:11px;color:#6b5a90;text-transform:uppercase;letter-spacing:.05em}
+.res-list .e{flex:none;font-family:var(--chunky);font-size:13px;color:var(--violet);min-width:44px;text-align:right}
+.best-list{display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;margin-top:6px;font-size:14px;color:var(--text-ink)}
+.best-list b{font-family:var(--chunky);font-weight:400;color:var(--ink);text-align:right}
+.best-list .h{font-size:11px;color:#6b5a90;text-transform:uppercase;letter-spacing:.05em}
+.dist{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+.dist .dr{display:flex;align-items:center;gap:6px;font-family:var(--chunky);font-size:14px}
+.dist .dr > span{width:30px;text-align:right;color:var(--ink)}
+.dist .bb{min-width:26px;padding:2px 7px;text-align:right;background:#cfc3e8;border:2px solid var(--ink);border-radius:6px;color:var(--ink);font-size:13px}
+.dist .bb.hi{background:var(--green)}
+.help-demo{display:flex;align-items:center;gap:12px;margin:10px 0 4px}
+.help-demo svg{width:74px;height:74px;flex:none}
+.share-box{width:100%;min-height:120px;margin-top:10px;font:700 14px/1.3 var(--body);border:2.5px solid var(--ink);border-radius:10px;padding:8px;resize:vertical;color:var(--ink);background:#fff}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- telas baixas no celular ---------- */
+@media (max-height:740px) and (max-width:879px){ .fc{--kh:44px;gap:6px} main{gap:6px} .kr{gap:4px} #kb{gap:5px} }
+@media (max-height:680px) and (max-width:879px){ .fc{--kh:41px} #mascot .bg-mascot{width:46px;height:46px} #mascot .bg-bubble{height:52px} #mascot .bg-bubble p{font-size:12px} .hint{min-height:34px;padding-block:3px} .hint p{font-size:12.5px} .seg button{padding:4px 8px} .catbtn{height:32px} }
+/* título comprido + 4 botões: quebra em duas linhas no celular em vez de virar "FORCA…" */
+@media (max-width:480px){ #bar .bar-title b{white-space:normal;font-size:20px;line-height:.86;overflow:visible;text-overflow:clip} #bar .bar-title small{margin-bottom:1px} }
+@media (max-width:380px){ .seg button{font-size:13px;padding:5px 7px} .seg .n{display:none} .key{font-size:17px} .prog i{width:14px;height:14px} .prog{gap:4px} }
+
+/* ---------- desktop ---------- */
+@media (min-width:880px){
+  .fc{--kh:54px;display:grid;grid-template-columns:300px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);column-gap:30px;row-gap:12px;padding-block:12px 18px;min-height:640px}
+  #bar{grid-column:1/-1}
+  #side{grid-column:1;grid-row:2;gap:18px;padding-top:14px;min-height:0;overflow:auto}
+  #mascot .bg-bubble{height:auto;min-height:118px;overflow:visible}
+  #mascot .bg-bubble p{font-size:15.5px;line-height:1.3}
+  #mascot .bg-bubble p.long{font-size:14.5px}
+  main{grid-column:2;grid-row:2;gap:10px}
+  .modes{justify-content:center;gap:14px}
+  .seg button{font-size:16px;padding:6px 13px}
+  .prog i{width:20px;height:20px;font-size:11px}
+  .hint{width:100%;max-width:640px;margin:0 auto;min-height:44px;padding:7px 14px 7px 8px}
+  .hint p{font-size:15px} .hint p b{font-size:16px} .hint p .fr{font-size:13.5px}
+  #stage{min-height:220px}
+  .key{font-size:21px}
+  .key.dica{font-size:16px} .key.dica small{font-size:10.5px}
+  .side-card{display:block;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--violet);padding:14px 16px}
+  .side-card h4{margin:0;font-family:var(--display);font-weight:400;font-size:26px;letter-spacing:.03em;color:var(--violet);line-height:1}
+  .side-card .sub{margin:2px 0 10px;font-size:13px;color:#6b5a90}
+  .side-card .wrong{display:flex;flex-wrap:wrap;gap:4px;min-height:26px;margin:4px 0 10px}
+  .side-card .wrong i{font-style:normal;font-family:var(--chunky);font-size:14px;width:24px;height:24px;display:grid;place-items:center;border:2px solid var(--ink);border-radius:6px;background:#35264f;color:#d6c9f0}
+  .side-card .wrong i.h{background:var(--sun);color:var(--ink)}
+  .side-card .wrong span{font-size:12.5px;color:#8c7cae}
+  .side-card .mini{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .side-card .mini div{background:#fff;border:2px solid var(--ink);border-radius:10px;padding:5px 2px;text-align:center}
+  .side-card .mini b{display:block;font-family:var(--chunky);font-weight:400;font-size:19px}
+  .side-card .mini span{font-size:10px;color:#6b5a90;text-transform:uppercase;letter-spacing:.04em}
+  .side-card .kbd{margin-top:12px;font-size:12.5px;color:#6b5a90;line-height:1.6}
+}
+@media (min-width:880px) and (max-height:760px){ .fc{--kh:48px} }
+@media (prefers-reduced-motion: reduce){
+  #big .bob,#big .spin,#big .eyesN,#big.s5 .act{animation:none}
+  .tl.flip,.tl.pop,.tl.dance,.key.shake,.meter.bump .segs{animation:none}
+}
+</style>
+</head><body>
+<div class="wrap fc" id="app">
+  <header id="bar"></header>
+  <aside id="side">
+    <div id="mascot"></div>
+    <div class="side-card" id="sideCard" aria-live="off"></div>
+  </aside>
+  <main>
+    <nav class="modes" aria-label="Modo de jogo">
+      <div class="seg" role="group" aria-label="Modo">
+        <button type="button" data-kind="daily">Desafio<span class="n" id="dayN"></span></button>
+        <button type="button" data-kind="inf">Infinito</button>
+      </div>
+      <div class="prog" id="prog" aria-label="Progresso do desafio"></div>
+      <button type="button" class="btn catbtn" id="catBtn" hidden></button>
+    </nav>
+    <div class="hint" id="hint"><span class="tag2" id="catTag">…</span><p id="hintTxt"></p></div>
+    <section id="stage" aria-label="O Bugado, sendo apagado a cada erro">
+      <div class="meter" id="meter" aria-hidden="true"><span class="lbl">VIDA</span><div class="segs"></div><b id="pct">100%</b></div>
+      <div id="bigWrap"></div>
+      <figure class="polar" id="polar" hidden><img alt="" id="polImg"><figcaption id="polCap"></figcaption></figure>
+      <div class="bsod" id="bsod" hidden><div class="in">
+        <div class="sad">:(</div>
+        <p class="t1">Bugado.exe parou de funcionar.</p>
+        <p>Seu mascote encontrou um problema e precisa ser reiniciado. A palavra era:</p>
+        <p class="ans" id="bsAns"></p>
+        <p class="t3"><span id="bsPct">0</span>% concluído · código de parada: FORCA_0x07</p>
+      </div></div>
+      <div class="burst" id="burst" aria-hidden="true"></div>
+    </section>
+    <div id="word" role="group" aria-label="Palavra secreta"></div>
+    <div id="kb" role="group" aria-label="Teclado"></div>
+    <div id="endp" class="endp" hidden></div>
+    <p class="sr" id="sr" aria-live="polite"></p>
+  </main>
+</div>
+<script src="../shared/falas.js"></script><script src="../shared/bugado.js"></script>
+<script src="../conexo/puzzles.js"></script><script src="../pokemon/pokedex.js"></script>
+<script src="../dragonball/personagens.js"></script><script src="../contexto/segredos.js"></script>
+<script src="falas-forca.js"></script>
+<script>
+(() => {
+'use strict';
+const B = window.Bugado, RM = B.RM;
+const $ = s => document.querySelector(s);
+const up = s => String(s).toLocaleUpperCase('pt-BR');
+const keyOf = ch => { const n = B.normalize(ch); return /^[a-z]$/.test(n) ? n : ''; };
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const chance = p => Math.random() < p;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+const MAXE = 7;                 // o 7º erro trava tudo
+const VOW = 'aeiou', RARE = 'kwyzqx';
+const PARTS = ['', 'a orelha esquerda', 'a orelha direita', 'o Jorge', 'os olhos', 'a resolução', 'a boca'];
+const CATS = {
+  mistura: { name:'Mistureba',   color:'#FFB38A', desc:'Categoria sorteada a cada palavra' },
+  conexo:  { name:'Conexo',      color:'#FFD23F', desc:'Palavras do Conexo · dica: o tema do grupo' },
+  pokemon: { name:'Pokémon',     color:'#FF4F9A', desc:'Os 1025 · dica: geração e tipo' },
+  db:      { name:'Dragon Ball', color:'#FF9A3C', desc:'Guerreiros · dica: raça (e mais com 3 erros)' },
+  coisas:  { name:'Coisas',      color:'#2EE6D6', desc:'Substantivos do dia a dia · dica: 1ª letra' }
+};
+const REAL = ['coisas','conexo','pokemon','db'];
+const TIPOS = { normal:'Normal', fogo:'Fogo', agua:'Água', planta:'Planta', eletrico:'Elétrico', gelo:'Gelo', lutador:'Lutador', venenoso:'Venenoso', terrestre:'Terrestre', voador:'Voador', psiquico:'Psíquico', inseto:'Inseto', pedra:'Pedra', fantasma:'Fantasma', dragao:'Dragão', sombrio:'Sombrio', metalico:'Metálico', fada:'Fada' };
+const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
+const nLetters = w => [...String(w)].filter(keyOf).length;
+const wordKey = w => B.normalize(w).replace(/[^a-z]/g, '');
+
+/* ---------------- bancos de palavras (reaproveita os dados do site) ---------------- */
+function cleanTema(tema, palavras, ans){
+  const ws = palavras.map(wordKey);
+  // tira parênteses que entregam as respostas (ex.: "DÓ-mingo, MI-ojo")
+  let s = String(tema).replace(/\s*\(([^)]*)\)/g, (m, inner) => {
+    const toks = B.normalize(inner).split(/[^a-z]+/).filter(Boolean);
+    return (/[A-ZÁÉÍÓÚÂÊÔÃÕÇ]{2,}/.test(inner) || toks.some(t => ws.includes(t))) ? '' : m;
+  }).trim();
+  const k = wordKey(ans);
+  s = s.split(/(\s+)/).map(t => wordKey(t) === k ? '___' : t).join('');
+  return s;
+}
+let POOLS = null;
+function pools(){
+  if (POOLS) return POOLS;
+  const P = { conexo:[], pokemon:[], db:[], coisas:[] }, seen = new Set();
+  (window.CONEXO || []).forEach(p => (p.grupos || []).forEach(g => (g.palavras || []).forEach(w => {
+    const n = nLetters(w), k = wordKey(w);
+    if (n < 3 || n > 12 || seen.has(k)) return; seen.add(k);
+    P.conexo.push({ cat:'conexo', ans:w, tema:cleanTema(g.tema, g.palavras, w) });
+  })));
+  (window.POKEDEX || []).forEach(r => {
+    const n = nLetters(r[1]); if (n < 3 || n > 14) return;
+    P.pokemon.push({ cat:'pokemon', ans:r[1], num:r[0], gen:r[2], tipo:TIPOS[r[3]] || cap(r[3]) });
+  });
+  (window.DB_CHARS || []).forEach(c => {
+    const n = nLetters(c.nome); if (n < 3 || n > 16) return;
+    const raca = wordKey(c.nome).includes(wordKey(c.raca)) ? c.afiliacao : c.raca;
+    P.db.push({ cat:'db', ans:c.nome, raca, frase:c.frase || '', img:c.img || '' });
+  });
+  (window.CTX_SEGREDOS || []).forEach(w => { if (nLetters(w) >= 3) P.coisas.push({ cat:'coisas', ans:w }); });
+  // se algum arquivo de dados faltar, não quebra: usa o que tiver
+  const any = REAL.find(c => P[c].length) ;
+  REAL.forEach(c => { if (!P[c].length) P[c] = any ? P[any] : [{ cat:'coisas', ans:'bugado' }]; });
+  return POOLS = P;
+}
+const imgOf = E => E.cat === 'pokemon' ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${E.num}.png` : (E.cat === 'db' ? E.img : '');
+const temaOf = E => E.cat === 'conexo' ? E.tema : E.cat === 'pokemon' ? `Geração ${E.gen}, tipo ${E.tipo}` : E.cat === 'db' ? E.raca : up(E.ans).charAt(0);
+
+/* ---------------- estado ---------------- */
+const DKEY = 'fliperama.forca.daily', IKEY = 'fliperama.forca.inf', UIKEY = 'fliperama.forca.ui';
+const G = B.game('forca');
+(function initStats(){
+  const def = { solved:0, lost:0, perfect:0, played:0, best:{}, dailyPlayed:0, dailyWins:0, dailyBest:0, dailyDist:{} };
+  for (const k in def) if (G[k] === undefined) G[k] = def[k];
+})();
+const newRound = E => ({ E, g:'', hl:'', h:0, done:false, won:false, counted:false });
+const keysOf = R => new Set([...R.E.ans].map(keyOf).filter(Boolean));
+const wrongOf = R => { const K = keysOf(R); return [...R.g].filter(k => !K.has(k) ); };
+const errorsOf = R => wrongOf(R).length + R.h;
+const leftKeys = R => { const K = keysOf(R); return [...K].filter(k => !R.g.includes(k)); };
+const leftPositions = R => [...R.E.ans].filter(ch => { const k = keyOf(ch); return k && !R.g.includes(k); }).length;
+const okRound = R => R && R.E && typeof R.E.ans === 'string' && CATS[R.E.cat] && typeof R.g === 'string';
+
+// Desafio do Dia: permutação fixa de cada banco; o dia escolhe a posição (igual pra todo mundo)
+const permCache = {};
+function dailyPool(cat){ const P = pools()[cat]; return cat === 'pokemon' ? P.filter(e => e.num <= 493) : P; }
+function perm(cat){ return permCache[cat] || (permCache[cat] = B.shuffle([...dailyPool(cat).keys()], B.rng(0xF0CA + cat.length*7919 + cat.charCodeAt(0)*31))); }
+function dailyEntry(cat, day, off){ const arr = dailyPool(cat), p = perm(cat), L = arr.length; return arr[p[(((day + off) % L) + L) % L]]; }
+function dailyWords(day){
+  const r = B.rng(day*2654435761 + 0x5EED);
+  const bonus = REAL[Math.floor(r()*REAL.length)];
+  return [...REAL.map(c => dailyEntry(c, day, 0)), dailyEntry(bonus, day, 97 + Math.floor(dailyPool(bonus).length/2))];
+}
+let D = null, INF = null, kind = 'daily';
+function loadDaily(){
+  const day = B.dayNumber(); let d = B.store.get(DKEY);
+  if (!d || d.day !== day || !Array.isArray(d.rounds) || d.rounds.length !== 5 || !d.rounds.every(okRound)){
+    d = { day, idx:0, rounds: dailyWords(day).map(newRound), counted:false };
+  }
+  d.idx = Math.max(0, Math.min(4, d.idx|0));
+  D = d; saveDaily();
+}
+function loadInf(){
+  let s = B.store.get(IKEY);
+  if (!s || typeof s !== 'object' || !s.by) s = { cat:'mistura', by:{} };
+  if (!CATS[s.cat]) s.cat = 'mistura';
+  Object.keys(CATS).forEach(c => {
+    const b = s.by[c] = s.by[c] || {};
+    b.streak = b.streak|0; if (!Array.isArray(b.recent)) b.recent = [];
+    if (!okRound(b.R)) b.R = null;
+  });
+  INF = s;
+}
+const saveDaily = () => B.store.set(DKEY, D);
+const saveInf = () => B.store.set(IKEY, INF);
+const save = () => kind === 'daily' ? saveDaily() : saveInf();
+const cur = () => kind === 'daily' ? D.rounds[D.idx] : INF.by[INF.cat].R;
+const infSlot = () => INF.by[INF.cat];
+function randomEntry(cat, recent){
+  const c = cat === 'mistura' ? pick(REAL) : cat, arr = pools()[c];
+  for (let t = 0; t < 60; t++){ const E = pick(arr); if (!recent.includes(E.cat + ':' + wordKey(E.ans))) return E; }
+  return pick(arr);
+}
+function ensureInfRound(){
+  const b = infSlot();
+  if (!b.R){ const E = randomEntry(INF.cat, b.recent); b.R = newRound(E); b.recent.push(E.cat + ':' + wordKey(E.ans)); if (b.recent.length > 60) b.recent.shift(); saveInf(); return true; }
+  return false;
+}
+
+/* ---------------- o Bugado grandão (SVG) ---------------- */
+const INK = '#1B1030', CY = '#2EE6D6', PK = '#FF4F9A';
+const BIG_SVG = `<svg id="big" viewBox="-8 -2 136 124" role="img" aria-label="Bugado inteiro" tabindex="0">
+<defs>
+  <filter id="fcRgb" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+    <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="r"/>
+    <feOffset in="r" dx="-2.6" dy="0.4" result="r2"/>
+    <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0" result="gb"/>
+    <feOffset in="gb" dx="2.2" dy="-0.3" result="gb2"/>
+    <feBlend in="r2" in2="gb2" mode="screen"/>
+  </filter>
+  <pattern id="fcScan" width="4" height="3.2" patternUnits="userSpaceOnUse"><rect width="4" height="1.3" fill="${INK}" opacity=".32"/></pattern>
+  <clipPath id="fcBodyClip"><path d="M18 70 C18 36 38 22 60 22 C82 22 102 36 102 70 C102 98 84 108 60 108 C36 108 18 98 18 70Z"/></clipPath>
+</defs>
+<ellipse cx="60" cy="113" rx="32" ry="5" fill="#140a2a" opacity=".6"/>
+<g class="bob"><g class="act">
+  <g class="earL"><path d="M27 50 L21 10 L52 30 Z" fill="${CY}" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/><path d="M29 36 L27 20 L40 29 Z" fill="${PK}"/></g>
+  <g class="earR"><path d="M93 50 L99 10 L68 30 Z" fill="${CY}" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/><path d="M91 36 L93 20 L80 29 Z" fill="${PK}"/></g>
+  <g class="head">
+    <path d="M18 70 C18 36 38 22 60 22 C82 22 102 36 102 70 C102 98 84 108 60 108 C36 108 18 98 18 70Z" fill="${CY}" stroke="${INK}" stroke-width="5"/>
+    <path d="M30 44 Q38 32 52 29" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity=".55"/>
+    <rect class="scan" x="14" y="18" width="92" height="94" fill="url(#fcScan)" clip-path="url(#fcBodyClip)"/>
+    <g class="eyesN">
+      <ellipse cx="43" cy="63" rx="12" ry="15" fill="#fff" stroke="${INK}" stroke-width="4"/><ellipse cx="45" cy="65" rx="7.5" ry="10" fill="${INK}"/><ellipse cx="45" cy="68" rx="5" ry="5" fill="#5B3DF5"/><circle cx="42" cy="60" r="3.4" fill="#fff"/><circle cx="48" cy="70" r="1.6" fill="#fff"/>
+      <ellipse cx="77" cy="63" rx="12" ry="15" fill="#fff" stroke="${INK}" stroke-width="4"/><ellipse cx="79" cy="65" rx="7.5" ry="10" fill="${INK}"/><ellipse cx="79" cy="68" rx="5" ry="5" fill="#5B3DF5"/><circle cx="76" cy="60" r="3.4" fill="#fff"/><circle cx="82" cy="70" r="1.6" fill="#fff"/>
+    </g>
+    <g class="eyesShock"><ellipse cx="43" cy="62" rx="13" ry="16" fill="#fff" stroke="${INK}" stroke-width="4"/><circle cx="43" cy="63" r="3.5" fill="${INK}"/><ellipse cx="77" cy="62" rx="13" ry="16" fill="#fff" stroke="${INK}" stroke-width="4"/><circle cx="77" cy="63" r="3.5" fill="${INK}"/></g>
+    <g class="eyesHappy" fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round"><path d="M32 66 Q43 52 54 66"/><path d="M66 66 Q77 52 88 66"/></g>
+    <g class="eyesBroken">
+      <path d="M35 55 L51 71 M51 55 L35 71" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>
+      <ellipse cx="77" cy="63" rx="12" ry="14" fill="#fff" stroke="${INK}" stroke-width="4"/>
+      <g class="spin"><circle cx="77" cy="63" r="6.5" fill="none" stroke="${INK}" stroke-width="3.2" stroke-dasharray="7 3.2" stroke-linecap="round"/></g>
+    </g>
+    <g class="blush" fill="${PK}" opacity=".55"><ellipse cx="31" cy="80" rx="7" ry="4"/><ellipse cx="89" cy="80" rx="7" ry="4"/></g>
+    <path class="mouthN" d="M51 84 Q55.5 90 60 84 Q64.5 90 69 84" fill="none" stroke="${INK}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <g class="mouthOpen"><path d="M49 82 Q60 101 71 82 Z" fill="${INK}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><path d="M54 91 Q60 87 66 91 Q60 97 54 91Z" fill="${PK}"/></g>
+    <ellipse class="mouthO" cx="60" cy="89" rx="6" ry="8" fill="${INK}"/>
+    <g class="m404"><rect x="44" y="81" width="32" height="14" rx="3.5" fill="${INK}"/><text x="60" y="92" font-size="11" text-anchor="middle" fill="${PK}" font-family="Lilita One, Arial Black, sans-serif" letter-spacing=".5">404</text></g>
+    <path class="sweat" d="M100 44 Q107 56 100 59 Q93 56 100 44Z" fill="#9FE8FF" stroke="${INK}" stroke-width="2.5"/>
+  </g>
+</g></g>
+<g class="jorge"><rect class="bg-pixel" x="100" y="16" width="8" height="8" fill="${PK}" stroke="${INK}" stroke-width="2"/></g>
+<rect class="bg-pixel" x="110" y="28" width="5" height="5" fill="#FFD23F" stroke="${INK}" stroke-width="1.5" style="animation-delay:.7s"/>
+<g class="fx"></g>
+</svg>`;
+$('#bigWrap').outerHTML = BIG_SVG;
+const big = $('#big'), fxLayer = big.querySelector('.fx');
+const EAR_L = [[27,50],[21,10],[52,30]], EAR_L_IN = [[29,36],[27,20],[40,29]];
+const EAR_R = [[93,50],[99,10],[68,30]], EAR_R_IN = [[91,36],[93,20],[80,29]];
+function inTri(p, t){
+  const s = (a, b, c) => (a[0]-c[0])*(b[1]-c[1]) - (b[0]-c[0])*(a[1]-c[1]);
+  const d1 = s(p, t[0], t[1]), d2 = s(p, t[1], t[2]), d3 = s(p, t[2], t[0]);
+  return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0));
+}
+// pedaço vira pixels que caem (a "despixelização")
+function shatter(cells, dir){
+  if (RM) return;
+  const NS = 'http://www.w3.org/2000/svg', frag = document.createDocumentFragment();
+  cells.forEach(([x, y, col, sz]) => {
+    const r = document.createElementNS(NS, 'rect');
+    r.setAttribute('x', x); r.setAttribute('y', y); r.setAttribute('width', sz); r.setAttribute('height', sz);
+    r.setAttribute('fill', col); r.setAttribute('stroke', INK); r.setAttribute('stroke-width', '.7');
+    r.setAttribute('class', 'px');
+    r.style.setProperty('--dx', (dir*(4 + Math.random()*16) + (Math.random()-.5)*10).toFixed(1) + 'px');
+    r.style.setProperty('--dy', (26 + Math.random()*62).toFixed(1) + 'px');
+    r.style.setProperty('--r', Math.round((Math.random()-.5)*260) + 'deg');
+    r.style.setProperty('--d', Math.round(Math.random()*260) + 'ms');
+    frag.appendChild(r);
+  });
+  fxLayer.appendChild(frag);
+  setTimeout(() => { fxLayer.textContent = ''; }, 1500);
+}
+function earCells(tri, inner){
+  const xs = tri.map(p => p[0]), ys = tri.map(p => p[1]), out = [], sz = 4.2;
+  for (let x = Math.min(...xs) - 2; x < Math.max(...xs) + 2; x += sz)
+    for (let y = Math.min(...ys) - 2; y < Math.max(...ys) + 2; y += sz){
+      const c = [x + sz/2, y + sz/2]; if (!inTri(c, tri)) continue;
+      out.push([x, y, inTri(c, inner) ? PK : CY, sz]);
+    }
+  return out;
+}
+function boxCells(x0, y0, x1, y1, cols, sz=3.4){ const out = []; for (let x = x0; x < x1; x += sz) for (let y = y0; y < y1; y += sz) if (Math.random() < .7) out.push([x, y, pick(cols), sz]); return out; }
+const flash = (cls, ms) => { big.classList.remove(cls); void big.getBoundingClientRect(); big.classList.add(cls); clearTimeout(flash[cls]); flash[cls] = setTimeout(() => big.classList.remove(cls), ms); };
+// estado do desenho: 0..6 erros (acumulado), 'win' reconstrói, 'lost' = tela azul
+function paintBig(e, state){
+  for (let i = 1; i <= 6; i++) big.classList.toggle('s' + i, state !== 'win' && e >= i);
+  big.classList.toggle('win', state === 'win');
+  big.classList.toggle('dead', state === 'lost');
+  const pct = state === 'win' ? 100 : Math.round((MAXE - Math.min(e, MAXE)) / MAXE * 100);
+  big.setAttribute('aria-label', state === 'lost' ? 'Bugado travou: tela azul' : state === 'win' ? 'Bugado recompilado e feliz' : e ? `Bugado com ${e} erro${e>1?'s':''}: sem ${PARTS.slice(1, Math.min(e,6)+1).join(', ')}` : 'Bugado inteiro');
+  paintMeter(state === 'win' ? 0 : Math.min(e, MAXE), pct);
+}
+function damageFx(e){
+  B.glitch();
+  flash('hit', 520); flash('ouch', 950);
+  if (e === 1) shatter(earCells(EAR_L, EAR_L_IN), -1);
+  if (e === 2) shatter(earCells(EAR_R, EAR_R_IN), 1);
+  if (e === 3) flash('j3', 1150);
+  if (e === 4){ flash('j4', 650); shatter(boxCells(33, 50, 55, 76, ['#fff', '#5B3DF5', INK]), -1); }
+  if (e === 5) flash('j5', 720);
+  if (e === 6){ flash('j6', 650); shatter(boxCells(48, 82, 72, 94, [INK, PK]), 1); }
+  const m = $('#meter'); m.classList.remove('bump'); void m.offsetWidth; m.classList.add('bump');
+}
+function paintMeter(e, pct){
+  const segs = $('#meter .segs');
+  if (!segs.children.length) segs.innerHTML = '<i></i>'.repeat(MAXE);
+  [...segs.children].forEach((s, i) => s.classList.toggle('off', i >= MAXE - e));
+  $('#meter').dataset.lv = e >= 5 ? 'low' : e >= 3 ? 'mid' : 'ok';
+  $('#pct').textContent = pct + '%';
+}
+
+/* ---------------- montagem da rodada ---------------- */
+const wordEl = $('#word'), kbEl = $('#kb'), endEl = $('#endp'), hintEl = $('#hint');
+const KB_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm?'];
+let R = null, talkTimer = null, bsTimer = null, finishing = false;
+function buildRound(opts={}){
+  R = cur(); finishing = false;
+  clearTimeout(talkTimer); clearInterval(bsTimer);
+  big.classList.remove('rec', 'rec1', 'rec2', 'rec3', 'hit', 'ouch', 'yay', 'hop', 'j3', 'j4', 'j5', 'j6'); fxLayer.textContent = '';
+  // palavra: cada palavra do nome é um bloco que não quebra
+  const words = String(R.E.ans).split(/\s+/).filter(Boolean);
+  let idx = 0;
+  wordEl.innerHTML = words.map(w => '<span class="wd">' + [...w].map(ch => {
+    const k = keyOf(ch), i = idx++;
+    if (k) return `<i class="tl" data-i="${i}" data-k="${k}"></i>`;
+    return `<i class="tl fx${/\d/.test(ch) ? ' dg' : ''}" data-s="f">${esc(up(ch))}</i>`;
+  }).join('') + '</span>').join('');
+  wordEl.setAttribute('aria-label', `Palavra secreta com ${nLetters(R.E.ans)} letras`);
+  if (!kbEl.children.length) buildKeys();
+  renderAll();
+  fitWord();
+  if (opts.pop && !RM) [...wordEl.querySelectorAll('.tl')].forEach((t, i) => { t.style.animationDelay = (i*28) + 'ms'; t.classList.add('pop'); setTimeout(() => { t.classList.remove('pop'); t.style.animationDelay = ''; }, 400 + i*28); });
+}
+function buildKeys(){
+  kbEl.innerHTML = KB_ROWS.map(row => '<div class="kr">' + [...row].map(ch => ch === '?'
+    ? `<button type="button" class="key dica" data-k="dica" aria-label="Dica: revela uma letra e custa uma vida">DICA<small>−1 vida</small></button>`
+    : `<button type="button" class="key" data-k="${ch}" aria-label="${ch.toUpperCase()}">${ch.toUpperCase()}</button>`).join('') + '</div>').join('');
+}
+function renderAll(){ renderModes(); renderHint(); renderWord(); renderKeys(); renderBigState(); renderPolar(); renderEnd(); renderSide(); }
+function renderBigState(){
+  const e = errorsOf(R);
+  paintBig(e, R.done ? (R.won ? 'win' : 'lost') : 'play');
+  const bs = $('#bsod');
+  if (R.done && !R.won){ $('#bsAns').textContent = up(R.E.ans); if (bs.hidden){ bs.hidden = false; $('#bsPct').textContent = '100'; } }
+  else bs.hidden = true;
+}
+function renderModes(){
+  document.querySelectorAll('.modes [data-kind]').forEach(b => b.setAttribute('aria-pressed', b.dataset.kind === kind));
+  $('#dayN').textContent = ' #' + B.dayNumber();
+  const prog = $('#prog'), cb = $('#catBtn');
+  prog.hidden = kind !== 'daily'; cb.hidden = kind === 'daily';
+  if (kind === 'daily'){
+    prog.innerHTML = D.rounds.map((r, i) => {
+      const c = r.done ? (r.won ? (errorsOf(r) === 0 ? 'w' : 'p') : 'l') : '';
+      const lab = `Palavra ${i+1}: ${r.done ? (r.won ? 'acertou' : 'perdeu') : (i === D.idx ? 'agora' : 'falta')}`;
+      return `<i class="${c} ${i === D.idx ? 'cur' : ''}" title="${lab}" aria-label="${lab}"></i>`;
+    }).join('');
+  } else {
+    const C = CATS[INF.cat], st = infSlot().streak;
+    cb.style.setProperty('--c', C.color);
+    cb.innerHTML = `<span class="dot" style="--c:${C.color}"></span><span class="nm">${C.name}</span>${st ? `<span class="stk">🔥${st}</span>` : ''}<span class="ar">▼</span>`;
+    cb.setAttribute('aria-label', `Categoria: ${C.name}. Sequência ${st}. Trocar categoria`);
+  }
+  const nb = document.getElementById('btnNova'); if (nb) nb.hidden = kind === 'daily';
+}
+function renderHint(fresh){
+  const E = R.E, e = errorsOf(R), C = CATS[E.cat];
+  const tag = $('#catTag'); tag.textContent = C.name.toUpperCase(); tag.style.setProperty('--c', C.color);
+  let h;
+  if (E.cat === 'conexo') h = `Dica do grupo: <b>${esc(E.tema)}</b>`;
+  else if (E.cat === 'pokemon') h = `Pokémon · Geração <b>${E.gen}</b> · tipo <b>${esc(E.tipo)}</b>`;
+  else if (E.cat === 'db') h = `Personagem · <b>${esc(E.raca)}</b>`;
+  else h = `Uma coisa · começa com <b>${esc(up(E.ans).charAt(0))}</b>`;
+  const words = String(E.ans).trim().split(/\s+/).length;
+  const moreDB = E.cat === 'db' && E.frase && !(e >= 3 || R.done);
+  h += ` <span class="lock">· ${nLetters(E.ans)} letras${words > 1 ? ` em ${words} palavras` : ''}${moreDB ? ' · mais dica com 3 erros' : ''}</span>`;
+  if (E.cat === 'db' && E.frase && (e >= 3 || R.done)) h += `<span class="fr">“${esc(E.frase)}”</span>`;
+  $('#hintTxt').innerHTML = h;
+  if (fresh && !RM){ hintEl.classList.remove('fresh'); void hintEl.offsetWidth; hintEl.classList.add('fresh'); }
+}
+function tileState(t){
+  const k = t.dataset.k; if (!k) return 'f';
+  if (R.g.includes(k)) return R.hl.includes(k) ? 'h' : 'c';
+  if (R.done && !R.won) return 'm';
+  return '';
+}
+function renderWord(){
+  const chars = [...R.E.ans].filter(c => !/\s/.test(c));
+  wordEl.querySelectorAll('.tl[data-k]').forEach(t => {
+    const s = tileState(t);
+    if (s){ t.dataset.s = s; t.textContent = up(chars[+t.dataset.i]); } else { delete t.dataset.s; t.textContent = ''; }
+  });
+}
+// vira só os quadradinhos novos (letra k acabou de aparecer)
+function flipIn(k, cls){
+  const tiles = [...wordEl.querySelectorAll(`.tl[data-k="${k}"]`)], chars = [...R.E.ans].filter(c => !/\s/.test(c));
+  tiles.forEach((t, j) => {
+    const apply = () => { t.dataset.s = tileState(t) || cls; t.textContent = up(chars[+t.dataset.i]); };
+    if (RM){ apply(); return; }
+    setTimeout(() => { t.classList.remove('flip'); void t.offsetWidth; t.classList.add('flip'); B.sfx.flip(); setTimeout(apply, 210); setTimeout(() => t.classList.remove('flip'), 450); }, j*110);
+  });
+  return RM ? 0 : (tiles.length - 1)*110 + 450;
+}
+function renderKeys(){
+  const K = keysOf(R), e = errorsOf(R);
+  kbEl.querySelectorAll('.key[data-k]').forEach(key => {
+    const L = key.dataset.k;
+    if (L === 'dica'){
+      const off = R.done || e >= MAXE - 1 || leftKeys(R).length <= 1;
+      key.setAttribute('aria-disabled', off); return;
+    }
+    let s = '';
+    if (R.g.includes(L)) s = K.has(L) ? (R.hl.includes(L) ? 'h' : 'c') : 'a';
+    if (s) key.dataset.s = s; else delete key.dataset.s;
+    key.setAttribute('aria-label', L.toUpperCase() + (s === 'a' ? ' (não tem)' : s ? ' (tem)' : ''));
+  });
+}
+const setPol = on => { $("#polar").hidden = !on; $("#bsod").classList.toggle("pic", on); };
+function renderPolar(){
+  const pol = $('#polar'), src = R.done ? imgOf(R.E) : '';
+  if (!src){ setPol(false); return; }
+  const img = $('#polImg');
+  if (img.dataset.src !== src){ img.dataset.src = src; setPol(false); img.onload = () => { if (R && R.done && imgOf(R.E) === src) setPol(true); }; img.onerror = () => { setPol(false); }; img.src = src; }
+  else if (img.complete && img.naturalWidth) setPol(true);
+  img.alt = up(R.E.ans); $('#polCap').textContent = up(R.E.ans);
+}
+
+/* tamanho dos quadradinhos: o maior que cabe, quebrando por palavra */
+function fitWord(){
+  if (!R) return;
+  const W = wordEl.clientWidth; if (!W) return;
+  const desk = innerWidth >= 880, H = innerHeight;
+  const words = String(R.E.ans).split(/\s+/).filter(Boolean).map(w => ({ n:[...w].length, u:[...w].reduce((a, ch) => a + (keyOf(ch) || /\d/.test(ch) ? 1 : .5), 0) }));
+  const maxT = desk ? 56 : (H < 700 ? 38 : 44), maxH = desk ? 136 : (H < 700 ? 70 : 96);
+  let best = null;
+  for (let t = maxT; t >= 14; t--){
+    const g = Math.max(3, Math.round(t*.11)), sp = Math.round(t*.5), rg = Math.round(t*.24);
+    let lines = 1, x = 0, ok = true;
+    for (const w of words){
+      const ww = w.u*t + (w.n - 1)*g;
+      if (ww > W){ ok = false; break; }
+      if (x === 0) x = ww; else if (x + sp + ww <= W) x += sp + ww; else { lines++; x = ww; }
+    }
+    if (!ok) continue;
+    best = { t, g, sp, rg };
+    if (lines*t + (lines-1)*rg <= maxH) break;
+  }
+  if (!best) best = { t:14, g:2, sp:7, rg:4 };
+  const s = wordEl.style;
+  s.setProperty('--t', best.t + 'px'); s.setProperty('--g', best.g + 'px'); s.setProperty('--sp', best.sp + 'px'); s.setProperty('--rg', best.rg + 'px');
+}
+if ('ResizeObserver' in window) new ResizeObserver(() => fitWord()).observe(wordEl); else addEventListener('resize', fitWord);
+
+/* ---------------- falas ---------------- */
+const talk = (cat, vars, mood, hold) => B.talk(cat, vars, mood, hold || 5200);
+const later = (fn, ms) => { clearTimeout(talkTimer); talkTimer = setTimeout(fn, ms); };
+function startLine(){
+  const E = R.E, tema = temaOf(E);
+  const catLine = { conexo:'forcaInicioConexo', pokemon:'forcaInicioPokemon', db:'forcaInicioDB', coisas:'forcaInicioCoisas' }[E.cat];
+  if (kind === 'inf' && INF.cat === 'mistura' && chance(.35)) return talk('forcaInicioMistura', { cat: CATS[E.cat].name }, 'smug', 5500);
+  talk(catLine, { tema }, pick(['talk','smug','happy']), 6000);
+}
+function announce(txt){ const sr = $('#sr'); sr.textContent = ''; setTimeout(() => sr.textContent = txt, 30); }
+
+/* ---------------- jogada ---------------- */
+function wrongRun(){ const K = keysOf(R); let n = 0; for (let i = R.g.length - 1; i >= 0; i--){ if (K.has(R.g[i]) && !R.hl.includes(R.g[i])) break; if (!K.has(R.g[i])) n++; } return n; }
+function guess(k){
+  if (!R || R.done || finishing || B.isModalOpen()) return;
+  const L = k.toUpperCase(), K = keysOf(R);
+  if (R.g.includes(k)){
+    const key = kbEl.querySelector(`[data-k="${k}"]`); if (key){ key.classList.remove('shake'); void key.offsetWidth; key.classList.add('shake'); }
+    B.sfx.meh(); talk(K.has(k) ? 'forcaRepetida' : 'forcaRepetidaErrada', { letra:L }, 'smug', 4000); return;
+  }
+  const prevRun = wrongRun();
+  R.g += k;
+  if (K.has(k)){
+    const n = [...R.E.ans].filter(ch => keyOf(ch) === k).length;
+    B.sfx.good(); flash('yay', 900); flash('hop', 520);
+    const dur = flipIn(k, 'c'); renderKeys(); renderSide();
+    announce(`Tem ${L}: ${n} vez${n > 1 ? 'es' : ''}.`);
+    if (!leftKeys(R).length){ endRound(true, dur); return; }
+    save(); commentRight(k, n, prevRun);
+  } else {
+    const e = errorsOf(R);
+    B.sfx.err(); renderKeys(); renderSide();
+    announce(`Não tem ${L}. Erros: ${e} de ${MAXE}.`);
+    if (e >= MAXE){ damageFx(6); endRound(false, 250); return; }
+    paintBig(e, 'play'); damageFx(e); save(); renderEnd();
+    commentWrong(k, e, prevRun + 1);
+    if (R.E.cat === 'db' && e === 3 && R.E.frase){ renderHint(true); later(() => { if (!R.done) talk('forcaDBFrase', null, 'smug', 5000); }, 4200); }
+  }
+}
+function commentRight(k, n, prevRun){
+  const L = k.toUpperCase(), left = leftPositions(R);
+  if (left <= 2 && chance(.7)) return talk('forcaQuase', { n:left }, 'happy');
+  if (RARE.includes(k)) return talk('forcaAcertoRara', { letra:L }, 'shock');
+  if (prevRun >= 2 && chance(.8)) return talk('forcaAcertoAlivio', { letra:L }, 'happy');
+  if (n >= 3 || (n === 2 && chance(.55))) return talk('forcaAcertoVarias', { n, letra:L }, 'happy');
+  if (VOW.includes(k) && chance(.45)) return talk('forcaAcertoVogal', { letra:L }, 'talk');
+  talk('forcaAcerto', { letra:L }, pick(['happy','talk','smug']));
+}
+function commentWrong(k, e, run){
+  const L = k.toUpperCase();
+  if (e >= 6) return talk('forcaErro6', { letra:L }, 'shock', 7000);
+  if (RARE.includes(k) && chance(.7)) return talk('forcaErroRara', { letra:L, parte:PARTS[e] }, 'shock', 5500);
+  if (run >= 3 && chance(.4)) return talk('forcaErroSeguido', { n:run }, 'dead');
+  if (VOW.includes(k) && chance(.25)) return talk('forcaErroVogal', { letra:L }, 'smug');
+  talk('forcaErro' + e, { letra:L }, e >= 4 ? 'dead' : 'shock', 5500);
+}
+function useHint(){
+  if (!R || R.done || finishing || B.isModalOpen()) return;
+  const left = leftKeys(R), e = errorsOf(R);
+  if (left.length <= 1){ B.sfx.meh(); return talk('forcaDicaUltima', null, 'smug', 4000); }
+  if (e >= MAXE - 1){ B.sfx.meh(); return talk('forcaDicaNegada', null, 'shock', 4500); }
+  const k = pick(left), ne = e + 1;
+  R.g += k; R.hl += k; R.h++;
+  B.sfx.hint(); paintBig(ne, 'play'); damageFx(ne);
+  const dur = flipIn(k, 'h'); renderKeys(); renderSide();
+  announce(`Dica: letra ${k.toUpperCase()}. Erros: ${ne} de ${MAXE}.`);
+  talk('forcaDica', { letra:k.toUpperCase(), parte:PARTS[ne] }, 'smug', 5500);
+  if (!leftKeys(R).length){ endRound(true, dur); return; }
+  save();
+  if (R.E.cat === 'db' && ne === 3 && R.E.frase){ renderHint(true); later(() => { if (!R.done) talk('forcaDBFrase', null, 'smug', 5000); }, 4500); }
+}
+
+/* ---------------- fim da rodada ---------------- */
+let lastXP = 0;
+function endRound(won, delay){
+  finishing = true;
+  const e = errorsOf(R);
+  R.done = true; R.won = won;
+  let milestone = 0, lostStreak = 0;
+  lastXP = 0;
+  if (!R.counted){
+    R.counted = true; G.played++;
+    if (won){
+      G.solved++; if (e === 0) G.perfect++;
+      lastXP = 10 + Math.min(10, keysOf(R).size) + Math.max(0, 6 - e)*3 + (e === 0 ? 10 : 0);
+      if (kind === 'daily') lastXP = Math.round(lastXP*1.2);
+    } else { G.lost++; lastXP = 2; }
+    if (kind === 'inf'){
+      const b = infSlot();
+      if (won){ b.streak++; G.best[INF.cat] = Math.max(G.best[INF.cat]||0, b.streak); if (b.streak % 5 === 0){ milestone = b.streak; lastXP += 25; } }
+      else { lostStreak = b.streak; b.streak = 0; }
+    }
+    B.saveProfile(); save();
+    if (milestone) B.registerWin('forca');
+    B.gainXP(lastXP);
+  }
+  save();
+  setTimeout(() => {
+    finishing = false;
+    const word = up(R.E.ans);
+    renderWord(); renderKeys(); renderBigState(); renderModes(); renderSide(); renderHint(); renderPolar(); renderEnd();
+    if (won){
+      big.classList.toggle('rec', e > 0);
+      for (let i = 1; i <= 3; i++) big.classList.toggle('rec' + i, e >= i);
+      B.sfx.win(); if (!RM) wordEl.querySelectorAll('.tl[data-k]').forEach((t, i) => { t.style.animationDelay = (i*60) + 'ms'; t.classList.add('dance'); setTimeout(() => { t.classList.remove('dance'); t.style.animationDelay = ''; }, 800 + i*60); });
+      B.burst($('#burst'), e === 0 ? 'PERFEITO!' : e >= MAXE - 1 ? 'POR UM PIXEL!' : 'RECOMPILADO!', e === 0 ? '#FFD23F' : '#3DDC84');
+      if (e === 0 || milestone) B.confetti();
+      if (e === 0) talk('forcaGanhouPerfeito', { palavra:word }, 'happy', 6500);
+      else if (e >= MAXE - 1) talk('forcaGanhouUltimaVida', { palavra:word }, 'shock', 6500);
+      else if (e >= 4) talk('forcaGanhouSofrido', { palavra:word, n:e }, 'happy', 6500);
+      else talk('forcaGanhou', { palavra:word, n:e }, 'happy', 6500);
+      announce(`Acertou: ${word}. ${e} erro${e === 1 ? '' : 's'}.`);
+    } else {
+      B.sfx.lose(); B.glitch();
+      wordEl.querySelectorAll('.tl[data-s="m"]').forEach(t => { if (!RM){ t.classList.remove('flip'); void t.offsetWidth; t.classList.add('flip'); } });
+      bsodCount();
+      talk('forcaPerdeu', { palavra:word }, 'dead', 7500);
+      announce(`Tela azul. A palavra era ${word}.`);
+    }
+    if (milestone){ B.toast(`Sequência de ${milestone}!`, `${CATS[INF.cat].name} · +25 XP bônus`); }
+    // segunda fala: marco, sequência perdida, palavra específica ou comentário da categoria
+    later(() => {
+      if (!R.done) return;
+      const kw = 'forcaW_' + wordKey(R.E.ans);
+      if (milestone) return talk('forcaSequenciaMarco', { n:milestone }, 'happy', 6500);
+      if (lostStreak >= 3) return talk('forcaSequenciaPerdida', { n:lostStreak }, 'dead', 6000);
+      if (B.lines(kw).length && chance(.85)) return talk(kw, null, 'smug', 6500);
+      if (kind === 'inf' && won && infSlot().streak >= 2 && chance(.6)) return talk('forcaSequencia', { n:infSlot().streak }, 'smug', 6000);
+      if (R.E.cat === 'pokemon' && chance(.7)) return talk('forcaFimPokemon', { palavra:word }, 'smug', 6000);
+      if (R.E.cat === 'db' && chance(.7)) return talk('forcaFimDB', { palavra:word }, 'smug', 6000);
+      if (R.E.cat === 'conexo' && chance(.4)) return talk('forcaFimConexo', { palavra:word, tema:R.E.tema }, 'talk', 6000);
+    }, 7000);
+    if (kind === 'daily' && D.rounds.every(r => r.done)) finishDaily();
+  }, delay || 0);
+}
+function bsodCount(){
+  clearInterval(bsTimer); const el = $('#bsPct');
+  if (RM){ el.textContent = '100'; return; }
+  let p = 0; el.textContent = '0';
+  bsTimer = setInterval(() => { p = Math.min(100, p + 3 + Math.floor(Math.random()*9)); el.textContent = p; if (p >= 100) clearInterval(bsTimer); }, 110);
+}
+function finishDaily(){
+  const solved = D.rounds.filter(r => r.won).length;
+  if (!D.counted){
+    D.counted = true;
+    const won = solved >= 3;
+    G.dailyPlayed++; if (won) G.dailyWins++;
+    G.dailyBest = Math.max(G.dailyBest, solved);
+    G.dailyDist[solved] = (G.dailyDist[solved]||0) + 1;
+    G.lastDaily = { day:D.day, won, solved };
+    B.saveProfile(); saveDaily();
+    if (won) B.registerWin('forca');
+    const bonus = solved*8 + (solved === 5 ? 25 : 0);
+    D.xp = bonus; saveDaily();
+    if (bonus) B.gainXP(bonus);
+    setTimeout(() => {
+      talk(solved === 5 ? 'forcaDiarioPerfeito' : solved <= 1 ? 'forcaDiarioRuim' : 'forcaDiarioFeito', { n:solved }, solved >= 3 ? 'happy' : 'dead', 7000);
+      if (solved === 5) B.confetti();
+    }, 7600);
+    setTimeout(() => { if (!B.isModalOpen() && kind === 'daily') openDailyResult(); }, RM ? 1200 : 3200);
+  }
+  renderEnd();
+}
+
+/* ---------------- painel de fim ---------------- */
+function renderEnd(){
+  const done = R.done && !finishing;
+  kbEl.hidden = done; endEl.hidden = !done;
+  if (!done){ clearInterval(renderEnd.t); return; }
+  const e = errorsOf(R), word = up(R.E.ans);
+  endEl.classList.toggle('won', R.won);
+  let meta = '', acts = '';
+  if (kind === 'daily'){
+    const i = D.idx, last = D.rounds.every(r => r.done);
+    const solved = D.rounds.filter(r => r.won).length;
+    meta = last ? `Desafio #${D.day} fechado: <b>${solved}/5</b> · próximo em <b id="cd">${countdown()}</b>`
+                : `Palavra <b>${i+1}/5</b> · ${R.won ? `${e} erro${e === 1 ? '' : 's'}` : 'o Bugado travou'} · vale vitória com 3 de 5`;
+    acts = last ? `<button type="button" class="btn cool" data-end="result">Resultado</button><button type="button" class="btn" data-end="share">Compartilhar</button><button type="button" class="btn primary" data-end="inf">Infinito</button>`
+                : `<button type="button" class="btn primary big" data-end="next">Próxima palavra ▶</button><button type="button" class="btn" data-end="stats">Estatísticas</button>`;
+  } else {
+    const st = infSlot().streak;
+    meta = R.won ? `${e} erro${e === 1 ? '' : 's'} · sequência <b>🔥${st}</b> · recorde <b>${G.best[INF.cat]||0}</b>` : `Sequência zerada · recorde em ${CATS[INF.cat].name}: <b>${G.best[INF.cat]||0}</b>`;
+    acts = `<button type="button" class="btn primary big" data-end="next">Próxima palavra ▶</button><button type="button" class="btn cool" data-end="cat">Categoria</button>`;
+  }
+  endEl.innerHTML = `<div class="top"><h3 class="${R.won ? '' : 'lost'}">${R.won ? (e === 0 ? 'PERFEITO!' : 'RECOMPILADO!') : 'TELA AZUL'}</h3><span class="ans ${R.won ? '' : 'lost'}">${esc(word)}</span></div>
+    <p class="meta">${meta}${lastXP && R.counted ? ` · <b>+${lastXP} XP</b>` : ''}</p>
+    <div class="acts">${acts}</div>`;
+  clearInterval(renderEnd.t);
+  if (kind === 'daily' && D.rounds.every(r => r.done)) renderEnd.t = setInterval(() => { const el = document.getElementById('cd'); if (el) el.textContent = countdown(); else clearInterval(renderEnd.t); }, 1000);
+}
+endEl.addEventListener('click', e => {
+  const b = e.target.closest('[data-end]'); if (!b) return; B.sfx.tap(); endAction(b.dataset.end);
+});
+function endAction(a){
+  if (a === 'next') nextWord();
+  else if (a === 'result') openDailyResult();
+  else if (a === 'share') share();
+  else if (a === 'inf') switchKind('inf');
+  else if (a === 'cat') openCats();
+  else if (a === 'stats') openStats();
+}
+function countdown(){
+  const d = new Date(), n = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+  const s = Math.max(0, Math.floor((n - d)/1000));
+  return [Math.floor(s/3600), Math.floor(s/60)%60, s%60].map(x => String(x).padStart(2,'0')).join(':');
+}
+function nextWord(){
+  if (!R || !R.done || finishing) return;
+  if (kind === 'daily'){
+    const nx = D.rounds.findIndex(r => !r.done);
+    if (nx < 0){ openDailyResult(); return; }
+    D.idx = nx; saveDaily(); lastXP = 0; buildRound({ pop:true });
+    talk('forcaDiarioProxima', { i:nx+1, n:5 }, 'happy', 4200);
+    later(() => { if (!R.done && !R.g) startLine(); }, 4400);
+  } else {
+    infSlot().R = null; ensureInfRound(); lastXP = 0; buildRound({ pop:true }); startLine();
+  }
+}
+
+/* ---------------- lateral (desktop) ---------------- */
+function renderSide(){
+  const card = $('#sideCard'); if (!card || !R) return;
+  const wr = wrongOf(R), hl = [...R.hl];
+  const title = kind === 'daily' ? `Desafio #${D.day}` : `Infinito`;
+  const sub = kind === 'daily' ? `Palavra ${D.idx+1} de 5 · igual pra todo mundo` : `${CATS[INF.cat].name} · sequência ${infSlot().streak} · recorde ${G.best[INF.cat]||0}`;
+  card.innerHTML = `<h4>${title}</h4><p class="sub">${sub}</p>
+    <div style="font-size:12px;color:#6b5a90;text-transform:uppercase;letter-spacing:.05em">Letras que me custaram pedaço</div>
+    <div class="wrong">${wr.length || hl.length ? wr.map(k => `<i>${k.toUpperCase()}</i>`).join('') + hl.map(k => `<i class="h" title="dica">${k.toUpperCase()}</i>`).join('') : '<span>nenhuma ainda (continua assim)</span>'}</div>
+    <div class="mini"><div><b>${G.solved}</b><span>Acertos</span></div><div><b>${G.perfect}</b><span>Perfeitas</span></div><div><b>${G.lost}</b><span>Telas azuis</span></div></div>
+    <div class="kbd">Digita as letras no teclado · <kbd>Enter</kbd> vai pra próxima · <kbd>?</kbd> pede dica (custa uma vida). Acento e Ç aparecem sozinhos.</div>`;
+}
+
+/* ---------------- entrada ---------------- */
+kbEl.addEventListener('mousedown', e => e.preventDefault());
+kbEl.addEventListener('click', e => {
+  const key = e.target.closest('.key'); if (!key) return;
+  B.idle.touch();
+  if (key.dataset.k === 'dica') useHint(); else guess(key.dataset.k);
+});
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey || B.isModalOpen()) return;
+  const t = e.target; if (t && t.closest && t.closest('input,textarea,select')) return;
+  if (e.key === 'Enter'){
+    if (t && t.closest && t.closest('button,a') && !t.closest('#kb')) return;
+    if (R && R.done && !finishing){ e.preventDefault(); nextWord(); }
+    return;
+  }
+  if (e.key === '?'){ e.preventDefault(); flashKey('dica'); useHint(); return; }
+  if (e.key.length === 1){ const n = keyOf(e.key); if (n){ e.preventDefault(); flashKey(n); guess(n); } }
+});
+function flashKey(k){ const el = kbEl.querySelector(`[data-k="${k}"]`); if (!el) return; el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 110); }
+document.addEventListener('click', e => { if (e.detail > 0){ const b = e.target.closest('button'); if (b && !b.closest('.bg-card')) b.blur(); } });
+// cutucar o Bugado grandão
+let bigPokes = 0;
+function pokeBig(){
+  B.sfx.boing(); flash('hop', 520); bigPokes++;
+  if (!R.done) flash(bigPokes % 3 ? 'yay' : 'ouch', 800);
+  talk(chance(.6) ? 'forcaCutucarGrande' : 'cutucarForca', null, bigPokes % 3 ? 'smug' : 'shock', 4500);
+}
+big.addEventListener('click', pokeBig);
+big.addEventListener('keydown', e => { if (e.key === ' '){ e.preventDefault(); pokeBig(); } });
+
+/* ---------------- troca de modo / categoria ---------------- */
+function switchKind(k, quiet){
+  if (finishing) return;
+  B.closeModal(true);
+  kind = k; B.store.set(UIKEY, { kind, day:B.dayNumber() });
+  if (k === 'daily') loadDaily(); else { ensureInfRound(); }
+  lastXP = 0; buildRound({ pop:!quiet });
+  if (quiet) return;
+  if (k === 'daily'){
+    if (D.rounds.every(r => r.done)) talk('forcaDiarioJaFeito', null, 'smug', 5500);
+    else if (!R.g && D.idx === 0){ talk('forcaOiDiario', null, 'talk', 6000); later(() => { if (!R.done && !R.g) startLine(); }, 6500); }
+    else if (!R.g) startLine();
+    else talk('forcaVoltou', null, 'smug', 5000);
+  } else {
+    if (R.done) talk('forcaOiInfinito', { cat:CATS[INF.cat].name }, 'happy', 5000);
+    else if (R.g) talk('forcaVoltou', null, 'smug', 5000);
+    else { talk('forcaOiInfinito', { cat:CATS[INF.cat].name }, 'happy', 5000); later(() => { if (!R.done && !R.g) startLine(); }, 5600); }
+  }
+}
+document.querySelector('.modes .seg').addEventListener('click', e => {
+  const b = e.target.closest('[data-kind]'); if (!b || b.dataset.kind === kind) return;
+  B.sfx.tap(); switchKind(b.dataset.kind);
+});
+$('#catBtn').addEventListener('click', () => { B.sfx.tap(); openCats(); });
+function openCats(){
+  const list = Object.keys(CATS).map(c => {
+    const C = CATS[c], b = INF.by[c];
+    return `<button class="btn" data-act="cat-${c}" style="--c:${C.color}" aria-pressed="${c === INF.cat}"><i class="dot"></i><span>${C.name}<small>${C.desc}</small></span><em>🔥 ${b.streak}<br>recorde ${G.best[c]||0}</em></button>`;
+  }).join('');
+  B.openModal(`<h2>Categoria</h2><p class="sub">Cada categoria tem sua própria sequência. A palavra em andamento fica guardada.</p>
+    <div class="cat-list">${list}</div>
+    <div class="m-actions"><button class="btn" data-act="close">Fechar</button></div>`);
+}
+Object.keys(CATS).forEach(c => B.onAct('cat-' + c, () => {
+  B.closeModal(true);
+  if (kind !== 'inf'){ INF.cat = c; saveInf(); switchKind('inf'); return; }
+  if (c === INF.cat) return;
+  INF.cat = c; saveInf(); const fresh = ensureInfRound(); lastXP = 0; buildRound({ pop:true });
+  talk('forcaTrocouCategoria', { cat:CATS[c].name }, 'happy', 4500);
+  if (fresh || !R.g) later(() => { if (!R.done && !R.g) startLine(); }, 4700);
+}));
+function skipWord(){
+  if (kind !== 'inf' || finishing) return;
+  if (R.done){ nextWord(); return; }
+  if (!R.g){ const w = up(R.E.ans); infSlot().R = null; ensureInfRound(); buildRound({ pop:true }); talk('forcaPulou', { palavra:w }, 'smug', 5000); later(() => { if (!R.done && !R.g) startLine(); }, 5200); return; }
+  const st = infSlot().streak;
+  B.openModal(`<h2>Pular essa?</h2><p class="sub">Pular no meio conta como tela azul${st ? ` e zera tua sequência de <b>${st}</b>` : ''}. O Bugado vai lembrar.</p>
+    <div class="m-actions"><button class="btn hot" data-act="skip-yes">Pular mesmo</button><button class="btn primary" data-act="close">Voltar pro jogo</button></div>`);
+}
+B.onAct('skip-yes', () => {
+  B.closeModal(true);
+  const w = up(R.E.ans), b = infSlot(), st = b.streak;
+  if (!R.counted){ R.counted = true; G.played++; G.lost++; b.streak = 0; B.saveProfile(); }
+  b.R = null; ensureInfRound(); lastXP = 0; buildRound({ pop:true });
+  talk(st >= 3 ? 'forcaSequenciaPerdida' : 'forcaPulou', { palavra:w, n:st }, 'smug', 5500);
+  later(() => { if (!R.done && !R.g) startLine(); }, 5800);
+});
+
+/* ---------------- compartilhar / resultado do dia ---------------- */
+const emOf = r => !r.done ? '⬜' : !r.won ? '💀' : errorsOf(r) === 0 ? '⭐' : errorsOf(r) <= 2 ? '🟩' : errorsOf(r) <= 4 ? '🟨' : '🟧';
+function shareText(){
+  const solved = D.rounds.filter(r => r.won).length, tot = D.rounds.reduce((a, r) => a + errorsOf(r), 0);
+  return `Fliperama Bugado · Forca #${D.day}: ${solved}/5 ${'💀'.repeat(D.rounds.filter(r => r.done && !r.won).length)}`.trim() +
+    `\n${D.rounds.map(emOf).join('')}\nErros: ${D.rounds.map(r => r.done ? (r.won ? errorsOf(r) : 'X') : '-').join('·')} (total ${tot})\n\n${location.origin + location.pathname}`;
+}
+async function share(){
+  const txt = shareText();
+  const ok = await B.copyText(txt);
+  if (ok){ B.toast('Copiado!', 'Resultado na área de transferência.'); talk('forcaCompartilhou', null, 'happy', 4500); return; }
+  B.openModal(`<h2>Copia aí</h2><p class="sub">Não consegui copiar sozinho. Seleciona e copia:</p><textarea class="share-box" readonly>${esc(txt)}</textarea><div class="m-actions"><button class="btn primary" data-act="close">Fechou</button></div>`);
+  const ta = document.querySelector('.share-box'); if (ta){ ta.focus(); ta.select(); }
+}
+function openDailyResult(){
+  const solved = D.rounds.filter(r => r.won).length, tot = D.rounds.reduce((a, r) => a + errorsOf(r), 0);
+  const titles = ['TELA AZUL TOTAL', 'QUASE NADA', 'DEU RUIM', 'SOBREVIVI!', 'BRABO!', 'PERFEIÇÃO!'];
+  const rows = D.rounds.map((r, i) => `<div><span class="em">${emOf(r)}</span><span class="w">${r.done ? esc(up(r.E.ans)) : '???'}</span><span class="c">${CATS[r.E.cat].name}</span><span class="e">${r.done ? (r.won ? `${errorsOf(r)} erro${errorsOf(r) === 1 ? '' : 's'}` : 'travou') : '—'}</span></div>`).join('');
+  B.openModal(`<h2 class="big">${titles[solved]}</h2>
+    <p class="sub">Desafio #${D.day} · <b>${solved}/5</b> palavras · ${tot} erro${tot === 1 ? '' : 's'} no total${D.xp ? ` · <b style="color:var(--violet)">+${D.xp} XP bônus</b>` : ''}</p>
+    <div class="res-list">${rows}</div>
+    <p class="m-note">${solved >= 3 ? 'Vitória do dia registrada no Fliperama.' : 'Precisava de 3 de 5 pra contar vitória. Amanhã tem mais.'} Próximo desafio em <b id="cd2">${countdown()}</b></p>
+    <div class="m-actions"><button class="btn hot" data-act="share">Compartilhar</button><button class="btn primary" data-act="goinf">Jogar Infinito</button><button class="btn" data-act="close">Fechar</button></div>`);
+  clearInterval(openDailyResult.t);
+  openDailyResult.t = setInterval(() => { const el = document.getElementById('cd2'); if (!el) return clearInterval(openDailyResult.t); el.textContent = countdown(); }, 1000);
+}
+B.onAct('share', () => share());
+B.onAct('goinf', () => switchKind('inf'));
+
+/* ---------------- estatísticas / ajuda ---------------- */
+function openStats(){
+  const pct = G.played ? Math.round(G.solved / G.played * 100) : 0;
+  const best = Object.keys(CATS).map(c => `<span>${CATS[c].name}</span><b>🔥 ${INF.by[c].streak}</b><b>${G.best[c]||0}</b>`).join('');
+  const maxBar = Math.max(1, ...Object.values(G.dailyDist));
+  const today = D && D.counted ? D.rounds.filter(r => r.won).length : -1;
+  const dist = [5,4,3,2,1,0].map(n => { const v = G.dailyDist[n]||0; return `<div class="dr"><span>${n}/5</span><div class="bb ${n === today ? 'hi' : ''}" style="width:${Math.max(8, v/maxBar*100)}%">${v}</div></div>`; }).join('');
+  B.openModal(`<h2>Estatísticas</h2><p class="sub">O histórico completo das minhas mortes e renascimentos.</p>
+    <div class="stat-grid">
+      <div class="stat"><b>${G.solved}</b><span>Acertos</span></div>
+      <div class="stat"><b>${G.lost}</b><span>Telas azuis</span></div>
+      <div class="stat"><b>${pct}%</b><span>Aproveit.</span></div>
+      <div class="stat"><b>${G.perfect}</b><span>Perfeitas</span></div>
+    </div>
+    <h3>Infinito: sequência e recorde</h3>
+    <div class="best-list"><span class="h">Categoria</span><span class="h">Agora</span><span class="h">Recorde</span>${best}</div>
+    <h3>Desafio do Dia (${G.dailyPlayed} jogado${G.dailyPlayed === 1 ? '' : 's'}, ${G.dailyWins} vitória${G.dailyWins === 1 ? '' : 's'})</h3>
+    <div class="dist">${dist}</div>
+    <div class="m-actions">${D && D.counted ? '<button class="btn hot" data-act="share">Compartilhar o dia</button>' : ''}<button class="btn primary" data-act="close">Fechar</button></div>`);
+}
+const HELP_SVG = `<svg viewBox="0 0 120 120" aria-hidden="true"><path d="M27 50 L21 10 L52 30 Z" fill="${CY}" stroke="${INK}" stroke-width="5" stroke-linejoin="round" opacity=".25" stroke-dasharray="4 4"/><path d="M93 50 L99 10 L68 30 Z" fill="${CY}" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/><path d="M18 70 C18 36 38 22 60 22 C82 22 102 36 102 70 C102 98 84 108 60 108 C36 108 18 98 18 70Z" fill="${CY}" stroke="${INK}" stroke-width="5"/><path d="M35 55 L51 71 M51 55 L35 71" stroke="${INK}" stroke-width="5" stroke-linecap="round"/><ellipse cx="77" cy="63" rx="12" ry="14" fill="#fff" stroke="${INK}" stroke-width="4"/><circle cx="77" cy="63" r="6.5" fill="none" stroke="${INK}" stroke-width="3.2" stroke-dasharray="7 3.2"/><rect x="44" y="81" width="32" height="14" rx="3.5" fill="${INK}"/><text x="60" y="92" font-size="11" text-anchor="middle" fill="${PK}" font-family="Lilita One, sans-serif">404</text><rect x="96" y="100" width="8" height="8" fill="#7d6d9c" stroke="${INK}" stroke-width="2" transform="rotate(45 100 104)"/></svg>`;
+function openHelp(auto){
+  G.seenHelp = true; B.saveProfile();
+  B.openModal(`<h2>Como jogar Forca Bugada</h2>
+    <p class="sub">É a forca de sempre: descobre a palavra secreta chutando uma letra de cada vez. A diferença é que quem paga pelos teus erros sou EU.</p>
+    <div class="help-demo">${HELP_SVG}<p style="margin:0">Cada letra errada apaga um pedaço meu: orelha, orelha, o Jorge (meu pixel rosa), os olhos, a imagem e a boca. No <b>7º erro</b> eu viro tela azul e você perde.</p></div>
+    <ul>
+      <li>🔤 <span>Toca numa letra do teclado (ou digita no PC). Se tiver na palavra, ela aparece em todos os lugares. Tecla verde = tem, tecla escura com X = não tem.</span></li>
+      <li>✍️ <span>Não precisa de acento: chutou <b>A</b>, aparecem Á, Â, Ã e À também. <b>C</b> revela o Ç. Espaço, hífen, ponto e número já vêm à mostra.</span></li>
+      <li>💡 <span>A dica em cima da palavra ajuda: tema do grupo do Conexo, geração e tipo do Pokémon, raça do guerreiro (com 3 erros eu conto mais) ou a primeira letra.</span></li>
+      <li>🆘 <span>O botão <b>DICA</b> revela uma letra, mas custa uma vida (um pedaço meu). Na última vida eu me recuso.</span></li>
+      <li>📅 <span><b>Desafio do Dia</b>: 5 palavras (Coisas, Conexo, Pokémon, Dragon Ball e uma surpresa), iguais pra todo mundo. Acertou 3 ou mais, vitória. Dá pra compartilhar o resultado.</span></li>
+      <li>♾️ <span><b>Infinito</b>: palavra atrás de palavra na categoria que você escolher, com sequência e recorde. A cada 5 seguidas, vitória no Fliperama.</span></li>
+      <li>⭐ <span>Cada palavra acertada dá XP. Menos erros e palavras mais longas dão mais. Palavra perfeita (zero erros) dá bônus.</span></li>
+    </ul>
+    <div class="m-actions"><button class="btn primary" data-act="close">Bora, não te deixo virar tela azul</button></div>`);
+  if (auto !== true) talk('forcaAjuda', null, 'smug', 4500);
+}
+
+/* ---------------- início ---------------- */
+B.mountBar(document.getElementById('bar'), { title:'Forca Bugada', color:'#FFB38A', buttons:[
+  { id:'btnNova', icon:'shuffle', label:'Pular / nova palavra (Infinito)', onClick: () => skipWord() },
+  { id:'btnHelp', icon:'help', label:'Como jogar', onClick: () => openHelp() },
+  { id:'btnStats', icon:'stats', label:'Estatísticas', onClick: () => { openStats(); talk('forcaStats', null, 'smug', 4000); } },
+  { id:'btnSom', icon: B.profile().sound ? 'on' : 'off', label:'Som liga/desliga', onClick: () => { B.setSound(!B.profile().sound); document.getElementById('btnSom').innerHTML = B.ICON[B.profile().sound ? 'on' : 'off']; } }
+]});
+B.mountMascot(document.getElementById('mascot'), { pokeCat:'cutucarForca' });
+const wide = matchMedia('(min-width:880px)');
+const onWide = () => { B.setStack(wide.matches); fitWord(); };
+wide.addEventListener ? wide.addEventListener('change', onWide) : wide.addListener(onWide);
+onWide();
+
+loadDaily(); loadInf();
+const ui = B.store.get(UIKEY) || {};
+// volta pro modo de antes; mas no primeiro acesso de um dia novo, com o desafio intocado, abre no desafio
+const startKind = ui.kind === 'inf' && (ui.day === D.day || D.rounds.some(r => r.g)) ? 'inf' : 'daily';
+switchKind(startKind, true);
+requestAnimationFrame(fitWord);
+if (kind === 'daily' && D.rounds.every(r => r.done)) talk('forcaDiarioJaFeito', null, 'smug', 5500);
+else if (R.g && !R.done) talk('forcaVoltou', null, 'smug', 5500);
+else if (kind === 'daily' && D.idx === 0 && !R.g){ talk('forcaOiDiario', null, 'talk', 6000); later(() => { if (!R.done && !R.g) startLine(); }, 6600); }
+else if (!R.done) startLine();
+else talk(kind === 'inf' ? 'forcaOiInfinito' : 'forcaVoltou', { cat:CATS[INF.cat].name }, 'happy', 5000);
+if (!G.seenHelp) setTimeout(() => openHelp(true), 500);
+
+B.chatter({ active: () => R && !R.done && !finishing });
+// parado com a palavra pela metade: fala antes do "parado" genérico
+setInterval(() => {
+  if (!R || R.done || document.hidden || B.isModalOpen()) return;
+  if (!B.idle.said && R.g && Date.now() - B.idle.last > 24000){ B.idle.said = true; talk('forcaParadoMeio', null, 'smug', 6000); }
+}, 1000);
+})();
+</script>
+</body></html>

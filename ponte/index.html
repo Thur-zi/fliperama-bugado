@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2A1650">
+<title>Ponte · Fliperama Bugado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+:root{ --pt:#C3B1FF; --wood:#FFF7E6; --grain:rgba(122,84,40,.07); --water:#3FA7E0; --water2:#2A7FC0;
+  --d0:var(--green); --d1:var(--orange); --d2:var(--sun); --d3:var(--cyan); --d4:#A99BFF; }
+.wrap.game{max-width:1060px;overflow-x:clip;padding-block:8px 32px}
+.game{display:grid;gap:10px;grid-template-columns:minmax(0,1fr);grid-template-areas:"bar" "side" "route" "entry" "bridge"}
+#bar{grid-area:bar}
+.side{grid-area:side;min-width:0}
+.route{grid-area:route;min-width:0}
+.entry{grid-area:entry;min-width:0}
+.bridgewrap{grid-area:bridge;min-width:0;position:relative}
+#mascot .bg-bubble{min-height:52px}
+.legend{display:none}
+
+/* ---------- rota A → B ---------- */
+.route{background:rgba(255,247,230,.06);border:2.5px solid var(--line);border-radius:16px;padding:8px 12px 9px}
+.rt{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0}
+.rt-w{min-width:0;font-family:var(--display);font-size:clamp(24px,7.4vw,34px);letter-spacing:.04em;line-height:1.05;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;text-shadow:2px 2px 0 var(--ink)}
+.rt-w.a{color:var(--cyan)}
+.rt-w.b{color:var(--sun)}
+.rt-arrow{flex:none;width:44px;height:22px}
+.rt-arrow svg{width:100%;height:100%;fill:none;stroke:var(--pt);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.rt-arrow .dash{stroke-dasharray:4 5;animation:dashmove 1s linear infinite}
+@keyframes dashmove{to{stroke-dashoffset:-9}}
+.infobar{display:flex;align-items:center;justify-content:center;gap:6px 12px;margin-top:6px;flex-wrap:wrap}
+.modechip{cursor:pointer;font-family:var(--chunky);background:var(--pt);color:var(--ink);letter-spacing:.03em}
+.modechip.free{background:var(--cyan)}
+.cnt{font-family:var(--chunky);font-size:13px;color:var(--muted);white-space:nowrap}
+.cnt b{font-weight:400;color:var(--paper);font-size:17px;font-variant-numeric:tabular-nums}
+.cnt.par b{color:var(--sun)}
+
+/* ---------- ponta + entrada ---------- */
+.tip{display:flex;flex-direction:column;gap:6px;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--pt);padding:9px 12px 10px}
+.tip-top{display:flex;align-items:baseline;gap:8px;min-width:0}
+.tip-lbl{flex:none;font-family:var(--chunky);font-size:11px;letter-spacing:.14em;color:#6b5a90}
+.tip-w{min-width:0;font-family:var(--chunky);font-weight:400;font-size:22px;line-height:1.1;color:var(--violet);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.m-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
+.m-lbl{font-family:var(--chunky);font-size:11px;letter-spacing:.12em;color:#6b5a90;white-space:nowrap}
+.m-val{font-family:var(--chunky);font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-track{position:relative;height:18px;border:3px solid var(--ink);border-radius:99px;background:#eadff9;overflow:hidden}
+.m-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--c,var(--d4));border-right:3px solid var(--ink);border-radius:0 99px 99px 0;transition:width .7s cubic-bezier(.3,1.4,.5,1),background-color .3s}
+.m-goal{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-family:var(--chunky);font-size:10px;letter-spacing:.08em;color:#6b5a90}
+.guess{display:flex;gap:8px;margin-top:10px}
+.guess input{flex:1;min-width:0;height:54px;border:3px solid var(--ink);border-radius:14px;background:var(--paper);color:var(--ink);font-family:var(--chunky);font-size:22px;letter-spacing:.02em;padding:0 14px;box-shadow:0 4px 0 var(--ink);outline:none;transition:box-shadow .12s}
+.guess input::placeholder{color:#9a8bbb;font-family:var(--body);font-weight:800;font-size:15.5px;letter-spacing:0}
+.guess input:focus{box-shadow:0 4px 0 var(--ink),0 0 0 3px var(--pt)}
+.guess input:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+.guess input:disabled{background:#e6dcf5;cursor:progress}
+.guess .go{flex:none;height:54px;padding:0 16px;font-size:19px;display:flex;align-items:center;gap:6px}
+.guess .go svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+.msg{margin:7px 2px 0;font-size:13.5px;line-height:1.35;color:var(--sun)}
+.msg:empty{display:none}
+.msg b{color:var(--paper)}
+.actions{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.actions .sp{flex:1}
+.btn.mini{position:relative;height:38px;padding:0 12px;font-size:14px;border-radius:11px;box-shadow:0 3px 0 var(--ink);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn.mini svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.btn.mini:active{box-shadow:0 0 0 var(--ink)}
+.btn.mini .tag{position:absolute;top:-9px;right:-6px;font-family:var(--chunky);font-weight:400;font-size:11px;line-height:1.2;background:var(--ink);color:var(--sun);border:2px solid var(--sun);border-radius:99px;padding:0 6px}
+.donecard{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--pink);padding:10px 12px}
+.donecard .dc-txt{flex:1 1 180px;font-size:15px;line-height:1.3}
+.donecard .dc-txt b{font-family:var(--chunky);font-weight:400;font-size:18px;color:var(--violet)}
+.donecard .dc-btns{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- a ponte ---------- */
+.b-head{display:flex;justify-content:space-between;align-items:baseline;margin:4px 2px 8px}
+.b-head span{font-family:var(--chunky);font-size:11px;letter-spacing:.18em;color:var(--muted)}
+.bridge{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;align-items:stretch}
+.plank{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;min-height:52px;padding:6px 12px 6px 8px;
+  background:repeating-linear-gradient(90deg,transparent 0 22px,var(--grain) 22px 24px),var(--wood);color:var(--ink);border:3px solid var(--ink);border-left:10px solid var(--c,var(--ink));border-radius:12px;box-shadow:0 4px 0 var(--ink)}
+.plank .pk-n{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--paper);font-family:var(--chunky);font-size:13px;line-height:1}
+.plank .pk-w{min-width:0;font-family:var(--chunky);font-size:20px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plank .pk-w em{font-style:normal;font-family:var(--chunky);font-size:10px;letter-spacing:.08em;color:var(--paper);background:var(--violet);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:3px}
+.plank .pk-d{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:84px}
+.plank .pk-d small{font-family:var(--chunky);font-size:13px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.plank .pk-d small i{font-style:normal;font-size:10px;letter-spacing:.06em;color:#6b5a90}
+.plank .pk-bar{display:block;width:84px;height:8px;border:2px solid var(--ink);border-radius:99px;background:#eadff9;overflow:hidden}
+.plank .pk-bar i{display:block;height:100%;background:var(--c,var(--d4))}
+.plank.start{--c:var(--cyan)}
+.plank.start .pk-n{background:var(--cyan);color:var(--ink);border:2px solid var(--ink)}
+.plank.goal{--c:var(--sun);background:repeating-linear-gradient(-45deg,transparent 0 10px,rgba(255,210,63,.18) 10px 20px),var(--wood);border-style:dashed;border-left-style:solid}
+.plank.goal .pk-n{background:var(--sun);color:var(--ink);border:2px solid var(--ink)}
+.plank.goal.reached{border-style:solid;background:var(--sun);box-shadow:0 4px 0 var(--ink),0 0 0 4px rgba(61,220,132,.6)}
+.plank.hinted .pk-w::after{content:"dica";font-family:var(--chunky);font-size:10px;letter-spacing:.06em;color:var(--ink);background:var(--cyan);border:1.5px solid var(--ink);border-radius:6px;padding:0 5px;margin-left:6px;vertical-align:3px}
+.plank.last{box-shadow:0 4px 0 var(--ink),0 0 0 3px var(--pt)}
+
+
+
+.link{position:relative;height:28px;display:flex;align-items:center;justify-content:center}
+.link::before,.link::after{content:"";position:absolute;top:-2px;bottom:-2px;width:4px;background:#C9A06A;border-left:1.5px solid var(--ink);border-right:1.5px solid var(--ink)}
+.link::before{left:22%}.link::after{right:22%}
+.link span{position:relative;z-index:1;font-family:var(--chunky);font-size:11.5px;letter-spacing:.04em;color:var(--ink);background:var(--c,var(--paper));border:2px solid var(--ink);border-radius:99px;padding:0 8px;line-height:1.5}
+.link.strong{--c:var(--green)} .link.ok{--c:var(--paper)} .link.weak{--c:var(--orange)}
+.river{position:relative;height:62px;margin:4px 0;border:3px solid var(--ink);border-radius:14px;overflow:hidden;
+  background:radial-gradient(ellipse 18px 6px at 20px 16px,rgba(255,255,255,.45) 55%,transparent 60%) 0 0/60px 30px,
+             radial-gradient(ellipse 14px 5px at 44px 34px,rgba(255,255,255,.3) 55%,transparent 60%) 0 0/70px 40px,
+             linear-gradient(180deg,var(--water),var(--water2));
+  animation:flow 6s linear infinite;display:flex;align-items:center;justify-content:center}
+@keyframes flow{to{background-position:60px 0,-70px 0,0 0}}
+.river b{position:relative;z-index:1;font-family:var(--chunky);font-weight:400;font-size:13px;letter-spacing:.08em;color:var(--paper);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;white-space:nowrap}
+.river .splash{position:absolute;left:50%;top:-4px;transform:translateX(-50%);font-family:var(--chunky);font-size:16px;color:var(--ink);background:var(--wood);border:2.5px solid var(--ink);border-radius:9px;padding:1px 10px;white-space:nowrap;pointer-events:none;z-index:2}
+.solution{margin-top:16px;background:rgba(255,247,230,.06);border:2.5px dashed var(--line);border-radius:16px;padding:10px 12px}
+.solution h3{margin:0 0 8px;font-family:var(--chunky);font-weight:400;font-size:15px;color:var(--paper)}
+.chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.chips .w{font-family:var(--chunky);font-size:15px;color:var(--ink);background:var(--paper);border:2.5px solid var(--ink);border-radius:9px;padding:2px 9px}
+.chips .w.a{background:var(--cyan)} .chips .w.b{background:var(--sun)} .chips .w.h{background:#D8F7F4}
+.chips .ar{font-family:var(--chunky);color:var(--muted);font-size:14px}
+.bg-card .chips .ar{color:#8a7aa8}
+
+/* vazio + carregando */
+.loader{background:var(--paper);color:var(--ink);border:4px solid var(--ink);border-radius:20px;box-shadow:6px 6px 0 var(--pink);padding:18px 18px 16px;text-align:center}
+.loader h2{margin:0 0 4px;font-family:var(--display);font-weight:400;font-size:30px;letter-spacing:.04em;color:var(--violet);line-height:1}
+.loader p{margin:0 0 12px;font-size:14px;color:var(--text-ink)}
+.ld-track{height:22px;border:3px solid var(--ink);border-radius:99px;background:#eadff9;overflow:hidden}
+.ld-fill{display:block;height:100%;width:2%;background:repeating-linear-gradient(-45deg,var(--pt) 0 12px,#a996ef 12px 24px);border-right:3px solid var(--ink);transition:width .25s}
+.ld-txt{display:block;margin-top:8px;font-family:var(--chunky);font-size:14px;color:#6b5a90;font-variant-numeric:tabular-nums}
+.loader .btn{margin-top:12px;height:46px;padding:0 18px;font-size:16px}
+.thinking{font-family:var(--chunky);color:var(--muted);text-align:center;padding:14px 0;font-size:15px}
+.burst{top:40px}
+
+/* animações */
+@keyframes drop{0%{transform:translateY(-26px) scale(.9) rotate(-2deg);opacity:0}60%{transform:translateY(3px) scale(1.02);opacity:1}100%{transform:none}}
+.drop{animation:drop .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes sink{0%{transform:translate(-50%,-30px) rotate(0);opacity:0}20%{transform:translate(-50%,0) rotate(-4deg);opacity:1}100%{transform:translate(-50%,60px) rotate(18deg);opacity:0}}
+.splash{animation:sink 1.1s ease-in forwards}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+.shake{animation:shake .38s}
+@keyframes flash{0%,100%{transform:none}30%{transform:scale(1.04) rotate(-1deg);box-shadow:0 0 0 4px var(--sun)}60%{transform:scale(.98)}}
+.flash{animation:flash .9s ease 1}
+@keyframes slam{0%{transform:scale(1.4) rotate(-6deg);opacity:0}55%{transform:scale(.95) rotate(1deg);opacity:1}100%{transform:none}}
+.slam{animation:slam .6s cubic-bezier(.3,1.6,.5,1)}
+
+/* legenda (desktop) */
+.legend{margin-top:14px;background:rgba(255,247,230,.06);border:2.5px solid var(--line);border-radius:16px;padding:12px 14px}
+.legend h3{margin:0 0 8px;font-family:var(--chunky);font-weight:400;font-size:15px;color:var(--paper)}
+.legend ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13.5px;color:var(--paper)}
+.legend li{display:flex;align-items:center;gap:8px}
+.sw{flex:none;width:18px;height:18px;border:2.5px solid var(--ink);border-radius:5px;background:var(--c)}
+.legend .keys{margin:10px 0 0;font-size:12.5px;color:var(--muted);line-height:1.4}
+
+@media (max-width:380px){
+  .guess .go span{display:none}
+  .guess input{font-size:20px}
+  .btn.mini{padding:0 9px;font-size:13px}
+  .cnt{font-size:12px}
+  .plank .pk-d{min-width:70px} .plank .pk-bar{width:70px}
+  .plank .pk-w{font-size:18px}
+}
+@media (max-width:420px){ #bGive span{display:none} #bGive{padding:0 10px} }
+
+/* desktop: ponte na horizontal, mascote do lado */
+@media (min-width:880px){
+  .game{grid-template-columns:minmax(0,640px) 320px;justify-content:center;column-gap:30px;row-gap:12px;align-items:start;
+    grid-template-areas:"bar bar" "route side" "entry side" "bridge bridge";grid-template-rows:auto auto 1fr auto}
+  .side{grid-row:2/4;position:sticky;top:12px}
+  .legend{display:block}
+  .route{padding:12px 16px}
+  .rt-w{font-size:40px}
+  .rt-arrow{width:70px;height:28px}
+  .guess input,.guess .go{height:60px}
+  .guess input{font-size:24px}
+  .bridgewrap{margin-top:10px;background:rgba(20,10,42,.35);border:2.5px solid var(--line);border-radius:22px;padding:14px 18px 20px}
+  .bridge{flex-direction:row;flex-wrap:nowrap;align-items:center;overflow-x:auto;overflow-y:hidden;padding:4px 4px 12px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+  .bridge > li{flex:none}
+  .plank{grid-template-columns:auto minmax(0,auto);grid-template-rows:auto auto;min-width:108px;max-width:190px;padding:7px 10px 7px 7px;gap:3px 7px}
+  .plank .pk-n{grid-row:1/3}
+  .plank .pk-d{align-items:flex-start;min-width:0}
+  .plank .pk-bar{width:100%;min-width:72px}
+  .plank .pk-w{font-size:18px}
+  .plank .pk-n{width:24px;height:24px;font-size:12px}
+  .link{height:auto;width:38px;align-self:stretch;min-height:52px}
+  .link::before,.link::after{top:auto;bottom:auto;left:-2px;right:-2px;width:auto;height:4px;border:0;border-top:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink)}
+  .link::before{top:34%}.link::after{top:auto;bottom:34%}
+  .link span{font-size:11px;padding:0 6px}
+  .bridge > .river{flex:1 1 100px;min-width:100px;height:70px;margin:0 6px}
+  .river b{font-size:12px;white-space:normal;text-align:center;line-height:1.1;padding:0 6px}
+}
+
+/* modais */
+.modes{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.mode{text-align:left;padding:11px 14px 11px 16px;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;border-left-width:12px;border-left-color:var(--c)}
+.mode b{font-family:var(--chunky);font-weight:400;font-size:20px}
+.mode span{grid-column:1;font-size:13.5px;font-weight:700;color:#4b3d6b;line-height:1.3;font-family:var(--body)}
+.mode em{grid-row:1/3;grid-column:2;font-style:normal;font-family:var(--chunky);font-size:12px;color:#6b5a90;text-align:right;line-height:1.2}
+.mode.cur{background:#FFF1B8}
+.scoreline{margin:12px 0 2px;text-align:center;font-family:var(--chunky);font-size:19px;color:var(--ink)}
+.scoreline .pill{margin-left:6px;vertical-align:2px}
+.route-big{margin:10px 0 0;text-align:center;font-family:var(--display);font-size:34px;letter-spacing:.04em;line-height:1.05;color:var(--sun);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:3px 3px 0 var(--violet);overflow-wrap:anywhere}
+.stat-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.stat-grid.four .stat span{font-size:10px;letter-spacing:.02em}
+.bg-card .chips{margin-top:4px}
+.note{margin:12px 0 0;font-size:13.5px!important;background:#F4EBFF;border:2px dashed #BBA7E4;border-radius:10px;padding:7px 10px}
+.share-ta{width:100%;min-height:110px;margin-top:10px;border:2.5px solid var(--ink);border-radius:10px;padding:8px;font:inherit;font-size:14px;color:var(--ink);background:#fff}
+/* exemplo animado da ajuda */
+.demo{margin-top:10px;background:var(--night);border:3px solid var(--ink);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:0}
+.demo .d-pk{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--wood);border:2.5px solid var(--ink);border-left:8px solid var(--c,var(--d4));border-radius:9px;padding:3px 10px;font-family:var(--chunky);font-size:16px;color:var(--ink)}
+.demo .d-pk small{font-family:var(--chunky);font-size:11.5px;color:#6b5a90}
+.demo .d-ln{height:18px;display:flex;justify-content:center;align-items:center}
+.demo .d-ln span{font-family:var(--chunky);font-size:10.5px;color:var(--ink);background:var(--paper);border:2px solid var(--ink);border-radius:99px;padding:0 7px;line-height:1.3}
+.demo .d-no{align-self:center;margin:2px 0;font-family:var(--chunky);font-size:12px;color:var(--paper);background:var(--red);border:2px solid var(--ink);border-radius:8px;padding:1px 8px}
+.demo > *{animation:demo 9s ease infinite}
+.demo > :nth-child(2){animation-delay:.0s}
+@keyframes demo{0%{opacity:0;transform:translateY(-8px)}6%{opacity:1;transform:none}88%{opacity:1}96%,100%{opacity:0}}
+.demo .d-no{animation-name:demono}
+@keyframes demono{0%{opacity:0;transform:translateY(-6px)}6%{opacity:1;transform:none}20%{opacity:1;transform:none}32%,100%{opacity:0;transform:translateY(16px) rotate(12deg)}}
+</style>
+</head>
+<body>
+<div class="wrap game">
+  <header id="bar"></header>
+
+  <aside class="side">
+    <div id="mascot"></div>
+    <div class="legend" aria-hidden="true">
+      <h3>Distância até o alvo</h3>
+      <ul>
+        <li><span class="sw" style="--c:var(--d0)"></span>até 400: liga! A ponte fecha</li>
+        <li><span class="sw" style="--c:var(--d1)"></span>até 1.000: pertinho</li>
+        <li><span class="sw" style="--c:var(--d2)"></span>até 3.000: morno</li>
+        <li><span class="sw" style="--c:var(--d3)"></span>até 7.000: frio</li>
+        <li><span class="sw" style="--c:var(--d4)"></span>mais que isso: gelado</li>
+      </ul>
+      <p class="keys">O número é a posição do alvo na lista de palavras parecidas com a tua. Menor = mais perto. <kbd>Enter</kbd> coloca a tábua.</p>
+    </div>
+  </aside>
+
+  <section class="route" id="route" aria-label="Desafio">
+    <div class="rt"><span class="rt-w a" id="rtA">…</span><span class="rt-arrow" aria-hidden="true"><svg viewBox="0 0 70 28"><path class="dash" d="M4 14h56"/><path d="m52 6 10 8-10 8"/></svg></span><span class="rt-w b" id="rtB">…</span></div>
+    <div class="infobar">
+      <button class="chip modechip" id="modeChip" type="button" title="Trocar modo">DIÁRIO</button>
+      <span class="cnt par">par <b id="nPar">–</b></span>
+      <span class="cnt">passos <b id="nSteps">0</b></span>
+      <span class="cnt">erros <b id="nTries">0</b></span>
+    </div>
+  </section>
+
+  <section class="entry" id="entry">
+    <div class="tip" id="tip" aria-live="polite">
+      <div class="tip-top"><span class="tip-lbl">PONTA DA PONTE</span><b class="tip-w" id="tipW">…</b></div>
+      <div>
+        <div class="m-head"><span class="m-lbl">DISTÂNCIA ATÉ O ALVO</span><span class="m-val" id="mVal">calculando…</span></div>
+        <div class="m-track"><i class="m-fill" id="mFill"></i><span class="m-goal">LIGA</span></div>
+      </div>
+    </div>
+    <form class="guess" id="form" autocomplete="off">
+      <input id="inp" type="text" maxlength="32" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" placeholder="carregando…" aria-label="Próxima palavra da ponte" disabled>
+      <button class="btn primary go" id="go" type="submit" disabled aria-label="Colocar tábua"><svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg><span>Pôr</span></button>
+    </form>
+    <p class="msg" id="msg" role="status"></p>
+    <div class="actions" id="actions">
+      <button class="btn mini" id="bUndo" type="button" disabled><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg><span>Desfazer</span></button>
+      <button class="btn mini cool" id="bHint" type="button" disabled><svg viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg><span>Dica</span><b class="tag" id="nHint" hidden>0</b></button>
+      <span class="sp"></span>
+      <button class="btn mini" id="bGive" type="button" aria-label="Desistir" disabled><svg viewBox="0 0 24 24"><path d="M4 22V4"/><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1"/></svg><span>Desistir</span></button>
+    </div>
+    <div class="donecard" id="doneCard" hidden>
+      <div class="dc-txt" id="dcTxt"></div>
+      <div class="dc-btns">
+        <button class="btn mini primary" id="bResult" type="button">Ver resultado</button>
+        <button class="btn mini cool" id="bNext" type="button">Jogar livre</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="bridgewrap" id="bridgeWrap">
+    <div class="burst" id="burst" aria-hidden="true"></div>
+    <div class="loader" id="loader">
+      <h2>CARREGANDO AS TÁBUAS</h2>
+      <p id="ldSub">São 16 mil palavras. Se você já jogou Contexto, é rapidinho.</p>
+      <div class="ld-track"><i class="ld-fill" id="ldFill"></i></div>
+      <span class="ld-txt" id="ldTxt">0%</span>
+    </div>
+    <div id="bridgeBox" hidden></div>
+  </section>
+</div>
+
+<script src="../shared/falas.js"></script>
+<script src="../shared/bugado.js"></script>
+<script src="../contexto/vocab.js"></script>
+<script src="pares.js"></script>
+<script src="falas-ponte.js"></script>
+<script>
+(() => {
+const B = Bugado, $ = s => document.querySelector(s), RM = B.RM;
+
+/* ================= dados ================= */
+const VOCAB = window.CTX_VOCAB || [];
+const DIM = 300, K = window.PONTE_K || 400;
+let N = VOCAB.length;
+const EXACT = new Map(), NORM = new Map();
+VOCAB.forEach((w, i) => {
+  if (!EXACT.has(w)) EXACT.set(w, i);
+  const n = B.normalize(w); if (!NORM.has(n)) NORM.set(n, i);
+});
+const PARES = (window.PONTE_PARES || []).filter(p => EXACT.has(p.a) && EXACT.has(p.b) && (p.caminho || []).every(w => EXACT.has(w)));
+// palavras de ligação: não valem como tábua (mesma lista usada pra calcular o par)
+const STOP = new Set('que para com uma não por mais como dos das sua ser seu mas são muito sobre pelo pela também nos você ele até mesmo sem entre bem quando isso ainda todos seus ter fazer nas aos era onde ela meu tudo sempre aqui minha vez outros este assim apenas cada porque pra quem esse depois melhor dois esta essa seja maior pois agora todo qualquer ver nem contra hoje outro durante menos então antes caso qual tinha duas pouco meio nada tão três após desde partir toda nosso nossa além através num nós estar deste dar dentro quer desta estou mim mesma possível numa poder tanto for enquanto neste quase lhe fora disso vários sim sabe algum sob quatro meus alguma próprio dele isto deixar demais serão vão bastante somente esses entanto abaixo preciso junto porém acima nenhum devido dela nesse ninguém embora aquela aquele aquilo cujo cuja pelos pelas essas estes estas aquelas aqueles nossos nossas suas teu tua teus tuas dele deles delas dessa desse destes destas daquele daquela naquele naquela nisso nisto naquilo daquilo cujos cujas quais quanto quanta quantos quantas tanta tantos tantas muita muitos muitas pouca poucos poucas outra outras mesmos mesmas algumas alguns nenhuma nenhuns todas tal tais ali lá cá aí acolá aonde logo já contudo todavia portanto senão conforme segundo apesar mediante perante exceto salvo inclusive sequer talvez quiçá sobretudo aliás ademais afinal obviamente evidentemente realmente meramente praticamente absolutamente simplesmente certamente provavelmente geralmente frequentemente dificilmente principalmente justamente exatamente ante trás detrás adiante eis ora sei vai vou foi fui sou eram estava estavam está estão tem têm teve havia há houve seria será sendo sido tendo feito fez faz fazem faço pode podem podia deve devem deveria'.split(' '));
+const GENERIC = new Set(['coisa','coisas','pessoa','algo','vida','objeto','gente','mundo','negócio','treco','troço','parada','palavra','alguém','lugar','ideia','tempo','cara','tipo','forma','parte','assunto','questão','situação','caso','sentido','geral','elemento','item','exemplo','legal','bom','grande']);
+const TEMA = window.PONTE_TEMA || {};
+
+const KEY_D = 'fliperama.ponte.daily', KEY_L = 'fliperama.ponte.livre', KEY_R = 'fliperama.ponte.recent';
+const G = B.game('ponte');
+['played','wins','gaveUp','sumDiff','pars','birdies','eagles','bogeys','dStreak','dMax'].forEach(k => { G[k] = G[k] || 0; });
+
+/* ================= util ================= */
+const fmt = n => Number(n).toLocaleString('pt-BR');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const bw = w => `<b>${esc(w)}</b>`;
+const q = w => `‘${esc(w)}’`;
+const tickCh = new MessageChannel(), tickQ = [];
+tickCh.port1.onmessage = () => { const f = tickQ.shift(); if (f) f(); };
+const tick = () => new Promise(res => { tickQ.push(res); tickCh.port2.postMessage(0); });
+function hashStr(s){ let h = 5381; for (let i = 0; i < s.length; i++) h = (h * 33 ^ s.charCodeAt(i)) >>> 0; return h.toString(36); }
+// faixas de distância até o alvo
+const BANDS = [[K,'LIGA!','var(--d0)','🟩'],[1000,'PERTINHO','var(--d1)','🟧'],[3000,'MORNO','var(--d2)','🟨'],[7000,'FRIO','var(--d3)','🟦'],[Infinity,'GELADO','var(--d4)','🟪']];
+const bandOf = d => BANDS.find(b => d <= b[0]);
+const meterPct = d => d <= K ? 100 : Math.max(3, Math.min(97, 100 * (Math.log(N) - Math.log(d)) / (Math.log(N) - Math.log(K))));
+const golf = diff => diff <= -3 ? 'albatroz' : diff === -2 ? 'águia' : diff === -1 ? 'birdie' : diff === 0 ? 'par' : diff === 1 ? 'bogey' : diff === 2 ? 'bogey duplo' : diff === 3 ? 'bogey triplo' : `+${diff}`;
+
+/* ================= vetores (mesmo cache do Contexto) ================= */
+let V = null, NORMS = null;
+async function loadVectors(onProg){
+  const url = '../contexto/vetores.bin', expect = N * DIM;
+  const cacheName = 'fliperama-contexto', cacheKey = new URL(`../contexto/vetores.bin?v=${hashStr(VOCAB.join('|'))}`, location.href).href;
+  let buf = null;
+  try {
+    if ('caches' in window){
+      const c = await caches.open(cacheName), hit = await c.match(cacheKey);
+      if (hit){ const b = await hit.arrayBuffer(); if (b.byteLength >= expect) buf = b; }
+    }
+  } catch(e){}
+  if (!buf){
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (res.body && res.body.getReader){
+      const rd = res.body.getReader(), parts = []; let got = 0;
+      for (;;){
+        const { done, value } = await rd.read(); if (done) break;
+        parts.push(value); got += value.length; onProg(Math.min(got / expect, 1));
+      }
+      const out = new Uint8Array(got); let o = 0; for (const p of parts){ out.set(p, o); o += p.length; }
+      buf = out.buffer;
+    } else { buf = await res.arrayBuffer(); }
+    onProg(1);
+    try {
+      if ('caches' in window){
+        const c = await caches.open(cacheName);
+        for (const k of await c.keys()) await c.delete(k);
+        await c.put(cacheKey, new Response(buf.slice(0), { headers:{ 'Content-Type':'application/octet-stream' } }));
+      }
+    } catch(e){}
+  } else onProg(1);
+  N = Math.min(N, Math.floor(buf.byteLength / DIM));
+  V = new Int8Array(buf, 0, N * DIM);
+  NORMS = new Float64Array(N);
+  for (let i = 0; i < N; i++){
+    let s = 0; const o = i * DIM;
+    for (let k = 0; k < DIM; k++){ const v = V[o + k]; s += v * v; }
+    NORMS[i] = Math.sqrt(s) || 1;
+    if (i % 4000 === 3999) await tick();
+  }
+}
+// similaridade de i com todas (conta exata em inteiro, igual à usada pra calcular o par)
+function simsOf(i){
+  const s = new Float64Array(N), a = new Float64Array(DIM), o0 = i * DIM, ni = NORMS[i];
+  for (let k = 0; k < DIM; k++) a[k] = V[o0 + k];
+  for (let j = 0; j < N; j++){
+    let d = 0; const o = j * DIM;
+    for (let k = 0; k < DIM; k++) d += a[k] * V[o + k];
+    s[j] = d / (NORMS[j] * ni);
+  }
+  return s;
+}
+// posição de x na lista de parecidas de w (1 = a mais parecida; w não conta)
+function posIn(sims, w, x){
+  const sx = sims[x]; let c = 0;
+  for (let j = 0; j < N; j++){ if (j === w || j === x) continue; const sj = sims[j]; if (sj > sx || (sj === sx && j < x)) c++; }
+  return c + 1;
+}
+
+/* ================= entrada ================= */
+const RULES = [['oes','ao'],['aes','ao'],['aos','ao'],['ns','m'],['ais','al'],['eis','el'],['eis','il'],['ois','ol'],['uis','ul'],['is','il'],['res','r'],['zes','z'],['ses','s'],['les','l'],['s','']];
+function resolve(raw){
+  const s = String(raw).toLowerCase().trim().replace(/^[\s.,;:!?"'“”‘’()]+|[\s.,;:!?"'“”‘’()]+$/g, '');
+  if (!s) return { err:'empty' };
+  if (!/^[a-zà-öø-ÿ-]+$/.test(s)) return { err:'invalid', s };
+  if (EXACT.has(s) && EXACT.get(s) < N) return { i:EXACT.get(s), s };
+  const n = B.normalize(s);
+  if (NORM.has(n) && NORM.get(n) < N) return { i:NORM.get(n), s };
+  for (const [suf, rep] of RULES){
+    if (n.length > suf.length && n.endsWith(suf)){
+      const c = n.slice(0, -suf.length) + rep;
+      if (NORM.has(c) && NORM.get(c) < N) return { i:NORM.get(c), s, plural:true };
+    }
+  }
+  return { err:'unknown', s };
+}
+
+/* ================= desafios ================= */
+function dailyIdx(day){
+  const perm = B.shuffle([...PARES.keys()], B.rng(0x9017E26));
+  return perm[((day % perm.length) + perm.length) % perm.length];
+}
+function pickLivre(){
+  const recent = B.store.get(KEY_R) || [], today = dailyIdx(B.dayNumber());
+  let pool = [...PARES.keys()].filter(i => !recent.includes(i) && i !== today);
+  if (!pool.length) pool = [...PARES.keys()].filter(i => i !== today);
+  const i = pool[Math.floor(Math.random() * pool.length)];
+  pushRecent(i); return i;
+}
+function pushRecent(i){ const r = (B.store.get(KEY_R) || []).filter(x => x !== i); r.push(i); while (r.length > 180) r.shift(); B.store.set(KEY_R, r); }
+
+/* ================= estado ================= */
+let S = null, ready = false, busy = false, loadTok = 0;
+let W = new Map();           // índice → { sims, dist }
+let TS = null;               // similaridade do alvo com todas
+let IA = -1, IB = -1;        // índices de partida e alvo
+let links = [], dists = [];  // por palavra da ponte (0 = partida)
+const newState = (mode, pi, day) => {
+  const p = PARES[pi];
+  return { mode, pi, day: day ?? null, a:p.a, b:p.b, par:p.par, min:p.min ?? p.par, caminho:p.caminho.slice(),
+    chain:[], hinted:[], tries:0, miss:0, undos:0, hints:0, done:false, won:false, gaveUp:false, xp:0 };
+};
+function save(){ if (S) B.store.set(S.mode === 'daily' ? KEY_D : KEY_L, S); }
+const chainIdx = () => [IA, ...S.chain.map(w => EXACT.get(w))];
+const lastIdx = () => { const c = chainIdx(); return c[c.length - 1]; };
+const steps = () => S.chain.length;
+async function ensure(i){
+  if (W.has(i)) return W.get(i);
+  const sims = simsOf(i), dist = i === IB ? 1 : posIn(sims, i, IB);
+  const d = { sims, dist }; W.set(i, d); return d;
+}
+
+/* ================= DOM ================= */
+const inp = $('#inp'), form = $('#form'), msgEl = $('#msg'), box = $('#bridgeBox'), burstEl = $('#burst'), loaderEl = $('#loader');
+const say = (cat, vars, mood, hold) => B.talk(cat, vars, mood, hold);
+function setMsg(t){ msgEl.innerHTML = t || ''; }
+function anim(el, cls, ms = 950){ if (!el || RM) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); setTimeout(() => el.classList.remove(cls), ms); }
+const burst = (t, c) => B.burst(burstEl, t, c);
+const linkCls = p => p <= 25 ? 'strong' : p <= K * .75 ? 'ok' : 'weak';
+
+function plankHTML(w, n, d, cls, extra = ''){
+  const bd = d ? bandOf(d) : null;
+  const meter = d ? `<span class="pk-d"><small><i>ALVO </i>${d <= K ? 'LIGA!' : fmt(d)}</small><span class="pk-bar"><i style="width:${meterPct(d).toFixed(1)}%"></i></span></span>` : '<span class="pk-d"></span>';
+  return `<li class="plank ${cls}" style="${bd ? `--c:${bd[2]}` : ''}" data-w="${esc(w)}"><span class="pk-n">${n}</span><span class="pk-w">${esc(w)}${extra}</span>${meter}</li>`;
+}
+const linkHTML = (p, de, para) => `<li class="link ${linkCls(p)}" title="${esc(para)} é a ${fmt(p)}ª mais parecida com ${esc(de)}"><span>#${fmt(p)}</span></li>`;
+
+function render(){
+  if (!S) return;
+  const daily = S.mode === 'daily';
+  $('#rtA').textContent = S.a.toUpperCase(); $('#rtB').textContent = S.b.toUpperCase();
+  const chip = $('#modeChip'); chip.textContent = daily ? `DIÁRIO #${S.day}` : 'LIVRE'; chip.classList.toggle('free', !daily);
+  $('#nPar').textContent = S.par; $('#nSteps').textContent = steps(); $('#nTries').textContent = S.tries;
+  $('#nHint').hidden = !S.hints; $('#nHint').textContent = S.hints;
+  const live = ready && !S.done && !busy;
+  inp.disabled = !ready || S.done; $('#go').disabled = !live;
+  $('#bHint').disabled = !live; $('#bUndo').disabled = !live || !S.chain.length; $('#bGive').disabled = !live;
+  form.hidden = S.done; $('#actions').hidden = S.done; $('#doneCard').hidden = !S.done;
+  // ponta
+  const lw = S.done && S.won ? S.b : (S.chain.length ? S.chain[S.chain.length - 1] : S.a);
+  $('#tipW').textContent = lw;
+  const ld = ready ? (S.done && S.won ? 1 : dists[dists.length - 1]) : null;
+  const fill = $('#mFill');
+  if (!ld){ fill.style.width = '0%'; $('#mVal').textContent = ready ? '—' : 'calculando…'; }
+  else {
+    const bd = bandOf(ld);
+    fill.style.width = meterPct(ld).toFixed(1) + '%'; fill.style.setProperty('--c', bd[2]);
+    $('#mVal').innerHTML = S.done && S.won ? '<b>CHEGOU!</b>' : `<b>${fmt(ld)}</b> · ${bd[1]}`;
+  }
+  inp.placeholder = !ready ? 'carregando…' : `o que tem a ver com “${lw}”?`;
+  if (S.done){
+    const p = steps(), diff = p - S.par;
+    $('#dcTxt').innerHTML = S.won
+      ? `Ponte pronta em <b>${p}</b> passo${p === 1 ? '' : 's'} (par ${S.par}: ${golf(diff)})${S.hints ? ` com ${S.hints} dica${S.hints > 1 ? 's' : ''}` : ''}.`
+      : `Ponte caiu. Um caminho era ${S.caminho.map(bw).join(' → ')}.`;
+    $('#bNext').textContent = daily ? 'Jogar livre' : 'Nova ponte';
+  }
+  // a ponte
+  if (!ready){ box.innerHTML = '<div class="thinking">Medindo as distâncias…</div>'; return; }
+  let h = plankHTML(S.a, 'A', dists[0], 'start' + (S.chain.length || S.done ? '' : ' last'));
+  const ci = chainIdx();
+  S.chain.forEach((w, k) => {
+    const isGoal = S.won && k === S.chain.length - 1;
+    h += linkHTML(links[k + 1], VOCAB[ci[k]], w);
+    if (isGoal) h += plankHTML(w, 'B', 0, 'goal reached', '<em>ALVO</em>');
+    else h += plankHTML(w, k + 1, dists[k + 1], (S.hinted.includes(w) ? 'hinted' : '') + (k === S.chain.length - 1 && !S.done ? ' last' : ''));
+  });
+  if (!S.won){
+    h += `<li class="river" id="river"><b>${S.done ? 'A PONTE NÃO CHEGOU' : 'RIO · FALTA LIGAR'}</b></li>`;
+    h += plankHTML(S.b, 'B', 0, 'goal', '<em>ALVO</em>');
+  }
+  let sol = '';
+  if (S.done && !S.won) sol = `<div class="solution"><h3>Um caminho em ${S.par} passos (o par)</h3><div class="chips">${chipsHTML(S.caminho)}</div></div>`;
+  box.innerHTML = `<div class="b-head"><span>A PONTE</span><span>${steps()} PASSO${steps() === 1 ? '' : 'S'} · PAR ${S.par}</span></div><ol class="bridge" id="bridge">${h}</ol>${sol}`;
+  const br = $("#bridge"); if (br && br.scrollWidth > br.clientWidth) br.scrollLeft = br.scrollWidth;
+}
+function chipsHTML(ws, hinted = []){
+  return ws.map((w, k) => `<span class="w ${k === 0 ? 'a' : k === ws.length - 1 ? 'b' : hinted.includes(w) ? 'h' : ''}">${esc(w)}</span>`).join('<span class="ar">→</span>');
+}
+function lastPlank(){ const ps = box.querySelectorAll('.plank:not(.goal)'); return ps[ps.length - 1]; }
+function splash(word){
+  const r = $('#river'); if (!r || RM) return;
+  const s = document.createElement('span'); s.className = 'splash'; s.textContent = word; r.appendChild(s);
+  setTimeout(() => s.remove(), 1150);
+}
+
+/* ================= jogada ================= */
+async function submit(){
+  if (!ready || busy || !S || S.done) return;
+  const raw = inp.value, res = resolve(raw);
+  if (res.err === 'empty'){ anim(form, 'shake'); return; }
+  if (res.err === 'invalid'){ anim(form, 'shake'); B.sfx.meh(); setMsg('Uma palavra só, só com letras.'); say('pnInvalida', null, 'smug'); return; }
+  if (res.err === 'unknown'){
+    anim(form, 'shake'); B.sfx.err(); B.glitch(); setMsg(`Não conheço “${esc(res.s)}”. Não contou como erro.`);
+    say('pnDesconhecida', { palavra:bw(res.s) }, 'smug'); inp.select(); return;
+  }
+  const i = res.i, w = VOCAB[i], prev = lastIdx(), de = VOCAB[prev];
+  const vars = { palavra:bw(w), de:bw(de), a:bw(S.a), b:bw(S.b), k:fmt(K), par:S.par, orig: res.plural ? bw(res.s) : '' };
+  if (STOP.has(w)){ anim(form, 'shake'); B.sfx.meh(); setMsg(`“${esc(w)}” é palavra de ligação. Não vale como tábua.`); say('pnFuncao', vars, 'smug'); inp.select(); return; }
+  if (chainIdx().includes(i)){
+    anim(form, 'shake'); B.sfx.meh(); setMsg(`${q(w)} já tá na ponte.`); say('pnRepetida', vars, 'smug'); inp.select();
+    const el = box.querySelector(`.plank[data-w="${CSS.escape(w)}"]`); if (el){ el.scrollIntoView({ block:'nearest', behavior: RM ? 'auto' : 'smooth' }); anim(el, 'flash'); }
+    return;
+  }
+  const pd = W.get(prev), p = posIn(pd.sims, prev, i);
+  vars.n = fmt(p);
+  if (p > K){
+    S.tries++; S.miss++; save(); render();
+    anim(form, 'shake'); splash(w);
+    setMsg(`${q(w)} ficou na posição <b>${fmt(p)}</b> de ${q(de)}: ${p <= K * 2 ? 'quase!' : 'longe demais'}, precisa ser até ${fmt(K)}.`);
+    inp.select();
+    if (i === IB){ B.sfx.meh(); say('pnAlvoCedo', vars, 'smug', 6000); }
+    else if ([3,5,8,12,18,25].includes(S.miss)){ B.sfx.err(); vars.k = S.miss; say('pnTentativas', vars, 'shock', 6000); }
+    else if (p <= K * 2){ B.sfx.meh(); say('pnNaoQuase', vars, 'talk', 5500); }
+    else { B.sfx.err(); B.glitch(); say('pnNaoLonge', vars, Math.random() < .5 ? 'smug' : 'shock', 5500); }
+    return;
+  }
+  // conectou!
+  setMsg(''); inp.value = '';
+  await place(i, false, vars);
+}
+
+async function place(i, hint, vars){
+  busy = true; render();
+  const prev = lastIdx(), antes = W.get(prev).dist, link = posIn(W.get(prev).sims, prev, i);
+  const w = VOCAB[i];
+  if (i === IB){ // digitou o alvo e ele liga
+    S.chain.push(w); links.push(link); dists.push(1); busy = false; save(); render();
+    return finish(true);
+  }
+  const d = await ensure(i);
+  S.chain.push(w); links.push(link); dists.push(d.dist); S.miss = 0;
+  if (hint){ S.hints++; S.hinted.push(w); }
+  busy = false; save(); render();
+  const pl = lastPlank(); anim(pl, 'drop', 500);
+  if (pl && steps() > 3) pl.scrollIntoView({ block:'nearest', behavior: RM ? 'auto' : 'smooth' });
+  if (d.dist <= K){ // o alvo liga na palavra nova: fecha a ponte
+    B.sfx.good();
+    setTimeout(() => { S.chain.push(S.b); links.push(d.dist); dists.push(1); save(); render(); anim(box.querySelector('.plank.goal'), 'slam', 700); finish(true); }, RM ? 150 : 650);
+    return;
+  }
+  const better = d.dist < antes;
+  if (hint) B.sfx.hint(); else if (better) B.sfx.place(Math.max(0, Math.round(meterPct(d.dist) / 100 * 14))); else B.sfx.meh();
+  if (hint) return;
+  // o que o Bugado fala
+  Object.assign(vars, { palavra:bw(w), n:fmt(link), dist:fmt(d.dist), antes:fmt(antes), k:fmt(K), passos:steps() });
+  const start = dists[0], n = steps();
+  let cat, mood = 'talk';
+  if (vars.orig && Math.random() < .5) cat = 'pnPlural';
+  else if (GENERIC.has(w)){ cat = 'pnGenerica'; mood = 'smug'; }
+  else if (d.dist > start && antes <= start){ cat = 'pnVoltando'; mood = 'shock'; }
+  else if (d.dist <= K * 2.5){ cat = 'pnQuaseLa'; mood = 'shock'; }
+  else if (n === 1 && Math.random() < .35) cat = 'pnPrimeira';
+  else if (link <= 5 && Math.random() < .45){ cat = 'pnLinkForte'; mood = 'smug'; }
+  else if (link > K * .8 && Math.random() < .55){ cat = 'pnLinkFraco'; mood = 'shock'; }
+  else if (n >= S.par + 2 && (n - S.par) % 2 === 0 && Math.random() < .7){ cat = 'pnMeiaPonte'; vars.k = n; mood = 'smug'; }
+  else if (d.dist < antes * .55){ cat = 'pnPertoMuito'; mood = 'happy'; }
+  else if (better) cat = 'pnPertoPouco';
+  else { cat = 'pnLonge'; mood = 'smug'; }
+  say(cat, vars, mood, 5500);
+}
+
+function undo(){
+  if (!ready || busy || !S || S.done || !S.chain.length) return;
+  const w = S.chain.pop(); links.pop(); dists.pop(); S.undos++;
+  const hi = S.hinted.indexOf(w); if (hi >= 0) S.hinted.splice(hi, 1); // a dica continua contada
+  save(); render(); B.sfx.flip(); setMsg('');
+  const de = S.chain.length ? S.chain[S.chain.length - 1] : S.a;
+  say(S.undos >= 4 && S.undos % 3 === 1 ? 'pnDesfazerMuito' : 'pnDesfazer', { palavra:bw(w), de:bw(de) }, 'smug', 4500);
+  anim(lastPlank(), 'flash');
+  if (matchMedia('(pointer:fine)').matches) inp.focus({ preventScroll:true });
+}
+
+async function hint(){
+  if (!ready || busy || !S || S.done) return;
+  busy = true; render(); $('#bHint').classList.add('flash');
+  const prev = lastIdx(), ps = W.get(prev).sims, cur = W.get(prev).dist, used = new Set(chainIdx());
+  // vizinhas conectadas da ponta
+  const idx = new Uint32Array(N); for (let j = 0; j < N; j++) idx[j] = j;
+  idx.sort((x, y) => (ps[y] - ps[x]) || (x - y));
+  const conn = [];
+  for (let k = 0, got = 0; k < N && got < K; k++){ const j = idx[k]; if (j === prev) continue; got++; if (!used.has(j) && j !== IB && !STOP.has(VOCAB[j]) && VOCAB[j].length > 2) conn.push(j); }
+  // as mais parecidas com o alvo (prefere palavras comuns)
+  const common = conn.filter(j => j < 9000).sort((x, y) => TS[y] - TS[x]).slice(0, 18);
+  const rare = conn.filter(j => j >= 9000).sort((x, y) => TS[y] - TS[x]).slice(0, 4);
+  // a dica aproxima, mas não entrega o fim de bandeja: prefere uma que ainda NÃO liga no alvo
+  // (se ela fizer um progresso de verdade); se não tiver, vai a melhor mesmo
+  let best = -1, bd = Infinity, best2 = -1, bd2 = Infinity;
+  const scored = [];
+  for (const j of [...common, ...rare]){
+    const s = simsOf(j), d = posIn(s, j, IB);
+    const score = d * (j >= 9000 ? 1.6 : 1);
+    scored.push(j); W.set(j, { sims:s, dist:d });
+    if (score < bd){ bd = score; best = j; }
+    if (d > K && score < bd2){ bd2 = score; best2 = j; }
+    await tick();
+  }
+  if (best2 >= 0 && W.get(best2).dist < cur * .7) best = best2;
+  // libera memória das que não foram escolhidas
+  for (const j of scored) if (j !== best && !used.has(j)) W.delete(j);
+  busy = false; $('#bHint').classList.remove('flash');
+  if (best < 0 || W.get(best).dist >= cur){ render(); say('pnDicaNada', null, 'dead', 5000); return; }
+  const w = VOCAB[best], vars = { palavra:bw(w), de:bw(VOCAB[prev]), b:bw(S.b) };
+  setMsg(''); inp.value = '';
+  await place(best, true, vars);
+  if (!S.done){ vars.k = S.hints; say(S.hints >= 3 ? 'pnDicaMuitas' : 'pnDica', vars, 'smug', 6500); }
+}
+
+function askGiveUp(){
+  if (!ready || busy || !S || S.done) return;
+  B.openModal(`
+    <h2>Largar a obra?</h2>
+    <p class="sub">${B.line('pnDesistirPergunta', { b:bw(S.b) })}</p>
+    <p>Eu mostro um caminho de ${bw(S.a)} até ${bw(S.b)}. ${S.mode === 'daily' ? 'O diário de hoje conta como perdido.' : 'Conta como desistência.'}</p>
+    <div class="m-actions">
+      <button class="btn primary" type="button" data-act="close">Nada, vou continuar</button>
+      <button class="btn hot" type="button" data-act="giveup">Desisto, mostra</button>
+    </div>`);
+}
+B.onAct('giveup', () => { B.closeModal(true); finish(false); });
+
+/* ================= fim ================= */
+function xpFor(){
+  const diff = steps() - S.par;
+  let xp = 40 + (diff <= 0 ? 15 + 15 * (-diff) : 0) - 10 * S.hints;
+  xp = Math.max(10, xp);
+  if (S.mode !== 'daily') xp = xp / 2;
+  return Math.round(xp);
+}
+function finish(won){
+  if (S.done) return;
+  S.done = true; S.won = won; S.gaveUp = !won;
+  const p = steps(), diff = p - S.par;
+  G.played++;
+  if (won){
+    S.xp = xpFor(); B.registerWin('ponte');
+    G.sumDiff += diff;
+    if (diff <= -2) G.eagles++; else if (diff === -1) G.birdies++; else if (diff === 0) G.pars++; else G.bogeys++;
+    G.best = G.best === undefined || G.best === null ? diff : Math.min(G.best, diff);
+  } else G.gaveUp++;
+  if (S.mode === 'daily'){
+    G.lastDaily = { day:S.day, won, passos: won ? p : null };
+    if (won){ G.dStreak = G.dLastWin === S.day - 1 ? G.dStreak + 1 : 1; G.dLastWin = S.day; G.dMax = Math.max(G.dMax, G.dStreak); }
+    else G.dStreak = 0;
+    pushRecent(S.pi);
+  }
+  B.saveProfile(); save(); render();
+  if (won){
+    B.gainXP(S.xp, { quiet:true });
+    B.sfx.win(); B.confetti();
+    burst(diff <= -2 ? 'ÁGUIA!' : diff === -1 ? 'BIRDIE!' : diff === 0 ? 'NO PAR!' : 'PONTE PRONTA!', diff <= 0 ? '#3DDC84' : '#FFD23F');
+    const cat = S.hints ? 'pnVitoriaDica' : diff < 0 ? 'pnVitoriaAbaixo' : diff === 0 ? 'pnVitoriaPar' : diff <= 2 ? 'pnVitoriaAcima' : 'pnVitoriaMuitoAcima';
+    say(cat, { passos:p, par:S.par, b:bw(S.b), a:bw(S.a) }, 'happy', 99999);
+  } else {
+    B.sfx.lose(); B.glitch();
+    say('pnDesistiu', { b:bw(S.b) }, 'dead', 99999);
+  }
+  setTimeout(showResult, won ? (RM ? 500 : 1800) : 700);
+}
+
+function shareText(){
+  const p = steps(), title = S.mode === 'daily' ? `Fliperama Bugado · Ponte #${S.day}` : 'Fliperama Bugado · Ponte Livre';
+  const route = `${S.a.toUpperCase()} → ${S.b.toUpperCase()}`;
+  const res = S.won ? `${title}: ${route} em ${p} (par ${S.par}) 🌉` : `${title}: ${route}, a ponte caiu 🌊 (par ${S.par})`;
+  const sq = dists.slice(0, S.won ? -1 : undefined).map(d => bandOf(d)[3]).join('') + (S.won ? '🏁' : '');
+  const extra = [S.hints ? `${S.hints} dica${S.hints > 1 ? 's' : ''}` : '', S.tries ? `${S.tries} erro${S.tries > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · ');
+  return `${res}\n${sq}${extra ? `\n${extra}` : ''}\n${location.origin}${location.pathname}`;
+}
+function showResult(){
+  if (!S || !S.done) return;
+  const p = steps(), diff = p - S.par, daily = S.mode === 'daily', lvl = B.levelInfo();
+  const title = !S.won ? '<h2>A ponte caiu</h2>' : `<h2 class="big">${diff <= -2 ? 'ÁGUIA!' : diff === -1 ? 'BIRDIE!' : diff === 0 ? 'NO PAR!' : 'CHEGOU!'}</h2>`;
+  const mine = [S.a, ...S.chain];
+  B.openModal(`
+    ${title}
+    <p class="sub">${B.line(S.won ? 'vitoriaGeral' : 'derrotaGeral')}</p>
+    <div class="route-big">${esc(S.a.toUpperCase())} → ${esc(S.b.toUpperCase())}</div>
+    <p class="scoreline">${S.won ? `Par ${S.par}: você fez em ${p} <span class="pill ${diff <= 0 ? '' : diff === 1 ? 'sun' : 'pink'}">${golf(diff)}</span>` : `Par ${S.par}: desistiu com ${p} passo${p === 1 ? '' : 's'}`}</p>
+    <div class="stat-grid four">
+      <div class="stat"><b>${p}</b><span>passos</span></div>
+      <div class="stat"><b>${S.tries}</b><span>erros</span></div>
+      <div class="stat"><b>${S.hints}</b><span>dicas</span></div>
+      ${S.won ? `<div class="stat"><b>+${S.xp}</b><span>XP</span></div>` : daily ? `<div class="stat"><b>${G.dLastWin >= S.day - 1 ? G.dStreak : 0}</b><span>seguidos</span></div>` : `<div class="stat"><b>${lvl.lvl}</b><span>nível</span></div>`}
+    </div>
+    <h3>Tua ponte</h3>
+    <div class="chips">${chipsHTML(S.won ? mine : [...mine, '…', S.b], S.hinted)}</div>
+    <h3>Um caminho no par (${S.par})</h3>
+    <div class="chips">${chipsHTML(S.caminho)}</div>
+    ${S.min < S.par ? `<p class="note">Segredo: dá pra fazer em <b>${S.min}</b> usando palavras menos comuns. ${S.won && p <= S.min ? 'E você achou!' : 'Fica o desafio.'}</p>` : ''}
+    <div class="m-actions">
+      <button class="btn primary" type="button" data-act="share">Copiar resultado</button>
+      <button class="btn cool" type="button" data-act="next">${daily ? 'Jogar livre' : 'Nova ponte'}</button>
+      <button class="btn" type="button" data-act="close">Ver a ponte</button>
+    </div>`);
+}
+B.onAct('share', async () => {
+  const t = shareText();
+  if (await B.copyText(t)) B.toast('Copiado!', 'Cola no grupo. Sem entregar o caminho, hein.');
+  else B.openModal(`<h2>Copia aí</h2><p class="sub">Teu navegador não deixou eu copiar sozinho.</p><textarea class="share-ta" readonly>${esc(t)}</textarea><div class="m-actions"><button class="btn primary" type="button" data-act="close">Fechar</button></div>`);
+});
+B.onAct('next', () => { B.closeModal(true); openMode('livre', { fresh:true }); });
+
+/* ================= modos ================= */
+async function openMode(mode, opts = {}){
+  const tok = ++loadTok, day = B.dayNumber();
+  let st;
+  if (mode === 'daily'){
+    const pi = dailyIdx(day), p = PARES[pi];
+    st = B.store.get(KEY_D);
+    if (!st || st.day !== day || st.a !== p.a || st.b !== p.b) st = newState('daily', pi, day);
+  } else {
+    st = opts.fresh ? null : B.store.get(KEY_L);
+    if (!st || st.done || !PARES[st.pi] || PARES[st.pi].a !== st.a || PARES[st.pi].b !== st.b) st = newState('livre', pickLivre());
+  }
+  st = Object.assign(newState(st.mode, st.pi, st.day), st);
+  G.lastMode = mode; B.saveProfile();
+  S = st; ready = false; busy = false; W = new Map(); links = [0]; dists = []; setMsg('');
+  IA = EXACT.get(S.a); IB = EXACT.get(S.b);
+  render();
+  await tick();
+  TS = simsOf(IB); await tick();
+  const d0 = await ensure(IA); if (tok !== loadTok) return;
+  dists = [d0.dist];
+  // reconstrói a ponte salva (e corta onde algo não bater)
+  const saved = (S.chain || []).slice(); S.chain = [];
+  let prev = IA;
+  for (const w of saved){
+    const i = EXACT.get(w); if (i === undefined) break;
+    const lk = posIn(W.get(prev).sims, prev, i); if (lk > K) break;
+    if (i === IB){ S.chain.push(w); links.push(lk); dists.push(1); break; }
+    const d = await ensure(i); if (tok !== loadTok) return;
+    S.chain.push(w); links.push(lk); dists.push(d.dist); prev = i;
+    await tick();
+  }
+  if (S.won && S.chain[S.chain.length - 1] !== S.b){ S.done = false; S.won = false; }
+  S.hinted = (S.hinted || []).filter(w => S.chain.includes(w));
+  ready = true; save(); render();
+  if (!opts.quiet){
+    const vars = { a:bw(S.a), b:bw(S.b), dia:S.day, k:steps(), ultima:bw(S.chain.length ? S.chain[S.chain.length - 1] : S.a) };
+    if (S.done) say('pnDiarioFeito', vars, 'smug', 7000);
+    else if (S.chain.length || S.tries) say('pnVoltou', vars, 'smug', 6500);
+    else {
+      const ta = TEMA[S.a], tb = TEMA[S.b];
+      const combo = ta && tb ? (ta === tb ? 'pnCombo_mesmoTema' : B.lines(`pnCombo_${ta}_${tb}`).length ? `pnCombo_${ta}_${tb}` : B.lines(`pnCombo_${tb}_${ta}`).length ? `pnCombo_${tb}_${ta}` : null) : null;
+      if (combo && Math.random() < .45) say(combo, vars, 'smug', 6500);
+      else if (Math.random() < .5) say(mode === 'daily' ? 'pnInicioDiario' : 'pnInicioLivre', vars, 'talk', 6500);
+      else say('pnInicio', vars, 'talk', 6500);
+    }
+  }
+  if (!S.done && matchMedia('(pointer:fine)').matches) inp.focus({ preventScroll:true });
+}
+
+function showModes(){
+  const day = B.dayNumber(), d = B.store.get(KEY_D), l = B.store.get(KEY_L), p = PARES[dailyIdx(day)];
+  const dToday = d && d.day === day && d.a === p.a && d.b === p.b ? d : null;
+  const dStatus = !dToday || !(dToday.chain || []).length ? 'novo' : dToday.done ? (dToday.won ? 'feito' : 'perdido') : `${dToday.chain.length} passos`;
+  const lGoing = l && !l.done && ((l.chain && l.chain.length) || l.tries);
+  B.openModal(`
+    <h2>Escolhe o modo</h2>
+    <p class="sub">O diário é igual pra todo mundo. O livre sorteia quantas pontes você aguentar.</p>
+    <div class="modes">
+      <button class="btn mode ${S && S.mode === 'daily' ? 'cur' : ''}" type="button" data-act="mode" data-m="daily" style="--c:var(--pt)"><b>Diário #${day}</b><span>Uma ponte por dia. Compara o placar com os amigos.</span><em>${dStatus}</em></button>
+      <button class="btn mode ${S && S.mode === 'livre' ? 'cur' : ''}" type="button" data-act="mode" data-m="${lGoing ? 'livre' : 'livrenew'}" style="--c:var(--cyan)"><b>Livre</b><span>${lGoing ? `Continua ${esc(l.a)} → ${esc(l.b)}.` : 'Ponte sorteada. Vale metade do XP.'}</span><em>${lGoing ? `${l.chain.length} passos` : 'novo'}</em></button>
+      ${lGoing ? '<button class="btn mode" type="button" data-act="mode" data-m="livrenew" style="--c:var(--sun)"><b>Livre: ponte nova</b><span>Larga a atual (não conta como derrota) e sorteia outra.</span><em>novo</em></button>' : ''}
+    </div>
+    <div class="m-actions"><button class="btn" type="button" data-act="close">Voltar</button></div>`);
+}
+B.onAct('mode', b => {
+  B.closeModal(true); B.sfx.flip();
+  const m = b.dataset.m;
+  if (m === 'daily') openMode('daily'); else openMode('livre', { fresh: m === 'livrenew' });
+});
+
+function showStats(){
+  const avg = G.wins ? G.sumDiff / G.wins : null;
+  const avgTxt = avg === null ? '—' : (avg > 0 ? '+' : '') + avg.toFixed(1).replace('.', ',');
+  const day = B.dayNumber(), streak = G.dLastWin >= day - 1 ? G.dStreak : 0;
+  const today = G.lastDaily && G.lastDaily.day === day ? (G.lastDaily.won ? `feito em ${G.lastDaily.passos}` : 'perdido') : 'pendente';
+  B.openModal(`
+    <h2>Tua ficha na Ponte</h2>
+    <p class="sub">Diário de hoje: <b>${today}</b>.</p>
+    <div class="stat-grid">
+      <div class="stat"><b>${G.played}</b><span>jogos</span></div>
+      <div class="stat"><b>${G.wins || 0}</b><span>pontes</span></div>
+      <div class="stat"><b>${avgTxt}</b><span>média vs par</span></div>
+      <div class="stat"><b>${G.eagles}</b><span>águias</span></div>
+      <div class="stat"><b>${G.birdies}</b><span>birdies</span></div>
+      <div class="stat"><b>${G.pars}</b><span>no par</span></div>
+      <div class="stat"><b>${G.bogeys}</b><span>acima</span></div>
+      <div class="stat"><b>${G.gaveUp}</b><span>desistências</span></div>
+      <div class="stat"><b>${streak}</b><span>diários seguidos</span></div>
+      <div class="stat"><b>${G.dMax}</b><span>maior sequência</span></div>
+    </div>
+    <p style="margin-top:14px">${!G.wins ? 'Nenhuma ponte ainda. Todo engenheiro começa com um palito de picolé.' : avg <= 0 ? 'Média no par ou abaixo. Tá construindo melhor que eu. Não gostei.' : avg <= 1 ? 'Um passinho acima do par, em média. Dá pra apertar.' : 'Tuas pontes são… panorâmicas. Bonitas, mas compridas.'}</p>
+    <div class="m-actions"><button class="btn primary" type="button" data-act="close">Fechar</button></div>`);
+}
+function showHelp(){
+  B.openModal(`
+    <h2>Ponte pra quem nunca jogou</h2>
+    <p class="sub">Você recebe duas palavras que não têm nada a ver. Tua missão: ligar uma na outra, palavra por palavra.</p>
+    <div class="demo" aria-label="Exemplo: de gato até pizza">
+      <div class="d-pk" style="--c:var(--d4)">gato <small>alvo 6.002</small></div>
+      <div class="d-ln" style="animation-delay:.8s"><span>#7</span></div>
+      <div class="d-pk" style="--c:var(--d2);animation-delay:1.2s">rato <small>alvo 3.561</small></div>
+      <div class="d-no" style="animation-delay:2s">pizza? caiu no rio: #3.561</div>
+      <div class="d-ln" style="animation-delay:3.4s"><span>#143</span></div>
+      <div class="d-pk" style="--c:var(--d0);animation-delay:3.8s">queijo <small>alvo 49 · liga!</small></div>
+      <div class="d-ln" style="animation-delay:4.8s"><span>#49</span></div>
+      <div class="d-pk" style="--c:var(--sun);animation-delay:5.2s">PIZZA <small>chegou em 3!</small></div>
+    </div>
+    <h3>A regra</h3>
+    <ul>
+      <li><span class="tag2">1</span><span><b>Cada palavra tem que ter a ver com a anterior.</b> Por baixo dos panos: ela precisa estar entre as <b>${fmt(K)}</b> palavras mais parecidas com a anterior (numa fila de 16 mil, por <b>sentido</b>).</span></li>
+      <li><span class="tag2" style="--c:var(--orange)">2</span><span>Se não tiver, a tábua cai no rio e eu digo a posição dela (tipo “#2.345, precisa até ${fmt(K)}”). Não perde nada, só conta um erro.</span></li>
+      <li><span class="tag2" style="--c:var(--green)">3</span><span>Quando o <b>alvo</b> ficar entre as ${fmt(K)} mais parecidas da tua última palavra, a ponte fecha sozinha. Vitória!</span></li>
+    </ul>
+    <h3>A distância até o alvo</h3>
+    <ul>
+      <li><span class="tag2" style="--c:var(--pt)">NÚMERO</span><span>Embaixo de cada tábua aparece a posição do alvo na lista da palavra. Menor = mais perto. Chegou a ${fmt(K)}? Liga.</span></li>
+      <li><span class="tag2" style="--c:var(--d0)">CORES</span><span>Verde liga, laranja pertinho, amarelo morno, azul frio, lilás gelado.</span></li>
+    </ul>
+    <h3>O placar (tipo golfe)</h3>
+    <ul>
+      <li><span class="tag2" style="--c:var(--sun)">PAR</span><span>É quantos passos eu levo usando palavras do dia a dia. Fez igual: <b>par</b>. Um a menos: <b>birdie</b>. Dois: <b>águia</b>. A mais: <b>bogey</b>.</span></li>
+      <li><span class="tag2" style="--c:var(--cyan)">DICA</span><span>Eu coloco uma palavra que chega mais perto do alvo. Custa XP.</span></li>
+      <li><span class="tag2" style="--c:#fff">DESFAZER</span><span>Tira a última tábua. É de graça, usa sem culpa.</span></li>
+    </ul>
+    <h3>Truques</h3>
+    <ul>
+      <li><span class="tag2" style="--c:#FFF1B8">!</span><span>Pensa em onde a coisa fica, pra que serve, quem usa, do que é feita. Palavras comuns ligam mais fácil.</span></li>
+      <li><span class="tag2" style="--c:#FFF1B8">!</span><span>Plural e acento tanto faz. Palavra de ligação (que, para, com…) não vale.</span></li>
+    </ul>
+    <div class="m-actions"><button class="btn primary" type="button" data-act="close">Bora construir</button></div>`);
+}
+
+/* ================= eventos ================= */
+form.addEventListener('submit', e => { e.preventDefault(); submit(); inp.focus({ preventScroll:true }); });
+inp.addEventListener('input', () => { if (msgEl.textContent) setMsg(''); });
+$('#bHint').addEventListener('click', () => { B.sfx.tap(); hint(); });
+$('#bUndo').addEventListener('click', () => { B.sfx.tap(); undo(); });
+$('#bGive').addEventListener('click', () => { B.sfx.tap(); askGiveUp(); });
+$('#modeChip').addEventListener('click', () => { B.sfx.tap(); showModes(); });
+$('#bResult').addEventListener('click', () => { B.sfx.tap(); showResult(); });
+$('#bNext').addEventListener('click', () => { B.sfx.flip(); openMode('livre', { fresh:true }); });
+document.addEventListener('keydown', e => {
+  if (B.isModalOpen() || e.ctrlKey || e.metaKey || e.altKey || inp.disabled || form.hidden) return;
+  if (document.activeElement === inp) return;
+  if (e.key.length === 1 && /[a-zà-ÿ]/i.test(e.key) && !/^(BUTTON|A|INPUT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName)) inp.focus();
+});
+
+/* ================= início ================= */
+B.mountBar($('#bar'), { title:'Ponte', color:'#C3B1FF', buttons:[
+  { icon:'stats', label:'Estatísticas', onClick:showStats },
+  { icon:'help', label:'Como jogar', onClick: () => { $('#bHelp').classList.remove('pulse'); showHelp(); }, id:'bHelp' },
+  { icon:'plus', label:'Trocar modo / ponte nova', onClick:showModes, cls:'sun' }
+]});
+B.mountMascot($('#mascot'), { pokeCat:'cutucarPonte' });
+const wide = matchMedia('(min-width:880px)');
+const applyStack = () => B.setStack(wide.matches);
+applyStack(); wide.addEventListener('change', applyStack);
+const firstTime = !B.profile().seen.ponte;
+if (firstTime){ B.profile().seen.ponte = true; B.saveProfile(); $('#bHelp').classList.add('pulse'); }
+
+let loadTalk = null;
+async function boot(){
+  loaderEl.hidden = false; box.hidden = true;
+  $('#ldSub').textContent = 'São 16 mil palavras. Se você já jogou Contexto, é rapidinho.';
+  const oldBtn = loaderEl.querySelector('.btn'); if (oldBtn) oldBtn.remove();
+  say('pnCarregando', null, 'talk', 4000);
+  loadTalk = setInterval(() => say('pnCarregando', null, Math.random() < .5 ? 'talk' : 'smug', 4000), 4200);
+  const fillEl = $('#ldFill'), txtEl = $('#ldTxt');
+  try {
+    if (!VOCAB.length || !PARES.length) throw new Error('vocab');
+    await loadVectors(p => {
+      fillEl.style.width = Math.max(2, p * 100).toFixed(1) + '%';
+      txtEl.textContent = `${Math.round(p * 100)}% · ${(p * N * DIM / 1048576).toFixed(1).replace('.', ',')} de ${(N * DIM / 1048576).toFixed(1).replace('.', ',')} MB`;
+    });
+  } catch(err){
+    clearInterval(loadTalk);
+    $('#ldSub').textContent = 'Deu ruim pra baixar as palavras. Confere a internet e tenta de novo.';
+    txtEl.textContent = 'erro: ' + (err && err.message || 'desconhecido');
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn primary'; b.textContent = 'Tentar de novo';
+    b.onclick = boot; loaderEl.appendChild(b);
+    B.say('Tropecei no cabo da internet. A ponte ficou sem tábua. Tenta de novo?', 'dead', 99999);
+    return;
+  }
+  clearInterval(loadTalk);
+  fillEl.style.width = '100%'; txtEl.textContent = 'pronto!';
+  loaderEl.hidden = true; box.hidden = false;
+  const l = B.store.get(KEY_L);
+  const startLivre = G.lastMode === 'livre' && l && !l.done && ((l.chain && l.chain.length) || l.tries);
+  await openMode(startLivre ? 'livre' : 'daily', { quiet: firstTime });
+  if (firstTime) B.say(`Oi! Eu sou o <b>Bugado</b>. Aqui você liga ${bw(S.a)} até ${bw(S.b)} com palavras que <b>têm a ver uma com a anterior</b>. Cada uma é uma tábua da ponte. Dúvida? Aperta o <b>?</b> lá em cima.`, 'talk', 10000);
+}
+boot();
+B.chatter({ active: () => ready && S && !S.done, randomCat:'aleatorio', idleCat:'pnParadoTudo', every:[55,100], idleAfter:45 });
+})();
+</script>
+</body>
+</html>

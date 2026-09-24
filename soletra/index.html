@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2A1650">
+<title>Soletra · Fliperama Bugado</title>
+<meta name="description" content="Soletra: monte palavras com as 7 letras da colmeia, sempre usando a letra do meio. Diário e treino infinito.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+:root{ --sol:#E05CFF; --hive-max:330px; --cb:52px; }
+html,body{overflow-x:hidden}
+.sol{height:100vh;height:100dvh;min-height:560px;display:flex;flex-direction:column;gap:7px;padding-block:8px 10px}
+.sol > *{min-width:0}
+#play,#side{display:contents}
+#bar{order:0;flex:none}
+#mascot{order:1;flex:none}
+.modes{order:2}
+.rank{order:3}
+.found{order:4}
+#stage{order:5}
+.ctrl,.endp{order:6}
+#mascot .bg-bubble{min-height:0;height:62px;overflow:hidden}
+#mascot .bg-bubble p{font-size:13px;line-height:1.24}
+#mascot .bg-bubble p.long{font-size:12px;line-height:1.2}
+
+/* ---------- modos + dica ---------- */
+.modes{flex:none;display:flex;gap:8px;justify-content:space-between;align-items:center}
+.seg{display:flex;gap:2px;padding:3px;background:var(--deep);border:3px solid var(--ink);border-radius:13px;box-shadow:0 3px 0 var(--ink);min-width:0}
+.seg button{appearance:none;border:0;background:none;color:var(--muted);font-family:var(--chunky);font-size:14px;letter-spacing:.02em;padding:5px 11px;border-radius:9px;cursor:pointer;white-space:nowrap;transition:background-color .15s,color .15s}
+.seg button:hover{color:var(--paper)}
+.seg button[aria-pressed="true"]{background:var(--paper);color:var(--ink);box-shadow:0 2px 0 var(--ink)}
+.seg button:focus-visible{outline:3px solid var(--cyan);outline-offset:1px}
+.seg .n{font-size:11px;opacity:.75;margin-left:3px}
+.mini{height:38px;padding:0 12px;font-size:14px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;box-shadow:0 3px 0 var(--ink)}
+.mini svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.mini .xp{font-size:11px;opacity:.7}
+
+/* ---------- ranking ---------- */
+.rank{flex:none;background:rgba(20,10,42,.55);border:2.5px solid var(--ink);border-radius:14px;box-shadow:0 3px 0 var(--ink);padding:6px 12px 9px}
+.rk-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:5px}
+.rk-name{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:.04em;line-height:1;color:var(--sol);text-shadow:2px 2px 0 var(--ink);white-space:nowrap}
+.rk-next{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.rk-next b{color:var(--paper);font-family:var(--chunky);font-weight:400}
+.rk-track{position:relative;height:24px;margin:0 12px}
+.rk-line{position:absolute;left:0;right:0;top:50%;height:5px;margin-top:-2.5px;border-radius:9px;background:#4a3a6e}
+.rk-fill{display:block;height:100%;border-radius:9px;background:var(--sol);transition:width .6s cubic-bezier(.3,1.3,.5,1)}
+.rk-dot{position:absolute;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#4a3a6e;border:2.5px solid var(--ink)}
+.rk-dot.on{background:var(--sol)}
+.rk-dot.cur{width:32px;height:24px;margin:-12px 0 0 -16px;border-radius:99px;background:var(--sun);display:grid;place-items:center;font-family:var(--chunky);font-size:13px;color:var(--ink);border-width:2.5px;box-shadow:0 2px 0 var(--ink);z-index:1}
+.rk-dot.cur.bump{animation:rk-bump .5s cubic-bezier(.3,1.8,.5,1)}
+@keyframes rk-bump{40%{transform:scale(1.35)}}
+
+/* ---------- palavras achadas ---------- */
+.found{flex:none;position:relative;z-index:8}
+.fd-head{width:100%;display:flex;align-items:center;gap:10px;height:40px;padding:0 10px 0 12px;background:var(--paper);color:var(--ink);border:2.5px solid var(--ink);border-radius:13px;box-shadow:0 3px 0 var(--ink);cursor:pointer;font:inherit;text-align:left}
+.fd-head:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+.fd-count{flex:none;font-family:var(--chunky);font-size:15px}
+.fd-count b{font-weight:400;color:var(--violet)}
+.fd-peek{flex:1;min-width:0;font-size:13.5px;color:#6b5a90;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fd-chev{flex:none;width:20px;height:20px;fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.found.open .fd-chev{transform:rotate(180deg)}
+.fd-body{display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);max-height:min(62vh,470px);overflow:auto;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--sol);padding:12px 14px 14px;overscroll-behavior:contain}
+.found.open .fd-body{display:block;animation:bg-popin .25s cubic-bezier(.3,1.5,.5,1)}
+.fd-title{display:none}
+.fd-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:3px 14px;margin:0;padding:0;list-style:none}
+.fd-list li{font-size:15px;font-weight:800;color:var(--text-ink);padding:3px 0;border-bottom:1.5px solid #e6dcf7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:capitalize}
+.fd-list li.pan{color:var(--violet);font-weight:900}
+.fd-list li.pan::after{content:" ★";color:var(--sun);-webkit-text-stroke:1px var(--ink)}
+.fd-list li.new{animation:fd-new 1.2s ease-out}
+@keyframes fd-new{0%{background:var(--sun)}100%{background:transparent}}
+.fd-empty{margin:4px 0;font-size:14px;color:#6b5a90}
+.fd-sub{margin:14px 0 6px;font-family:var(--chunky);font-weight:400;font-size:14px;color:#6b5a90}
+.fd-list.raras li{color:#0f8f86;font-style:italic}
+.fd-foot{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.fd-foot .btn{height:38px;padding:0 12px;font-size:14px;box-shadow:0 3px 0 var(--ink)}
+
+/* ---------- palco: mensagem, palavra, colmeia ---------- */
+#stage{flex:1;min-height:0;position:relative;display:flex;flex-direction:column;align-items:center}
+.msg{flex:none;height:28px;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.msg span{font-family:var(--chunky);font-size:15px;padding:2px 12px;border:2.5px solid var(--ink);border-radius:99px;background:var(--paper);color:var(--ink);box-shadow:2px 2px 0 var(--ink);white-space:nowrap;animation:msg-in .25s cubic-bezier(.3,1.6,.5,1)}
+.msg span.bad{background:var(--pink)}
+.msg span.good{background:var(--green)}
+.msg span.pan{background:var(--sun)}
+.msg span.rare{background:var(--cyan)}
+.msg span.out{animation:msg-out .3s ease-in forwards}
+@keyframes msg-in{from{transform:scale(.4) translateY(8px);opacity:0}}
+@keyframes msg-out{to{transform:translateY(-8px);opacity:0}}
+.word{flex:none;height:52px;max-width:100%;display:flex;align-items:center;justify-content:center;font-family:var(--chunky);font-size:36px;letter-spacing:.05em;line-height:1;white-space:nowrap;text-transform:uppercase;color:var(--paper);text-shadow:2px 2px 0 var(--ink);user-select:none;-webkit-user-select:none}
+.word .c{color:var(--sun)}
+.word .x{color:#8d7cb5}
+.word .ph{font-family:var(--body);font-weight:800;font-size:14px;letter-spacing:0;text-transform:none;color:var(--muted);text-shadow:none}
+.word .cur{display:inline-block;width:3px;height:.95em;margin-left:4px;border-radius:2px;background:var(--cyan);box-shadow:none;animation:cur-blink 1s steps(1) infinite;vertical-align:middle}
+@keyframes cur-blink{50%{opacity:0}}
+.word.shake{animation:w-shake .42s}
+@keyframes w-shake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-7px)}40%,60%{transform:translateX(7px)}}
+.word.ok{animation:w-ok .45s ease-in forwards}
+@keyframes w-ok{30%{transform:scale(1.12);color:var(--green)}100%{transform:translateY(-18px) scale(.8);opacity:0}}
+.hive-wrap{flex:1;min-height:0;width:100%;position:relative}
+#hive{position:absolute;left:0;right:0;top:4px;margin:0 auto;width:100%;height:calc(100% - 8px);max-width:var(--hive-max);overflow:visible;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+#hive .cell{cursor:pointer;outline:none}
+#hive .in{transform-box:fill-box;transform-origin:center;transition:transform .12s}
+#hive .sh{fill:var(--ink)}
+#hive .face{fill:var(--paper);stroke:var(--ink);stroke-width:5.5;stroke-linejoin:round;transition:fill .15s}
+#hive .cell.c .face{fill:var(--sun)}
+#hive .cell:hover .face{fill:#fff}
+#hive .cell.c:hover .face{fill:#ffe169}
+#hive .cell:focus-visible .face{stroke:var(--cyan);stroke-width:7}
+#hive .lt{font-family:var(--chunky);font-size:46px;fill:var(--ink);text-anchor:middle;dominant-baseline:central;pointer-events:none;transform-box:fill-box;transform-origin:center}
+#hive .cell.pop .in{animation:hx-pop .2s ease-out}
+@keyframes hx-pop{45%{transform:scale(.86)}}
+#hive.off .cell{cursor:default;opacity:.55}
+.fly{position:absolute;left:50%;top:40px;z-index:4;pointer-events:none;font-family:var(--display);font-size:30px;letter-spacing:.04em;color:var(--green);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;opacity:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- controles ---------- */
+.ctrl{flex:none;display:flex;gap:10px;justify-content:center;width:100%;max-width:440px;margin:0 auto}
+.ctrl .btn{flex:1 1 0;min-width:0;height:var(--cb);font-size:18px;padding:0 6px}
+.ctrl .round{flex:none;width:var(--cb);border-radius:50%;display:grid;place-items:center;padding:0}
+.ctrl .round svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.ctrl .round.spin svg{animation:spin .45s ease-in-out}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- fim ---------- */
+.endp{flex:none;width:100%;max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:8px;padding:10px 12px;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--sol);animation:bg-popin .35s cubic-bezier(.3,1.6,.5,1)}
+.endp .top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.endp h3{margin:0;font-family:var(--display);font-weight:400;font-size:26px;letter-spacing:.03em;line-height:1;color:var(--violet)}
+.endp .meta{font-size:13px;color:var(--text-ink)}
+.endp .meta b{font-family:var(--chunky);font-weight:400;color:var(--violet)}
+.endp .acts{display:flex;gap:8px}
+.endp .acts .btn{flex:1 1 0;min-width:0;height:44px;font-size:15px;padding:0 6px;white-space:nowrap}
+
+/* ---------- modais ---------- */
+.hx-ex{display:flex;gap:6px;margin:8px 0}
+.hx-ex i{font-style:normal;width:34px;height:30px;display:grid;place-items:center;font-family:var(--chunky);font-size:18px;color:var(--ink);background:var(--paper2);border:2.5px solid var(--ink);clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)}
+.hx-ex i.c{background:var(--sun)}
+.rk-table{display:grid;grid-template-columns:1fr auto;gap:2px 16px;margin-top:6px;font-size:14px;color:var(--text-ink)}
+.rk-table span.me{color:var(--violet);font-weight:900}
+.rk-table b{font-family:var(--chunky);font-weight:400;text-align:right}
+.hint-grid{border-collapse:collapse;margin-top:6px;font-size:14px;color:var(--ink);width:100%}
+.hint-grid th,.hint-grid td{border:1.5px solid #d9cdf2;padding:3px 5px;text-align:center;font-variant-numeric:tabular-nums}
+.hint-grid th{font-family:var(--chunky);font-weight:400;background:var(--paper2)}
+.hint-grid td.z{color:#bdb0d8}
+.hint-grid td.t{font-weight:900;background:#faf3ff}
+.hint-wrap{overflow-x:auto}
+.pairs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pairs span{font-family:var(--chunky);font-size:14px;padding:2px 8px;border:2px solid var(--ink);border-radius:8px;background:#fff;color:var(--ink)}
+.pairs span.z{opacity:.35;text-decoration:line-through}
+.ans-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.ans-list span{font-size:14px;font-weight:800;padding:2px 8px;border:2px solid var(--ink);border-radius:8px;background:var(--green);color:var(--ink);text-transform:capitalize}
+.ans-list span.miss{background:#fff;color:#8a7aa9;border-color:#bba7e4;border-style:dashed}
+.ans-list span.pan{box-shadow:0 0 0 2px var(--sun)}
+.ans-list span.pan::after{content:" ★"}
+.ans-list span.rara{background:var(--cyan);font-style:italic}
+.m-note{margin:12px 0 0;font-size:13px;color:#6b5a90;font-weight:800}
+.m-note b{font-family:var(--chunky);font-weight:400;color:var(--violet)}
+.share-box{width:100%;min-height:100px;margin-top:10px;font:700 14px/1.3 var(--body);border:2.5px solid var(--ink);border-radius:10px;padding:8px;resize:vertical;color:var(--ink);background:#fff}
+
+/* ---------- celular baixo ---------- */
+@media (max-height:720px) and (max-width:879px){
+  .sol{--cb:46px;gap:6px}
+  #mascot .bg-mascot{width:48px;height:48px}
+  #mascot .bg-bubble{height:54px}
+  #mascot .bg-bubble p{font-size:12px}
+  .word{height:44px;font-size:30px}
+  .msg{height:24px}
+  .rank{padding:4px 10px 7px}
+  .rk-name{font-size:19px}
+}
+@media (max-width:370px){ .seg button{padding:5px 8px;font-size:13px} .mini{padding:0 9px} .mini .xp{display:none} }
+
+/* ---------- desktop ---------- */
+@media (min-width:880px){
+  :root{--hive-max:430px;--cb:56px}
+  .sol{display:grid;grid-template-columns:minmax(0,1fr) 360px;grid-template-rows:auto minmax(0,1fr);column-gap:30px;row-gap:12px;padding-block:12px 18px;min-height:640px}
+  #bar{grid-column:1/-1}
+  #play{display:flex;flex-direction:column;gap:10px;grid-column:1;grid-row:2;min-height:0}
+  #side{display:flex;flex-direction:column;gap:16px;grid-column:2;grid-row:2;min-height:0;padding-top:4px}
+  #mascot .bg-bubble{height:auto;min-height:104px;overflow:visible}
+  #mascot .bg-bubble p{font-size:15.5px;line-height:1.3}
+  #mascot .bg-bubble p.long{font-size:14.5px}
+  .modes{justify-content:center;gap:14px}
+  .seg button{font-size:16px;padding:6px 14px}
+  .rank{width:100%;max-width:560px;margin:0 auto;padding:8px 16px 11px}
+  .rk-name{font-size:26px}
+  .rk-next{font-size:13.5px}
+  .word{height:62px;font-size:44px}
+  .msg{height:32px}
+  .msg span{font-size:16px}
+  .found{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--sol);overflow:hidden}
+  .fd-head{display:none}
+  .fd-title{display:block;margin:0;padding:12px 16px 4px;font-family:var(--display);font-weight:400;font-size:26px;letter-spacing:.03em;color:var(--violet);line-height:1}
+  .fd-title small{font-family:var(--body);font-size:13px;letter-spacing:0;color:#6b5a90}
+  .fd-body,.found.open .fd-body{display:block;position:static;flex:1;min-height:0;max-height:none;border:0;border-radius:0;box-shadow:none;padding:6px 16px 16px;animation:none}
+  .fd-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (min-width:880px) and (max-height:760px){ :root{--hive-max:360px} .word{height:52px;font-size:38px} }
+@media (prefers-reduced-motion: reduce){ #hive .cell.pop .in,.word.shake,.word.ok,.rk-dot.cur.bump,.ctrl .round.spin svg,.fd-list li.new{animation:none} .word .cur{animation:none} }
+</style>
+</head><body>
+<div class="wrap sol" id="app">
+  <header id="bar"></header>
+  <main id="play">
+    <nav class="modes" aria-label="Modo de jogo">
+      <div class="seg" role="group" aria-label="Diário ou treino">
+        <button type="button" data-kind="daily">Diário<span class="n" id="dayN"></span></button>
+        <button type="button" data-kind="treino">Treino</button>
+      </div>
+      <button type="button" class="btn mini" id="btnDica"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>Dica<span class="xp" id="dicaXp">−5 XP</span></button>
+    </nav>
+    <section class="rank" id="rank" aria-label="Ranking">
+      <div class="rk-top"><b class="rk-name" id="rkName">Iniciante</b><span class="rk-next" id="rkNext"></span></div>
+      <div class="rk-track" id="rkTrack" aria-hidden="true"></div>
+    </section>
+    <section id="stage" aria-label="Colmeia">
+      <div class="msg" id="msg" aria-hidden="true"></div>
+      <div class="word" id="word" aria-live="off"></div>
+      <div class="hive-wrap"><svg id="hive" role="group" aria-label="Letras da colmeia"></svg></div>
+      <div class="burst" id="burst" aria-hidden="true"></div>
+      <div class="fly" id="fly" aria-hidden="true"></div>
+    </section>
+    <div class="ctrl" id="ctrl">
+      <button type="button" class="btn" data-c="del">Apagar</button>
+      <button type="button" class="btn round cool" data-c="shuf" aria-label="Embaralhar letras" title="Embaralhar (barra de espaço)"></button>
+      <button type="button" class="btn primary" data-c="send">Enviar</button>
+    </div>
+    <div class="endp" id="endp" hidden></div>
+    <p class="sr" id="sr" aria-live="polite"></p>
+  </main>
+  <aside id="side">
+    <div id="mascot"></div>
+    <section class="found" id="found" aria-label="Palavras encontradas">
+      <button type="button" class="fd-head" id="fdHead" aria-expanded="false" aria-controls="fdBody">
+        <span class="fd-count" id="fdCount"><b>0</b> palavras</span><span class="fd-peek" id="fdPeek"></span>
+        <svg class="fd-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <h2 class="fd-title" id="fdTitle"></h2>
+      <div class="fd-body" id="fdBody"></div>
+    </section>
+  </aside>
+</div>
+<script src="../shared/falas.js"></script><script src="../shared/bugado.js"></script>
+<script src="aceitas.js"></script><script src="puzzles.js"></script><script src="falas-soletra.js"></script>
+<script>
+(() => {
+'use strict';
+const B = window.Bugado, RM = B.RM;
+const $ = s => document.querySelector(s);
+const norm = s => B.normalize(s).replace(/[^a-z]/g,'');
+const up = s => String(s).toLocaleUpperCase('pt-BR');
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const chance = p => Math.random() < p;
+const bold = s => `<b>${s}</b>`;
+
+/* ---------------- dados ---------------- */
+const PUZ = window.SOLETRA || [];
+const N = PUZ.length;
+const ACC = new Map();                 // chave sem acento -> grafia bonita
+(window.SOLETRA_ACEITAS || []).forEach(w => { w = w.normalize('NFC'); const k = norm(w); if (k.length >= 4 && !ACC.has(k)) ACC.set(k, w); });
+const maskOf = k => { let m = 0; for (let i = 0; i < k.length; i++) m |= 1 << (k.charCodeAt(i) - 97); return m; };
+const ACC_M = [...ACC.keys()].map(k => [k, maskOf(k)]);
+const PALAVRAS = window.FALAS_SOLETRA_PALAVRAS || {};
+const RARE_LETTERS = 'xzjqh';
+
+const RANKS = [
+  { name:'Iniciante',    pct:0,   xp:0  },
+  { name:'Aprendiz',     pct:.07, xp:3  },
+  { name:'Esperto',      pct:.18, xp:5  },
+  { name:'Craque',       pct:.35, xp:10 },
+  { name:'Mestre',       pct:.55, xp:15 },
+  { name:'Gênio Bugado', pct:.75, xp:25 }
+];
+const WIN_RANK = 3, HINT_COST = 5;
+
+let Z = null;   // desafio atual
+function buildPuzzle(idx){
+  const p = PUZ[idx], letras = p.letras, centro = p.centro;
+  const m = maskOf(letras), cb = 1 << (centro.charCodeAt(0) - 97);
+  const ans = new Map();
+  p.respostas.forEach(w => { w = w.normalize('NFC'); const k = norm(w); if (k.length >= 4 && !ans.has(k)) ans.set(k, w); });
+  const raras = new Map();
+  for (const [k, km] of ACC_M) if ((km & ~m) === 0 && (km & cb) && !ans.has(k)) raras.set(k, ACC.get(k));
+  const z = { idx, letras, centro, mask:m, ans, raras };
+  z.total = [...ans.keys()].reduce((s, k) => s + score(k, z), 0);
+  z.pans = [...ans.keys()].filter(k => isPan(k, z));
+  z.need = RANKS.map((r, i) => i === 0 ? 0 : Math.max(i, Math.round(r.pct * z.total)));
+  return z;
+}
+const isPan = (k, z) => maskOf(k) === z.mask;
+const score = (k, z) => (k.length === 4 ? 1 : k.length) + (isPan(k, z) ? 7 : 0);
+const show = k => (Z && (Z.ans.get(k) || Z.raras.get(k))) || ACC.get(k) || k;
+const dailyIdx = day => ((day % N) + N) % N;
+
+/* ---------------- estado ---------------- */
+const G = B.game('soletra');
+const KEY = { daily:'fliperama.soletra.daily', treino:'fliperama.soletra.treino', ui:'fliperama.soletra.ui', ontem:'fliperama.soletra.ontem' };
+let S = null;                // { kind, day, idx, found, raras, hint, done, gaveUp, rankMax, won }
+let cur = '', outer = [], shuffles = 0, fails = 0, lastFound = Date.now(), droughtLvl = 0, foundTimes = [], lastStreakTalk = 0, lastTalk = 0, nextLetters = 0;
+let rareLetterSaid = false;
+
+function defaults(){ const d = { days:0, lastDay:null, bestRank:0, words:0, pangrams:0, raras:0, treinos:0, hints:0, all:0 }; for (const k in d) if (G[k] === undefined) G[k] = d[k]; }
+defaults();
+
+function save(){
+  const o = { idx:S.idx, found:S.found, raras:S.raras, hint:S.hint, done:S.done, gaveUp:S.gaveUp, rankMax:S.rankMax, won:S.won, started:S.started };
+  if (S.kind === 'daily') o.day = S.day;
+  B.store.set(KEY[S.kind], o);
+}
+function load(kind){
+  const day = B.dayNumber();
+  let st = B.store.get(KEY[kind]);
+  if (kind === 'daily'){
+    const idx = dailyIdx(day);
+    if (st && st.day !== day){
+      if (Array.isArray(st.found) && st.found.length && typeof st.idx === 'number' && PUZ[st.idx]) B.store.set(KEY.ontem, { day:st.day, idx:st.idx, found:st.found, raras:st.raras || [] });
+      st = null;
+    }
+    if (!st || st.idx !== idx) st = { idx, found:[], raras:[] };
+  } else if (!st || typeof st.idx !== 'number' || !PUZ[st.idx]){
+    st = { idx: randomIdx(-1), found:[], raras:[] };
+  }
+  Z = buildPuzzle(st.idx);
+  S = { kind, day, idx:st.idx,
+    found: (Array.isArray(st.found) ? st.found : []).filter((k, i, a) => Z.ans.has(k) && a.indexOf(k) === i),
+    raras: (Array.isArray(st.raras) ? st.raras : []).filter((k, i, a) => Z.raras.has(k) && a.indexOf(k) === i),
+    hint: !!st.hint, done: !!st.done, gaveUp: !!st.gaveUp, rankMax: st.rankMax|0, won: !!st.won, started: !!st.started };
+  if (S.found.length === Z.ans.size) S.done = true;
+  S.rankMax = Math.max(S.rankMax, rankIdx(points()));
+  cur = ''; fails = 0; shuffles = 0; lastFound = Date.now(); droughtLvl = 0; foundTimes = []; rareLetterSaid = false;
+  outer = B.shuffle([...Z.letras].filter(c => c !== Z.centro));
+  save();
+  B.store.set(KEY.ui, { kind });
+  if (kind === 'daily') syncLastDaily();
+}
+function randomIdx(avoid){
+  const d = dailyIdx(B.dayNumber());
+  let i, n = 0;
+  do { i = Math.floor(Math.random() * N); n++; } while ((i === d || i === avoid) && n < 50);
+  return i;
+}
+const points = () => S.found.reduce((s, k) => s + score(k, Z), 0);
+function rankIdx(p){ let r = 0; for (let i = 0; i < RANKS.length; i++) if (p >= Z.need[i]) r = i; return r; }
+function syncLastDaily(){
+  if (S.kind !== 'daily') return;
+  if (!S.found.length && !(G.lastDaily && G.lastDaily.day === S.day)) return;
+  G.lastDaily = { day:S.day, won:S.won, pontos:points(), rank:RANKS[rankIdx(points())].name, palavras:S.found.length };
+  B.saveProfile();
+}
+
+/* ---------------- colmeia (SVG) ---------------- */
+const hive = $('#hive'), wordEl = $('#word'), msgEl = $('#msg'), stage = $('#stage');
+const R = 50, S3 = Math.sqrt(3), GP = 1.09;
+const POS = [[0,0],[0,-S3*R*GP],[1.5*R*GP,-S3/2*R*GP],[1.5*R*GP,S3/2*R*GP],[0,S3*R*GP],[-1.5*R*GP,S3/2*R*GP],[-1.5*R*GP,-S3/2*R*GP]];
+const HEX = [0,60,120,180,240,300].map(a => { const t = a*Math.PI/180, r = R - 3; return (r*Math.cos(t)).toFixed(1) + ',' + (r*Math.sin(t)).toFixed(1); }).join(' ');
+hive.setAttribute('viewBox', '-134 -140 268 288');
+function buildHive(){
+  hive.innerHTML = POS.map(([x, y], i) => `<g class="cell ${i === 0 ? 'c' : 'o'}" data-i="${i}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})" role="button" tabindex="0"><g class="in"><polygon class="sh" points="${HEX}" transform="translate(0 6)"/><polygon class="face" points="${HEX}"/><text class="lt" y="2"></text></g></g>`).join('');
+  paintHive();
+}
+function paintHive(){
+  hive.querySelectorAll('.cell').forEach(g => {
+    const i = +g.dataset.i, L = i === 0 ? Z.centro : outer[i-1];
+    g.dataset.l = L; g.querySelector('.lt').textContent = up(L);
+    g.setAttribute('aria-label', `Letra ${up(L)}${i === 0 ? ' (obrigatória)' : ''}`);
+  });
+  hive.classList.toggle('off', S.done);
+}
+hive.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; e.preventDefault(); });
+hive.addEventListener('click', e => {
+  const g = e.target.closest('.cell'); if (!g) return;
+  B.idle.touch(); typeLetter(g.dataset.l, g);
+});
+hive.addEventListener('keydown', e => {
+  const g = e.target.closest && e.target.closest('.cell'); if (!g) return;
+  if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); e.stopPropagation(); typeLetter(g.dataset.l, g); }
+});
+function popCell(g){ if (!g || RM) return; g.classList.remove('pop'); void g.getBBox; void g.getBoundingClientRect(); g.classList.add('pop'); setTimeout(() => g.classList.remove('pop'), 220); }
+
+function shuffleHive(){
+  if (S.done) return;
+  let nx; do { nx = B.shuffle(outer.slice()); } while (outer.length > 1 && nx.join('') === outer.join(''));
+  outer = nx; shuffles++;
+  const btn = document.querySelector('[data-c="shuf"]'); btn.classList.remove('spin'); void btn.offsetWidth; btn.classList.add('spin');
+  B.sfx.flip();
+  if (RM){ paintHive(); }
+  else {
+    const lts = [...hive.querySelectorAll('.cell.o .lt')];
+    lts.forEach((t, i) => t.animate([{ transform:'scale(1) rotate(0)', opacity:1 }, { transform:'scale(.1) rotate(-120deg)', opacity:0 }], { duration:160, delay:i*25, easing:'ease-in', fill:'forwards' }));
+    setTimeout(() => {
+      paintHive();
+      lts.forEach((t, i) => t.animate([{ transform:'scale(.1) rotate(120deg)', opacity:0 }, { transform:'scale(1.15) rotate(0)', opacity:1, offset:.7 }, { transform:'scale(1)', opacity:1 }], { duration:260, delay:i*25, easing:'ease-out', fill:'forwards' }));
+    }, 170 + 5*25);
+  }
+  if (shuffles === 1 || chance(shuffles > 6 ? .5 : .8)) talk('solEmbaralhar', { centro:bold(up(Z.centro)), n:shuffles }, pick(['talk','smug','happy']), 4200);
+}
+
+/* ---------------- palavra digitada ---------------- */
+function renderWord(){
+  wordEl.classList.remove('ok');
+  if (!cur){ wordEl.innerHTML = S.done ? '' : `<span class="ph">${matchMedia('(hover:hover)').matches ? 'digite ou clique nas letras' : 'toque nas letras'}</span><span class="cur"></span>`; wordEl.style.fontSize = ''; return; }
+  wordEl.innerHTML = [...cur].map(c => `<span class="${c === Z.centro ? 'c' : Z.letras.includes(c) ? '' : 'x'}">${up(c)}</span>`).join('') + '<span class="cur"></span>';
+  const base = innerWidth >= 880 ? 44 : 36, fitN = innerWidth >= 880 ? 14 : 10;
+  wordEl.style.fontSize = cur.length > fitN ? Math.max(18, Math.floor(base * fitN / cur.length)) + 'px' : '';
+}
+function typeLetter(L, g){
+  if (S.done || B.isModalOpen()) return;
+  if (cur.length >= 19){ flash('Longa demais', 'bad'); B.sfx.meh(); return; }
+  cur += L; B.sfx.type(); renderWord();
+  popCell(g || hive.querySelector(`.cell[data-l="${L}"]`));
+}
+function backspace(){ if (S.done || !cur) return; cur = cur.slice(0, -1); B.sfx.tap(); renderWord(); }
+function clearWord(){ cur = ''; renderWord(); }
+function shakeWord(){ wordEl.classList.remove('shake'); void wordEl.offsetWidth; wordEl.classList.add('shake'); }
+
+let msgT = 0;
+function flash(text, cls){
+  clearTimeout(msgT);
+  msgEl.innerHTML = `<span class="${cls||''}">${text}</span>`;
+  msgT = setTimeout(() => { const s = msgEl.firstChild; if (s) s.classList.add('out'); msgT = setTimeout(() => msgEl.innerHTML = '', 300); }, 1500);
+}
+function fly(text){
+  const f = $('#fly'); f.textContent = text;
+  if (RM){ f.animate([{ opacity:1 }, { opacity:0 }], { duration:900 }); return; }
+  f.animate([{ transform:'translate(-50%,10px) scale(.6)', opacity:0 }, { transform:'translate(-50%,-6px) scale(1.15)', opacity:1, offset:.25 }, { transform:'translate(-50%,-34px) scale(1)', opacity:0 }], { duration:1000, easing:'ease-out' });
+}
+function announce(txt){ const sr = $('#sr'); sr.textContent = ''; setTimeout(() => sr.textContent = txt, 30); }
+
+/* ---------------- falas ---------------- */
+function talk(cat, vars, mood='talk', hold=5000){ const s = B.line(cat, vars); if (!s) return; B.say(s, mood, hold); lastTalk = Date.now(); }
+function sayRaw(s, mood='talk', hold=5000){ B.say(s, mood, hold); lastTalk = Date.now(); }
+const lettersVar = () => bold([...Z.letras].map(up).join(' '));
+
+/* ---------------- enviar ---------------- */
+function submit(){
+  if (S.done || B.isModalOpen()) return;
+  const w = cur;
+  if (!w){ flash('Digita alguma coisa', ''); B.sfx.meh(); talk('solVazio', null, 'smug', 3500); return; }
+  const P = bold(up(w));
+  const fail = (text, cat, vars, mood) => {
+    fails++; shakeWord(); B.sfx.err(); flash(text, 'bad'); announce(text + '.');
+    if (fails >= 4 && fails % 4 === 0 && chance(.7)) talk('solErros', { n:fails }, 'smug', 5000);
+    else talk(cat, vars, mood || (chance(.5) ? 'smug' : 'shock'), 4600);
+    cur = ''; setTimeout(() => { if (!cur) renderWord(); }, 650);
+  };
+  if (w.length < 4) return fail('Muito curta', 'solCurta', { palavra:P });
+  const fora = [...w].find(c => !Z.letras.includes(c));
+  if (fora) return fail('Letra fora da colmeia', 'solForaColmeia', { letra:bold(up(fora)), palavra:P });
+  if (!w.includes(Z.centro)) return fail('Falta a letra do meio', 'solSemCentro', { centro:bold(up(Z.centro)), palavra:P });
+  if (S.found.includes(w) || S.raras.includes(w)) return fail('Já achou', 'solRepetida', { palavra:bold(up(show(w))) }, 'smug');
+  if (Z.ans.has(w)) return good(w);
+  if (Z.raras.has(w)) return rare(w);
+  B.glitch();
+  fail('Não tá na lista', 'solNaoExiste', { palavra:P });
+}
+
+function wordOk(){ cur = ''; wordEl.classList.remove('shake','ok'); void wordEl.offsetWidth; if (!RM) wordEl.classList.add('ok'); setTimeout(() => { if (!cur) renderWord(); }, RM ? 200 : 460); }
+function firstPlay(){
+  if (S.started) return;
+  S.started = true;
+  if (S.kind === 'daily'){ if (G.lastDay !== S.day){ G.days++; G.lastDay = S.day; } }
+  else G.treinos++;
+}
+
+function good(w){
+  const before = points(), rb = rankIdx(before);
+  S.found.push(w); firstPlay();
+  const pts = score(w, Z), pan = isPan(w, Z), after = points(), ra = rankIdx(after);
+  fails = 0; lastFound = Date.now(); droughtLvl = 0;
+  foundTimes.push(Date.now()); foundTimes = foundTimes.filter(t => Date.now() - t < 60000);
+  G.words++; if (pan) G.pangrams++;
+  let xp = w.length === 4 ? 1 : w.length <= 6 ? 2 : 3;
+  if (pan) xp += 10;
+  const disp = show(w), P = bold(up(disp));
+  const newRanks = [];
+  for (let i = S.rankMax + 1; i <= ra; i++) newRanks.push(i);
+  if (ra > S.rankMax){
+    newRanks.forEach(i => xp += S.kind === 'daily' ? RANKS[i].xp : Math.ceil(RANKS[i].xp / 2));
+    S.rankMax = ra; G.bestRank = Math.max(G.bestRank|0, ra);
+  }
+  let wonNow = false;
+  if (S.kind === 'daily' && ra >= WIN_RANK && !S.won){ S.won = true; wonNow = true; B.registerWin('soletra'); }
+  const complete = S.found.length === Z.ans.size;
+  if (complete){ S.done = true; xp += S.kind === 'daily' ? 30 : 15; G.all++; }
+  save(); syncLastDaily(); B.saveProfile();
+  B.gainXP(xp);
+
+  // efeitos
+  wordOk();
+  fly('+' + pts);
+  announce(`${disp}: mais ${pts} ponto${pts > 1 ? 's' : ''}. Total ${after}.`);
+  if (pan){ B.sfx.win(); flash('PANGRAMA! +' + pts, 'pan'); B.burst($('#burst'), 'PANGRAMA!', '#FFD23F'); B.confetti(); }
+  else { B.sfx.good(); flash(pts === 1 ? 'Boa!' : pts <= 6 ? 'Ótimo!' : 'Incrível!', 'good'); }
+  if (newRanks.length && !pan){ setTimeout(() => { B.sfx.lvl(); B.burst($('#burst'), up(RANKS[ra].name) + '!', '#E05CFF'); }, 350); }
+  renderRank(ra > rb); renderFound(w);
+
+  // fala
+  if (complete){ setTimeout(finishAll, 700); return; }
+  const now = Date.now();
+  if (pan){ talk(S.found.filter(k => isPan(k, Z)).length > 1 ? 'solPangrama2' : 'solPangrama', { palavra:P, pts }, 'shock', 7000); }
+  else if (newRanks.length){ talk('solRank' + ra, { rank:RANKS[ra].name }, 'happy', 6500); }
+  else if (PALAVRAS[w] && chance(.85)){ sayRaw(PALAVRAS[w], pick(['happy','smug','talk']), 5500); }
+  else if (foundTimes.filter(t => now - t < 30000).length >= 3 && now - lastStreakTalk > 50000){ lastStreakTalk = now; talk('solSequencia', { n:foundTimes.filter(t => now - t < 60000).length }, 'shock', 5000); }
+  else {
+    const nx = ra + 1 < RANKS.length ? Z.need[ra + 1] - after : 0;
+    if (nx > 0 && nx <= 5 && chance(.35)) talk('solQuase', { n:nx, rank:RANKS[ra + 1].name }, 'happy', 5000);
+    else if (disp !== w && chance(.25)) talk('solAcento', { palavra:P }, 'happy', 5000);
+    else if (w.length >= 10 && chance(.6)) talk('solLonga', { palavra:P, pts }, 'shock', 5500);
+    else if (w.length >= 7) talk('solValida7', { palavra:P, pts }, pick(['shock','happy']), 5200);
+    else if (w.length >= 5) talk('solValida56', { palavra:P, pts }, pick(['happy','talk','smug']), 4800);
+    else talk('solValida4', { palavra:P, pts }, pick(['talk','smug']), 4200);
+  }
+  if (wonNow) setTimeout(() => talk('solVitoriaDiario', null, 'happy', 6500), 6800);
+}
+
+function rare(w){
+  S.raras.push(w); firstPlay(); fails = 0; lastFound = Date.now(); droughtLvl = 0;
+  G.words++; G.raras++; save(); B.saveProfile(); B.gainXP(2);
+  const P = bold(up(show(w)));
+  wordOk(); B.sfx.hint(); flash('Palavra rara! +XP', 'rare'); fly('★');
+  announce(`${show(w)}: palavra rara, não conta ponto, ganha XP.`);
+  renderFound(w);
+  if (PALAVRAS[w]) sayRaw(PALAVRAS[w], 'happy', 5500);
+  else talk('solRara', { palavra:P }, pick(['shock','smug']), 5500);
+}
+
+function finishAll(){
+  renderAll();
+  B.sfx.win(); B.confetti(); B.burst($('#burst'), 'TODAS!', '#FFD23F');
+  talk('solTudo', null, 'happy', 8000);
+  setTimeout(() => { if (!B.isModalOpen()) openAnswers(); }, RM ? 400 : 2400);
+}
+
+/* ---------------- ranking ---------------- */
+function renderRank(bump){
+  const p = points(), r = rankIdx(p);
+  $('#rkName').textContent = RANKS[r].name;
+  const nx = r + 1 < RANKS.length ? r + 1 : -1;
+  $('#rkNext').innerHTML = nx > 0 ? `faltam <b>${Z.need[nx] - p}</b> pra ${RANKS[nx].name}` : (S.found.length === Z.ans.size ? 'achou tudo!' : `topo! faltam <b>${Z.ans.size - S.found.length}</b> palavras`);
+  const seg = 100 / (RANKS.length - 1);
+  const frac = nx > 0 ? (p - Z.need[r]) / Math.max(1, Z.need[nx] - Z.need[r]) : 0;
+  const fillW = Math.min(100, (r + frac) * seg);
+  const tr = $('#rkTrack');
+  tr.innerHTML = `<i class="rk-line"><i class="rk-fill" style="width:${fillW}%"></i></i>` +
+    RANKS.map((k, i) => `<span class="rk-dot ${i < r ? 'on' : ''} ${i === r ? 'cur' : ''}" style="left:${i*seg}%" title="${k.name}: ${Z.need[i]} pts">${i === r ? p : ''}</span>`).join('');
+  $('#rank').setAttribute('aria-label', `Ranking: ${RANKS[r].name}, ${p} pontos` + (nx > 0 ? `, faltam ${Z.need[nx] - p} para ${RANKS[nx].name}` : ''));
+  if (bump && !RM){ const d = tr.querySelector('.cur'); if (d) d.classList.add('bump'); }
+}
+
+/* ---------------- lista de achadas ---------------- */
+const foundEl = $('#found'), fdBody = $('#fdBody');
+const sortPT = arr => arr.slice().sort((a, b) => show(a).localeCompare(show(b), 'pt-BR'));
+function renderFound(newW){
+  const n = S.found.length;
+  $('#fdCount').innerHTML = `<b>${n}</b> palavra${n === 1 ? '' : 's'}`;
+  const recent = [...S.found, ...S.raras].slice(-8).reverse().map(show);
+  $('#fdPeek').textContent = recent.length ? recent.join(' · ') : (S.done ? '' : 'nenhuma ainda');
+  $('#fdTitle').innerHTML = `${n} de ${Z.ans.size} palavras <small>· ${points()} de ${Z.total} pts${S.raras.length ? ` · ${S.raras.length} rara${S.raras.length > 1 ? 's' : ''}` : ''}</small>`;
+  const li = k => `<li class="${isPan(k, Z) ? 'pan' : ''} ${k === newW ? 'new' : ''}">${show(k)}</li>`;
+  let h = n ? `<ul class="fd-list">${sortPT(S.found).map(li).join('')}</ul>` : `<p class="fd-empty">Nenhuma palavra ainda. As achadas aparecem aqui em ordem alfabética.</p>`;
+  if (S.raras.length) h += `<h3 class="fd-sub">Raras (valem XP, não pontos)</h3><ul class="fd-list raras">${sortPT(S.raras).map(li).join('')}</ul>`;
+  const foot = [];
+  if (!S.done) foot.push(`<button type="button" class="btn" data-f="desistir">Desistir e ver respostas</button>`);
+  else foot.push(`<button type="button" class="btn cool" data-f="respostas">Ver respostas</button>`);
+  if (S.kind === 'daily' && ontem()) foot.push(`<button type="button" class="btn" data-f="ontem">Respostas de ontem</button>`);
+  h += `<div class="fd-foot">${foot.join('')}</div>`;
+  fdBody.innerHTML = h;
+}
+function setFoundOpen(on){
+  foundEl.classList.toggle('open', on);
+  $('#fdHead').setAttribute('aria-expanded', on);
+}
+$('#fdHead').addEventListener('click', () => { B.sfx.tap(); setFoundOpen(!foundEl.classList.contains('open')); });
+document.addEventListener('pointerdown', e => { if (foundEl.classList.contains('open') && !e.target.closest('#found') && innerWidth < 880) setFoundOpen(false); });
+fdBody.addEventListener('click', e => {
+  const b = e.target.closest('[data-f]'); if (!b) return; B.sfx.tap();
+  const a = b.dataset.f;
+  if (a === 'desistir') askGiveUp(); else if (a === 'respostas') openAnswers(); else if (a === 'ontem') openOntem();
+});
+const ontem = () => { const o = B.store.get(KEY.ontem); return o && o.day === B.dayNumber() - 1 && PUZ[o.idx] ? o : null; };
+
+/* ---------------- fim / painel ---------------- */
+function renderEnd(){
+  const done = S.done;
+  $('#ctrl').hidden = done; $('#endp').hidden = !done;
+  if (!done) return;
+  const p = points(), r = rankIdx(p), all = S.found.length === Z.ans.size;
+  $('#endp').innerHTML = `<div class="top"><h3>${all ? 'COLMEIA COMPLETA!' : 'FIM DE JOGO'}</h3><span class="meta"><b>${RANKS[r].name}</b> · ${p} pts · ${S.found.length} de ${Z.ans.size} palavras</span></div>
+    <div class="acts">
+      <button type="button" class="btn" data-e="share">Compartilhar</button>
+      <button type="button" class="btn cool" data-e="ans">Respostas</button>
+      <button type="button" class="btn primary" data-e="treino">${S.kind === 'daily' ? 'Jogar treino' : 'Nova colmeia'}</button>
+    </div>`;
+}
+$('#endp').addEventListener('click', e => {
+  const b = e.target.closest('[data-e]'); if (!b) return; B.sfx.tap();
+  const a = b.dataset.e;
+  if (a === 'share') share(); else if (a === 'ans') openAnswers(); else if (a === 'treino') newTreino();
+});
+
+function renderAll(){
+  paintHive(); renderWord(); renderRank(false); renderFound(); renderEnd();
+  document.querySelectorAll('.modes [data-kind]').forEach(b => b.setAttribute('aria-pressed', b.dataset.kind === S.kind));
+  $('#dayN').textContent = ' #' + B.dayNumber();
+  $('#dicaXp').textContent = S.hint ? '' : `−${HINT_COST} XP`;
+  $('#btnDica').disabled = S.done;
+}
+
+/* ---------------- dica ---------------- */
+function askHint(){
+  if (S.done) return;
+  if (S.hint){ openHint(); talk('solDicaDeNovo', null, 'smug', 4000); return; }
+  B.openModal(`<h2>Comprar dica?</h2><p class="sub">A dica mostra quantas palavras faltam por letra inicial e por tamanho, e os começos de duas letras. Custa <b>${HINT_COST} XP</b> uma vez por colmeia. Depois fica liberada.</p>
+    <div class="m-actions"><button class="btn primary" data-act="buyHint">Quero a dica</button><button class="btn" data-act="close">Deixa quieto</button></div>`);
+}
+B.onAct('buyHint', () => {
+  S.hint = true; G.hints++; save(); B.saveProfile(); B.gainXP(-HINT_COST); B.sfx.hint();
+  $('#dicaXp').textContent = '';
+  openHint(); talk('solDica', null, 'smug', 5000);
+});
+function openHint(){
+  const keys = [...Z.ans.keys()];
+  const left = keys.filter(k => !S.found.includes(k));
+  const lens = [...new Set(keys.map(k => k.length))].sort((a, b) => a - b);
+  const firsts = [...new Set(keys.map(k => k[0]))].sort();
+  const cnt = (f, l) => left.filter(k => k[0] === f && k.length === l).length;
+  const head = `<tr><th></th>${lens.map(l => `<th>${l}</th>`).join('')}<th>Σ</th></tr>`;
+  const rows = firsts.map(f => `<tr><th>${up(f)}</th>${lens.map(l => { const c = cnt(f, l); return `<td class="${c ? '' : 'z'}">${c || '·'}</td>`; }).join('')}<td class="t">${left.filter(k => k[0] === f).length}</td></tr>`).join('');
+  const tot = `<tr><th>Σ</th>${lens.map(l => `<td class="t">${left.filter(k => k.length === l).length}</td>`).join('')}<td class="t">${left.length}</td></tr>`;
+  const pairs = [...new Set(keys.map(k => k.slice(0, 2)))].sort().map(pp => { const c = left.filter(k => k.startsWith(pp)).length; return `<span class="${c ? '' : 'z'}">${up(pp)}·${c}</span>`; }).join('');
+  const panLeft = Z.pans.filter(k => !S.found.includes(k)).length;
+  B.openModal(`<h2>Dica</h2><p class="sub">Faltam <b>${left.length}</b> palavras (${Z.total - points()} pts). Pangramas: ${Z.pans.length} (${panLeft ? `falta${panLeft > 1 ? 'm' : ''} ${panLeft}` : 'todos achados'}).</p>
+    <h3>Letra inicial × tamanho (o que falta)</h3><div class="hint-wrap"><table class="hint-grid">${head}${rows}${tot}</table></div>
+    <h3>Começos de duas letras</h3><div class="pairs">${pairs}</div>
+    <div class="m-actions"><button class="btn primary" data-act="close">Valeu</button></div>`);
+}
+
+/* ---------------- desistir / respostas ---------------- */
+function askGiveUp(){
+  if (S.done) return openAnswers();
+  setFoundOpen(false);
+  talk('solDesistirPergunta', null, 'shock', 4500);
+  B.openModal(`<h2>Desistir?</h2><p class="sub">Você vê todas as respostas, mas essa colmeia ${S.kind === 'daily' ? 'de hoje ' : ''}acaba aqui: não dá pra achar mais nada nela.</p>
+    <div class="m-actions"><button class="btn hot" data-act="giveUp">Desistir e ver</button><button class="btn primary" data-act="close">Continuar jogando</button></div>`);
+}
+B.onAct('giveUp', () => {
+  B.closeModal(true);
+  S.done = true; S.gaveUp = true; save(); syncLastDaily();
+  cur = ''; renderAll(); B.sfx.lose(); B.glitch();
+  talk('solDesistiu', { pts:points(), n:S.found.length }, 'dead', 7000);
+  setTimeout(openAnswers, 250);
+});
+function answersHTML(z, found, raras){
+  const list = [...z.ans.keys()].sort((a, b) => z.ans.get(a).localeCompare(z.ans.get(b), 'pt-BR'));
+  const got = new Set(found);
+  let h = `<div class="ans-list">${list.map(k => `<span class="${got.has(k) ? '' : 'miss'} ${isPan(k, z) ? 'pan' : ''}">${z.ans.get(k)}</span>`).join('')}</div>`;
+  if (raras && raras.length) h += `<h3>Raras que você achou</h3><div class="ans-list">${raras.map(k => `<span class="rara">${z.raras.get(k) || ACC.get(k) || k}</span>`).join('')}</div>`;
+  return h;
+}
+function openAnswers(){
+  const p = points(), r = rankIdx(p);
+  B.openModal(`<h2 class="${S.done ? 'big' : ''}">${S.found.length === Z.ans.size ? 'TODAS!' : S.done ? 'Respostas' : 'Respostas'}</h2>
+    <p class="sub">${S.kind === 'daily' ? `Soletra #${S.day}` : 'Soletra · treino'} · letras <b>${up(Z.letras)}</b> (meio: <b>${up(Z.centro)}</b>) · ${RANKS[r].name}, ${p} de ${Z.total} pts · achou ${S.found.length} de ${Z.ans.size}</p>
+    ${answersHTML(Z, S.found, S.raras)}
+    <p class="m-note">Verde: achou. Tracejada: faltou. ★ = pangrama.</p>
+    <div class="m-actions"><button class="btn hot" data-act="share">Compartilhar</button><button class="btn primary" data-act="treinoGo">${S.kind === 'daily' ? 'Jogar treino' : 'Nova colmeia'}</button><button class="btn" data-act="close">Fechar</button></div>`);
+}
+function openOntem(){
+  const o = ontem(); if (!o) return;
+  const z = buildPuzzle(o.idx), found = (o.found || []).filter(k => z.ans.has(k));
+  const pts = found.reduce((s, k) => s + score(k, z), 0);
+  B.openModal(`<h2>Respostas de ontem</h2><p class="sub">Soletra #${o.day} · letras <b>${up(z.letras)}</b> (meio: <b>${up(z.centro)}</b>) · você achou ${found.length} de ${z.ans.size} (${pts} de ${z.total} pts)</p>
+    ${answersHTML(z, found, (o.raras || []).filter(k => z.raras.has(k)))}
+    <div class="m-actions"><button class="btn primary" data-act="close">Fechar</button></div>`);
+  talk('solOntem', null, 'smug', 5000);
+}
+B.onAct('treinoGo', () => { B.closeModal(true); newTreino(); });
+
+/* ---------------- compartilhar ---------------- */
+function shareText(){
+  const p = points(), r = rankIdx(p), n = S.found.length;
+  const head = S.kind === 'daily' ? `Fliperama Bugado · Soletra #${S.day}` : 'Fliperama Bugado · Soletra (treino)';
+  const pans = S.found.filter(k => isPan(k, Z)).length;
+  return `${head}: ${RANKS[r].name} (${p} pts, ${n} palavra${n === 1 ? '' : 's'}) 🐝${pans ? ' ' + '⭐'.repeat(pans) : ''}\n${location.origin + location.pathname}`;
+}
+async function share(){
+  const txt = shareText();
+  if (await B.copyText(txt)){ B.toast('Copiado!', 'Resultado na área de transferência.'); talk('solCompartilhou', null, 'happy', 4500); return; }
+  B.openModal(`<h2>Copia aí</h2><p class="sub">Não consegui copiar sozinho. Seleciona e copia:</p><textarea class="share-box" readonly></textarea><div class="m-actions"><button class="btn primary" data-act="close">Fechou</button></div>`);
+  const ta = document.querySelector('.share-box'); if (ta){ ta.value = txt; ta.focus(); ta.select(); }
+}
+B.onAct('share', () => share());
+
+/* ---------------- estatísticas / ajuda ---------------- */
+function openStats(){
+  const p = points(), r = rankIdx(p);
+  const table = RANKS.map((k, i) => `<span class="${i === r ? 'me' : ''}">${k.name}${i === WIN_RANK ? ' (vitória)' : ''}</span><b>${Z.need[i]} pts</b>`).join('');
+  B.openModal(`<h2>Estatísticas</h2>
+    <p class="sub">${S.kind === 'daily' ? `Soletra #${S.day}` : 'Treino'}: <b>${RANKS[r].name}</b> · ${p} pts · ${S.found.length} palavra${S.found.length === 1 ? '' : 's'}${S.raras.length ? ` + ${S.raras.length} rara${S.raras.length > 1 ? 's' : ''}` : ''}</p>
+    <div class="stat-grid">
+      <div class="stat"><b>${G.days|0}</b><span>Dias</span></div>
+      <div class="stat"><b>${G.wins|0}</b><span>Vitórias</span></div>
+      <div class="stat"><b>${G.words|0}</b><span>Palavras</span></div>
+      <div class="stat"><b>${G.pangrams|0}</b><span>Pangramas</span></div>
+    </div>
+    <p class="m-note">Melhor ranking: <b>${RANKS[G.bestRank|0].name}</b> · raras: <b>${G.raras|0}</b> · colmeias completas: <b>${G.all|0}</b> · treinos: <b>${G.treinos|0}</b> · dicas: <b>${G.hints|0}</b></p>
+    <h3>Ranking desta colmeia (${Z.total} pts no total)</h3>
+    <div class="rk-table">${table}</div>
+    <div class="m-actions"><button class="btn hot" data-act="share">Compartilhar</button><button class="btn" data-act="close">Fechar</button></div>`);
+}
+function openHelp(auto){
+  G.seenHelp = true; B.saveProfile();
+  B.openModal(`<h2>Como jogar Soletra</h2>
+    <p class="sub">Monte palavras com as 7 letras da colmeia. Toda palavra tem que usar a letra do meio.</p>
+    <div class="hx-ex" aria-hidden="true"><i>B</i><i>O</i><i class="c">L</i><i>A</i><i>C</i><i>H</i><i>E</i></div>
+    <ul>
+      <li>✍️ <span>Palavras com <b>4 letras ou mais</b>, sempre com a <b>letra amarela</b>. Letras podem repetir.</span></li>
+      <li>📖 <span>Vale palavra de dicionário na <b>forma básica</b>: nada de plural nem verbo conjugado (vale <b>correr</b>, não <b>corria</b>). Nomes próprios não valem.</span></li>
+      <li>🔤 <span>Acento e cedilha não precisam: digita <b>acao</b> e eu mostro <b>ação</b>.</span></li>
+      <li>🎯 <span>Palavra de 4 letras vale 1 ponto; maiores valem 1 ponto por letra. <b>Pangrama</b> (usa as 7 letras) ganha +7.</span></li>
+      <li>🐝 <span>Palavras raras que existem mas quase ninguém usa entram como <b>raras</b>: dão XP, mas não contam pro ranking.</span></li>
+      <li>🏆 <span>Ranking: Iniciante → Aprendiz → Esperto → <b>Craque</b> (vitória do dia) → Mestre → Gênio Bugado.</span></li>
+      <li>💡 <span><b>Dica</b> mostra quantas palavras faltam por letra e tamanho (custa ${HINT_COST} XP uma vez). Dá pra <b>desistir e ver as respostas</b> pela lista de palavras.</span></li>
+      <li>📅 <span><b>Diário</b>: mesma colmeia pra todo mundo hoje. <b>Treino</b>: colmeia aleatória, infinita.</span></li>
+      <li>⌨️ <span>No PC: digita as letras, <kbd>Enter</kbd> envia, <kbd>Backspace</kbd> apaga, <kbd>Espaço</kbd> embaralha, <kbd>Esc</kbd> limpa.</span></li>
+    </ul>
+    <div class="m-actions"><button class="btn primary" data-act="close">Bora!</button></div>`);
+  if (auto !== true) talk('solAjuda', null, 'smug', 4500);
+}
+
+/* ---------------- trocar modo ---------------- */
+function switchTo(kind, quiet){
+  load(kind); buildHive(); renderAll(); setFoundOpen(false);
+  if (quiet) return;
+  greet();
+}
+function greet(){
+  const vars = { n:Z.ans.size, centro:bold(up(Z.centro)), letras:lettersVar(), total:N, rank:RANKS[rankIdx(points())].name };
+  if (S.done) talk(S.kind === 'daily' ? 'solDiarioFeito' : 'solTreinoFeito', null, 'smug', 6000);
+  else if (S.found.length || S.raras.length) talk('solVoltou', Object.assign({}, vars, { n:S.found.length }), 'smug', 5500);
+  else if (S.kind === 'treino') talk('solTreino', vars, 'happy', 5500);
+  else talk('solOi', vars, 'talk', 6000);
+  nextLetters = Date.now() + 25000 + Math.random()*20000;
+}
+function newTreino(){
+  B.closeModal(true);
+  if (S.kind !== 'treino'){ switchTo('treino'); return; }
+  const abandoned = !S.done && (S.found.length > 0);
+  B.store.set(KEY.treino, { idx:randomIdx(S.idx), found:[], raras:[] });
+  load('treino'); buildHive(); renderAll(); setFoundOpen(false);
+  talk(abandoned ? 'solNovoTreino' : 'solTreino', { n:Z.ans.size, centro:bold(up(Z.centro)), letras:lettersVar(), total:N }, 'happy', 5000);
+  nextLetters = Date.now() + 30000;
+}
+document.querySelector('.modes .seg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b || !b.dataset.kind || b.dataset.kind === S.kind) return;
+  B.sfx.tap(); switchTo(b.dataset.kind);
+});
+$('#btnDica').addEventListener('click', () => { B.sfx.tap(); askHint(); });
+
+/* ---------------- controles / teclado ---------------- */
+document.querySelector('[data-c="shuf"]').innerHTML = B.ICON.shuffle;
+$('#ctrl').addEventListener('mousedown', e => e.preventDefault());
+$('#ctrl').addEventListener('click', e => {
+  const b = e.target.closest('[data-c]'); if (!b) return;
+  B.idle.touch();
+  const c = b.dataset.c;
+  if (c === 'del') backspace(); else if (c === 'shuf') shuffleHive(); else if (c === 'send') submit();
+});
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey || B.isModalOpen()) return;
+  const t = e.target, ctl = t && t.closest && t.closest('button,a,input,textarea,select,[role="button"]');
+  const inCtl = ctl && ctl.offsetParent !== null && !ctl.closest('.bg-modal');   // botão escondido (modal fechado) não conta
+  const k = e.key;
+  if (k === 'Enter'){ if (inCtl) return; e.preventDefault(); submit(); return; }
+  if (t && t.closest && t.closest('input,textarea')) return;
+  if (k === 'Backspace'){ e.preventDefault(); backspace(); return; }
+  if (k === 'Escape'){ if (foundEl.classList.contains('open')) setFoundOpen(false); else clearWord(); return; }
+  if (k === ' '){ if (inCtl) return; e.preventDefault(); shuffleHive(); return; }
+  if (k.length === 1){ const n = norm(k); if (/^[a-z]$/.test(n)){ e.preventDefault(); typeLetter(n); } }
+});
+document.addEventListener('click', e => { if (e.detail > 0){ const b = e.target.closest('button'); if (b && !b.closest('.bg-card')) b.blur(); } });
+
+/* ---------------- tagarelice extra ---------------- */
+setInterval(() => {
+  if (!S || S.done || document.hidden || B.isModalOpen()) return;
+  const now = Date.now(), idleFor = now - B.idle.last;
+  // parado com palavra pela metade
+  if (!B.idle.said && cur && idleFor > 22000){ B.idle.said = true; talk('solParadoMeio', { palavra:bold(up(cur)) }, 'smug', 6000); return; }
+  // seca: jogando (mexeu há pouco) mas sem achar nada
+  const lim = [100, 220, 400, 650][droughtLvl];
+  if (lim && now - lastFound > lim*1000 && idleFor < 25000 && now - lastTalk > 8000){ droughtLvl++; talk('solSeca', { centro:bold(up(Z.centro)) }, pick(['smug','sleep','talk']), 6000); return; }
+  // comentários sobre as letras de vez em quando
+  if (now > nextLetters && now - lastTalk > 15000 && idleFor < 40000){
+    nextLetters = now + 120000 + Math.random()*90000;
+    const rl = [...Z.letras].find(c => RARE_LETTERS.includes(c));
+    if (rl && !rareLetterSaid){ rareLetterSaid = true; talk('solLetraRara', { letra:bold(up(rl)) }, 'shock', 6000); }
+    else talk('solLetras', { letras:lettersVar(), centro:bold(up(Z.centro)) }, pick(['talk','smug']), 6500);
+  }
+}, 1000);
+
+/* ---------------- início ---------------- */
+B.mountBar($('#bar'), { title:'Soletra', color:'#E05CFF', buttons:[
+  { id:'btnNova', icon:'plus', label:'Nova colmeia (treino)', onClick: () => newTreino() },
+  { id:'btnHelp', icon:'help', label:'Como jogar', onClick: () => openHelp() },
+  { id:'btnStats', icon:'stats', label:'Estatísticas', onClick: () => { openStats(); talk('solStats', null, 'smug', 4000); } },
+  { id:'btnSom', icon: B.profile().sound ? 'on' : 'off', label:'Som liga/desliga', onClick: () => { B.setSound(!B.profile().sound); $('#btnSom').innerHTML = B.ICON[B.profile().sound ? 'on' : 'off']; } }
+]});
+B.mountMascot($('#mascot'), { pokeCat:'cutucarSoletra' });
+const wide = matchMedia('(min-width:880px)');
+const onWide = () => { B.setStack(wide.matches); if (wide.matches) setFoundOpen(false); renderWord(); };
+wide.addEventListener ? wide.addEventListener('change', onWide) : wide.addListener(onWide);
+
+if (!N){ $('#word').textContent = 'Erro ao carregar as colmeias.'; return; }
+const ui = B.store.get(KEY.ui) || {};
+switchTo(ui.kind === 'treino' ? 'treino' : 'daily', true);
+onWide();
+greet();
+if (!G.seenHelp) setTimeout(() => openHelp(true), 500);
+B.chatter({ active: () => S && !S.done, idleCat:'solParadoMix', randomCat:'solMisto', every:[45,85] });
+})();
+</script>
+</body></html>

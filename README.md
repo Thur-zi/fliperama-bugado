@@ -6,16 +6,34 @@ Um fliperama de joguinhos diários com o **Bugado**, um mascote sarcástico que 
 
 ## Cartuchos
 
+**Palavras**
+
 | Jogo | O que é |
 | --- | --- |
-| Sudoku | Números de 1 a 9, com lápis, dica que explica o truque e 4 dificuldades (de Bebê a Sofrência). |
 | Termo | A palavra de 5 letras em 6 chutes. Tem Dueto e Quarteto. |
 | Conexo | 16 palavras, 4 grupos escondidos. |
 | Contexto | A palavra secreta pela proximidade de sentido. |
+| Soletra | Colmeia de 7 letras: monta palavras sempre com a letra do meio. |
+| Ponte | De uma palavra até outra só por palavras de sentido parecido, com par igual golfe. |
+
+**Pokémon & anime**
+
+| Jogo | O que é |
+| --- | --- |
 | Pokémon | Quem é esse Pokémon? Compara geração, tipos, altura, peso… |
 | Dragon Ball | Quem é esse guerreiro? Raça, saga, poder… |
+| Relâmpago | Silhuetas contra o relógio: 60 segundos, 4 opções, combo. |
+| Mais ou Menos | Quem é mais pesado, mais alto, mais forte? Sequência até errar. |
 
-Termo, Conexo, Contexto, Pokémon e Dragon Ball têm desafio **diário** (igual pra todo mundo no dia) e modo **infinito**.
+**Clássicos**
+
+| Jogo | O que é |
+| --- | --- |
+| Sudoku | Números de 1 a 9, com lápis, dica que explica o truque e 4 dificuldades (de Bebê a Sofrência). |
+| Forca Bugada | Forca em que cada erro apaga um pedaço do mascote. |
+| Memória | Pares de Pokémon e Dragon Ball, com fases de evolução, sombra e bagunça. |
+
+Todos têm um desafio **diário** (igual pra todo mundo no dia), e a home mostra quantos você já fez hoje.
 
 O XP é um só pra todos os jogos. Os títulos vão de "Estagiário do Fliperama" até "Isso Não Existe", e ganhar alguma coisa em dias seguidos acende o foguinho de sequência. O progresso fica salvo no navegador (localStorage), separado em cada aparelho.
 

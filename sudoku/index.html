@@ -145,7 +145,8 @@
 <script>
 (() => {
 const B = Bugado, $ = s => document.querySelector(s), RM = B.RM;
-const shuffle = a => B.shuffle(a);
+let RAND = Math.random; // trocado por um gerador com semente no Sudoku do Dia
+const shuffle = a => B.shuffle(a, RAND);
 const fmt = B.fmtTime;
 
 /* ================= geometria ================= */
@@ -196,7 +197,11 @@ function solveSingles(g0){
   }
   return g.every(v => v);
 }
-function generate(key){
+function generate(key, seed){
+  RAND = seed == null ? Math.random : B.rng(seed);
+  try { return generateWith(key); } finally { RAND = Math.random; }
+}
+function generateWith(key){
   const D=DIFFS[key]; const sol=Array(81).fill(0); solveRand(sol);
   const p=sol.slice(); let givens=81;
   for (const i of shuffle([...Array(41).keys()])){
@@ -283,7 +288,7 @@ function render(){
   $('#tNotes').classList.toggle('on', S.notesMode); $('#tNotes').setAttribute('aria-pressed', S.notesMode);
   $('#notesTag').textContent = S.notesMode ? 'ON' : 'OFF';
   const ht = $('#hintTag'); ht.hidden = !S.hints; ht.textContent = S.hints;
-  const D = DIFFS[S.diff], chip = $('#diffChip'); chip.textContent = D.name; chip.style.setProperty('--c', D.color);
+  const D = DIFFS[S.diff], chip = $('#diffChip'); chip.textContent = S.daily != null ? `Do Dia #${S.daily}` : D.name; chip.style.setProperty('--c', S.daily != null ? '#FFD23F' : D.color);
   $('#timer').textContent = fmt(S.time);
   const cb = $('#combo'); cb.hidden = S.combo<2; cb.textContent = `x${S.combo}`;
   $('#hearts').innerHTML = [0,1,2].map(k => `<span class="${k < 3-S.mistakes ? '' : 'lost'}">${heartSVG}</span>`).join('');
@@ -311,17 +316,21 @@ function flashCells(list, origin){
 let lastPlace = Date.now(), notesAdded = 0, undos = 0, paused = false;
 const talk = (cat, vars, m, hold) => B.talk(cat, vars, m, hold);
 
-function newGame(key, quiet){
-  const { puzzle, solution } = generate(key);
+function newGame(key, quiet, daily){
+  const day = B.dayNumber();
+  if (daily) key = 'normal';
+  const { puzzle, solution } = generate(key, daily ? 7000 + day : null);
   S = { diff:key, puzzle, solution, board:puzzle.slice(), notes:Array(81).fill(0), hinted:[], scored:Array(81).fill(false),
         time:0, mistakes:0, hints:0, combo:0, maxCombo:0, xpGain:0, history:[], sel:-1, notesMode:false,
-        over:false, won:false, continued:false, wrong:null, milestones:{} };
+        over:false, won:false, continued:false, wrong:null, milestones:{}, daily: daily ? day : null };
   S.sel = puzzle[40] ? puzzle.findIndex(v => !v) : 40;
-  G.lastDiff = key; G.played++;
+  if (!daily) G.lastDiff = key;
+  G.played++;
   if (new Date().getHours() < 5) unlock('night');
   notesAdded = 0; undos = 0; lastPlace = Date.now(); setPaused(false);
   save(); render();
-  if (!quiet){ B.say(B.line('sdStart') + ' ' + B.line('sdDiff_' + key), 'smug', 6000); burst('VALENDO!', DIFFS[key].color); }
+  if (daily){ talk('sdDaily', {n:day}, 'smug', 6000); burst('DO DIA!', '#FFD23F'); }
+  else if (!quiet){ B.say(B.line('sdStart') + ' ' + B.line('sdDiff_' + key), 'smug', 6000); burst('VALENDO!', DIFFS[key].color); }
 }
 function unlock(id){
   if (G.ach[id]) return false;
@@ -476,6 +485,8 @@ function win(){
   if (!S.mistakes && !S.continued) add('Zero erros', 30);
   if (!S.hints) add('Sem pedir dica', 25);
   if (S.maxCombo >= 5) add(`Combo máximo x${S.maxCombo}`, S.maxCombo*2);
+  const officialDaily = S.daily === B.dayNumber() && !(G.lastDaily && G.lastDaily.day === S.daily && G.lastDaily.won);
+  if (officialDaily){ add('Sudoku do Dia', 40); G.lastDaily = { day:S.daily, won:true, time:S.time, mistakes:S.mistakes, hints:S.hints }; }
   if (S.continued){ const pen = -Math.round(total/2); rows.push(['Taxa da vergonha (continuou)', pen]); total += pen; }
   const lvlBefore = B.levelInfo().lvl, earlier = S.xpGain;
   B.gainXP(total, {quiet:true});
@@ -522,6 +533,7 @@ function win(){
       </div>
       ${newAch.length ? `<h3>Conquistas novas</h3><div class="achs">${newAch.map(achCard).join('')}</div>` : ''}
       <div class="m-actions">
+        ${S.daily != null ? '<button class="btn cool" type="button" data-act="share">Copiar resultado</button>' : ''}
         <button class="btn primary" type="button" data-act="again">Outra no ${D.name}!</button>
         <button class="btn" type="button" data-act="menu">Trocar dificuldade</button>
       </div>`, {locked:true});
@@ -549,6 +561,8 @@ function showNewGame(){
     <h2>Escolhe teu sofrimento</h2>
     <p class="sub">${inProgress ? 'O jogo atual vai pro lixo. Ele não vai sentir falta. Eu talvez.' : 'Começa pelo Bebê. Ninguém tá olhando. Só eu.'}</p>
     <div class="diffs">
+      ${(() => { const day = B.dayNumber(), ld = G.lastDaily, done = ld && ld.day === day && ld.won;
+        return `<button class="btn diff ${S.daily===day?'cur':''}" type="button" data-act="daily" style="--c:#FFD23F;background:${done?'#E6FBD9':'#FFF1B8'}"><b>Sudoku do Dia #${day}</b><span>${done ? `Feito em ${fmt(ld.time)}. Pode jogar de novo, mas o oficial já foi.` : 'O mesmo tabuleiro pra todo mundo hoje. Nível Normal. +40 XP.'}</span><em>${done ? 'feito' : 'novo'}</em></button>`; })()}
       ${Object.entries(DIFFS).map(([k,D]) => `<button class="btn diff ${k===S.diff?'cur':''}" type="button" data-act="start" data-d="${k}" style="--c:${D.color}"><b>${D.name}</b><span>${D.desc}</span><em>${G.best[k] ? 'recorde<br>'+fmt(G.best[k]) : 'sem<br>recorde'}</em></button>`).join('')}
     </div>
     ${S.over || S.won ? '' : '<div class="m-actions"><button class="btn" type="button" data-act="close">Voltar pro jogo</button></div>'}`, {locked: S.over || S.won});
@@ -597,6 +611,11 @@ function showStats(){
 }
 B.onAct('start', b => { B.closeModal(true); newGame(b.dataset.d); });
 B.onAct('again', () => { B.closeModal(true); newGame(S.diff); });
+B.onAct('daily', () => { B.closeModal(true); newGame('normal', false, true); });
+B.onAct('share', async b => {
+  const ok = await B.copyText(`Fliperama Bugado · Sudoku do Dia #${S.daily}\n🧩 ${fmt(S.time)} · ${S.mistakes} erro${S.mistakes===1?'':'s'} · ${S.hints} dica${S.hints===1?'':'s'}\n${location.href.split('?')[0]}`);
+  b.textContent = ok ? 'Copiado!' : 'Não deu pra copiar';
+});
 B.onAct('menu', () => showNewGame());
 B.onAct('continue', () => { B.closeModal(true); S.over=false; S.mistakes=0; S.continued=true; save(); render(); B.mood('neutral'); talk('sdCont', null, 'smug'); });
 

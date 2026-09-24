@@ -36,8 +36,29 @@ if (!P){
   if (old){ P.xp = old.xp||0; P.sound = old.sound !== false; P.streak = old.streak||0; P.lastWin = old.lastWin||null; P.games.sudoku = { wins:old.wins||0, played:old.games||0, best:old.best||{}, ach:old.ach||{} }; }
 }
 P = Object.assign(defaults(), P);
-const saveProfile = () => store.set(PKEY, P);
-const game = id => (P.games[id] = P.games[id] || {});
+
+/* Várias abas abertas ao mesmo tempo: antes de salvar, junta com o que
+   as outras abas gravaram. XP soma a diferença feita aqui; jogos que esta
+   aba não mexeu vêm do armazenamento; sequência fica com a vitória mais recente. */
+let syncedXp = P.xp;
+const touched = new Set();
+const dayVal = k => { if (!k) return 0; const [y,m,d] = k.split('-').map(Number); return new Date(y, m-1, d).getTime(); };
+function mergeStored(){
+  const cur = store.get(PKEY); if (!cur) return;
+  P.xp = Math.max(0, (cur.xp || 0) + (P.xp - syncedXp));
+  syncedXp = cur.xp || 0;
+  for (const id in (cur.games || {})){
+    if (touched.has(id)) continue;
+    if (P.games[id]){ for (const k in P.games[id]) delete P.games[id][k]; Object.assign(P.games[id], cur.games[id]); }
+    else P.games[id] = cur.games[id];
+  }
+  if (dayVal(cur.lastWin) > dayVal(P.lastWin) || (cur.lastWin === P.lastWin && (cur.streak||0) > (P.streak||0))){ P.lastWin = cur.lastWin; P.streak = cur.streak; }
+  P.seen = Object.assign({}, cur.seen || {}, P.seen);
+}
+function saveProfile(){ mergeStored(); store.set(PKEY, P); syncedXp = P.xp; }
+const game = id => { touched.add(id); return (P.games[id] = P.games[id] || {}); };
+const peekGame = id => P.games[id] || {}; // só leitura (não marca o jogo como desta aba)
+window.addEventListener('storage', e => { if (e.key === PKEY){ mergeStored(); refreshBar(); } });
 
 function levelInfo(xp=P.xp){ let lvl=1, need=120, rest=xp; while (rest>=need){ rest-=need; lvl++; need=Math.round(need*1.2); } return { lvl, into:rest, need }; }
 const titleOf = lvl => TITLES[Math.min(lvl-1, TITLES.length-1)];
@@ -61,24 +82,31 @@ function registerWin(gameId){
 }
 
 /* ---------------- falas sem repetição ----------------
-   Cada categoria vira um "saco embaralhado" salvo no navegador.
-   Só repete depois de sair TODAS as falas daquela categoria. */
-const BKEY = 'fliperama.bags';
-const bags = store.get(BKEY) || {};
+   Pra cada categoria o navegador guarda quais falas já saíram (um hashzinho
+   de cada texto). Só repete depois de sair TODAS — e continua valendo mesmo
+   se um jogo somar falas novas à categoria. */
+const BKEY = 'fliperama.used';
+const used = store.get(BKEY) || {};
+const hash = s => { let h = 2166136261; for (let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h>>>0).toString(36); };
 const banks = Object.assign({}, window.FALAS || {});
 function addLines(obj){ Object.assign(banks, obj); }
+// soma falas a categorias que já existem (ex.: mais 'aleatorio' temático) em vez de substituir
+function extendLines(obj){ for (const k in obj) banks[k] = (banks[k] || []).concat(obj[k]); }
+const lines = cat => (banks[cat] || []).slice();
 function line(cat, vars){
   const arr = banks[cat];
   if (!arr || !arr.length) return '';
-  let b = bags[cat];
-  if (!b || b.n !== arr.length || b.pos >= b.order.length){
-    const last = b && b.order ? b.order[b.order.length-1] : -1;
-    const order = shuffle([...arr.keys()]);
-    if (order.length > 1 && order[0] === last) [order[0], order[1]] = [order[1], order[0]];
-    b = bags[cat] = { n:arr.length, order, pos:0 };
+  const fresh = store.get(BKEY); if (fresh) Object.assign(used, fresh); // outras abas também sorteiam
+  const seen = new Set(used[cat] || []);
+  let pool = arr.filter(s => !seen.has(hash(s)));
+  if (!pool.length){ // esgotou: recomeça, mas sem repetir a última que saiu
+    const last = (used[cat] || []).slice(-1)[0];
+    used[cat] = []; seen.clear();
+    pool = arr.length > 1 ? arr.filter(s => hash(s) !== last) : arr;
   }
-  const s = arr[b.order[b.pos++]];
-  store.set(BKEY, bags);
+  const s = pool[Math.floor(Math.random() * pool.length)];
+  (used[cat] = used[cat] || []).push(hash(s));
+  store.set(BKEY, used);
   return fill(s, vars);
 }
 
@@ -257,7 +285,11 @@ function openModal(html, opts={}){
   ensureChrome(); cardEl.innerHTML = html; modalEl.hidden = false; modalOpen = true; modalLocked = !!opts.locked; cardEl.scrollTop = 0;
   const f = cardEl.querySelector('button'); if (f) f.focus({preventScroll:true});
 }
-function closeModal(force){ if (modalLocked && !force) return; if (!modalEl) return; modalEl.hidden = true; modalOpen = false; modalLocked = false; }
+function closeModal(force){
+  if (modalLocked && !force) return; if (!modalEl) return;
+  if (modalEl.contains(document.activeElement)) document.activeElement.blur(); // não deixa o foco preso num botão escondido
+  modalEl.hidden = true; modalOpen = false; modalLocked = false;
+}
 const onAct = (name, fn) => { acts[name] = fn; };
 
 /* ---------------- toast / burst / confete ---------------- */
@@ -286,14 +318,21 @@ function confetti(){
   })(t0);
 }
 // copia texto (resultado do diário); devolve Promise<boolean>
-async function copyText(text){ try { await navigator.clipboard.writeText(text); return true; } catch(e){ return false; } }
+async function copyText(text){
+  try { await navigator.clipboard.writeText(text); return true; } catch(e){}
+  try { // plano B: textarea escondida + execCommand
+    const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly','');
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+    document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); return ok;
+  } catch(e){ return false; }
+}
 
 document.addEventListener('DOMContentLoaded', ensureChrome);
 
 window.Bugado = {
   RM, store, fmtTime, dayKey, dayNumber, rng, shuffle, normalize, fill,
-  profile: () => P, saveProfile, game, levelInfo, titleOf, streakNow, gainXP, registerWin,
-  line, talk, addLines, say, mood, glitch, mountMascot, setStack, chatter, idle,
+  profile: () => P, saveProfile, game, peekGame, syncProfile: mergeStored, levelInfo, titleOf, streakNow, gainXP, registerWin,
+  line, talk, addLines, extendLines, lines, say, mood, glitch, mountMascot, setStack, chatter, idle,
   sfx, tone, setSound, ICON, mountBar, refreshBar,
   openModal, closeModal, onAct, isModalOpen: () => modalOpen,
   toast, burst, confetti, copyText

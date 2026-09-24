@@ -33,6 +33,20 @@ sdStart: [
   'Vamos nessa. Se travar, olha pro quadrado mais cheio.',
   'Começou! Não esquece: o numerinho no canto do botão diz quantos faltam.'
 ],
+sdDaily: [
+  'Sudoku do Dia #{n}! Todo mundo tá jogando esse mesmo tabuleiro hoje. Não passa vergonha em público.',
+  'Desafio do dia! Mesmo tabuleiro pra todo mundo. Agora dá pra comparar quem é mais lento.',
+  'Sudoku #{n}. Oficial. Registrado. Eu tô com a prancheta na mão.',
+  'O tabuleiro de hoje foi escolhido pelo destino. E por uma semente de número aleatório. Mesma coisa.',
+  'Diário valendo! Termina e compartilha o tempo pra humilhar os amigos.',
+  'Esse aqui é o do dia. Se errar, amanhã tem outro. Mas hoje você vai lembrar.',
+  'Sudoku do Dia: nível Normal, zero desculpa, plateia imaginária lotada.',
+  'Chegou o tabuleiro do dia. Ele é igual pra todo mundo, mas o fracasso é pessoal.',
+  'Dia #{n}. Bora ver se hoje o cérebro acordou junto com você.',
+  'Desafio oficial! Se ganhar, vale XP extra e meu respeito temporário.',
+  'Mesmo sudoku pra todo mundo. Se alguém do grupo fizer mais rápido, a culpa é sua.',
+  'Hoje é dia de sudoku oficial. Capricha que eu tô gravando. Não tô. Mas imagina.'
+],
 sdDiff_bebe: [
   'Modo Bebê. Até eu jogaria de olho fechado. Não tenho pálpebra, mas jogaria.',
   'Bebê: a grade praticamente se resolve sozinha. Não estraga.',

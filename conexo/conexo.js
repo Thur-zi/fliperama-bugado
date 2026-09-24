@@ -116,7 +116,7 @@ function renderControls(){
   $('bNext').textContent = mode === 'daily' ? 'Jogar Infinito' : 'Próximo puzzle';
   $('tabDaily').classList.toggle('on', mode === 'daily'); $('tabDaily').setAttribute('aria-selected', mode === 'daily');
   $('tabInf').classList.toggle('on', mode === 'inf'); $('tabInf').setAttribute('aria-selected', mode === 'inf');
-  $('dayNo').innerHTML = `#${today + 1}` + (SD.done ? '<i class="done-dot" title="Diário feito"></i>' : '');
+  $('dayNo').innerHTML = `#${today}` + (SD.done ? '<i class="done-dot" title="Diário feito"></i>' : '');
   const h = $('hint');
   if (!done) h.innerHTML = S.solved.length ? `Faltam <b>${4 - S.solved.length}</b> grupo${S.solved.length === 3 ? '' : 's'}.` : 'Ache <b>4 grupos</b> de 4 palavras com algo em comum.';
   else if (mode === 'daily') h.innerHTML = S.won ? 'Diário de hoje: <b>vencido!</b> Volta amanhã pro próximo.' : 'Diário de hoje: perdeu. Amanhã tem revanche.';
@@ -295,7 +295,7 @@ function clearSel(){
 
 /* ---------- resultado / compartilhar ---------- */
 function shareText(){
-  const head = mode === 'daily' ? `Fliperama Bugado · Conexo #${S.day + 1}` : `Fliperama Bugado · Conexo Infinito #${S.idx + 1}`;
+  const head = mode === 'daily' ? `Fliperama Bugado · Conexo #${S.day}` : `Fliperama Bugado · Conexo Infinito #${S.idx + 1}`;
   const tail = S.won ? (S.mistakes ? `Venci com ${S.mistakes} erro${S.mistakes > 1 ? 's' : ''}` : 'Perfeito, zero erros!') : `Perdi (${S.found}/4 grupos)`;
   const rows = S.attempts.map(a => a.map(l => EMOJI[l]).join(''));
   return [head, tail, ...rows, location.origin + location.pathname].join('\n');
@@ -310,7 +310,7 @@ async function share(){
 function openResult(){
   const P = ALL[S.idx], g = B.game('conexo');
   const title = S.won ? (S.mistakes === 0 ? 'PERFEITO!' : S.mistakes === 3 ? 'NO SUFOCO!' : 'VENCEU!') : 'GAME OVER';
-  const label = mode === 'daily' ? `Diário #${S.day + 1}` : `Infinito · puzzle ${S.idx + 1}`;
+  const label = mode === 'daily' ? `Diário #${S.day}` : `Infinito · puzzle ${S.idx + 1}`;
   const sub = S.won ? `Achou os 4 grupos com ${S.mistakes} erro${S.mistakes === 1 ? '' : 's'}.` : `Achou ${S.found} de 4 grupos antes das vidas acabarem.`;
   const rows = S.attempts.map(a => `<div>${a.map(l => `<i class="l${l}"></i>`).join('')}</div>`).join('');
   const groups = P.grupos.slice().sort((a, b) => a.nivel - b.nivel).map(gr => `<div class="l${gr.nivel}"><b>${esc(gr.tema)}</b>${gr.palavras.map(esc).join(' · ')}</div>`).join('');

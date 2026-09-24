@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2A1650">
+<title>Mais ou Menos · Fliperama Bugado</title>
+<meta name="description" content="Quem pesa mais? Quem é mais alto? Quem é mais forte? O jogo do mais ou menos com Pokémon e Dragon Ball, com Desafio do Dia.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<link rel="stylesheet" href="../shared/base.css">
+<style>
+:root{--art:clamp(104px,25vh,210px);--art:clamp(110px,calc(100svh - 560px),210px);--ok:#3DDC84;--bad:#FF5A5A}
+/* título comprido: cabe no celular sem cortar */
+@media (max-width:420px){ .bar-title b{font-size:22px;letter-spacing:0} .lvl-chip .mini{display:none} .lvl-chip{padding-right:3px} }
+@media (max-width:350px){ .bar-title b{font-size:20px} }
+
+/* ---------- layout ---------- */
+.layout{display:grid;gap:8px;margin-top:4px}
+#mascot{min-height:74px}
+#mascot .bg-bubble{min-height:70px}
+.game{min-width:0;width:100%;max-width:820px;margin:0 auto}
+@media (min-width:880px){
+  .layout{grid-template-columns:240px minmax(0,1fr);gap:28px;align-items:start;margin-top:14px}
+  #mascot{position:sticky;top:14px;min-height:0}
+  #mascot .bg-bubble{min-height:84px}
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- menu ---------- */
+.hero{text-align:center;margin:2px 0 12px}
+.hero h1{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(40px,12vw,64px);letter-spacing:.04em;line-height:.95;color:var(--sun);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:4px 4px 0 var(--pink);transform:rotate(-2deg)}
+.hero h1 span{display:inline-block;font-size:.6em;color:var(--cyan);text-shadow:3px 3px 0 var(--violet);transform:rotate(6deg) translateY(-4px)}
+.hero p{margin:8px auto 0;max-width:420px;font-size:14px;line-height:1.35;color:var(--muted)}
+.hero p b{color:var(--paper)}
+
+.daily{width:100%;display:flex;align-items:center;gap:12px;padding:10px 12px;text-align:left;background:var(--violet);color:var(--paper);box-shadow:0 5px 0 var(--ink),5px 9px 0 rgba(255,79,154,.55)}
+.daily:active{box-shadow:0 1px 0 var(--ink)}
+.cal{flex:none;width:58px;height:62px;display:flex;flex-direction:column;border:3px solid var(--ink);border-radius:12px;overflow:hidden;background:var(--paper);color:var(--ink);transform:rotate(-4deg)}
+.cal small{display:block;background:var(--pink);border-bottom:3px solid var(--ink);font-family:var(--chunky);font-size:11px;letter-spacing:.08em;text-align:center;line-height:17px;color:#fff}
+.cal b{flex:1;display:grid;place-items:center;font-family:var(--display);font-weight:400;font-size:26px;letter-spacing:.02em}
+.d-txt{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}
+.d-txt b{font-family:var(--display);font-weight:400;font-size:26px;letter-spacing:.05em;line-height:1;color:var(--sun);-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;text-shadow:2px 2px 0 var(--ink)}
+.d-txt span{font-family:var(--body);font-size:13px;font-weight:800;color:#E9E1FF}
+.d-st{flex:none;font-size:13px}
+.d-st.new{background:var(--sun);animation:wig 1.6s ease-in-out infinite}
+@keyframes wig{25%{transform:rotate(-4deg) scale(1.05)}75%{transform:rotate(4deg) scale(1.05)}}
+
+.sect{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:18px 2px 8px}
+.sect h2{margin:0;font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:.06em;color:var(--cyan);text-shadow:2px 2px 0 var(--ink)}
+.sect span{font-size:12px;color:var(--muted)}
+.cats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cat{position:relative;min-width:0;min-height:84px;display:flex;align-items:center;gap:8px;padding:8px 10px 8px 6px;text-align:left;background:var(--paper)}
+.cat:last-child{grid-column:1/-1}
+.cat .ico{flex:none;width:58px;height:58px;display:grid;place-items:center;border:2.5px solid var(--ink);border-radius:12px;background:var(--c);overflow:hidden}
+.cat .ico img{width:64px;height:64px;image-rendering:pixelated;object-fit:contain}
+.cat .ico img.hd{image-rendering:auto;width:52px;height:52px;object-fit:cover;object-position:50% 0}
+.cat .t{min-width:0;display:flex;flex-direction:column;gap:2px}
+.cat .t b{font-family:var(--chunky);font-weight:400;font-size:18px;line-height:1.05;color:var(--ink)}
+.cat .t small{font-family:var(--body);font-size:12px;font-weight:800;line-height:1.2;color:var(--text-ink)}
+.cat .rec{align-self:flex-start;margin-top:2px;font-family:var(--chunky);font-size:12px;color:var(--ink);background:var(--c);border:2px solid var(--ink);border-radius:99px;padding:0 8px;white-space:nowrap}
+@media (min-width:700px){
+  .cats{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .cat{grid-column:span 2}
+  .cat:nth-child(n+4){grid-column:span 3}
+  .cat:last-child{grid-column:span 3}
+}
+
+/* ---------- HUD ---------- */
+.hud{display:flex;align-items:center;gap:8px;min-width:0}
+.hud .pill{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--c,var(--sun))}
+.score{flex:none;display:flex;align-items:center;gap:6px;height:36px;padding:0 10px 0 8px;border:2.5px solid var(--ink);border-radius:12px;background:var(--deep);box-shadow:0 3px 0 var(--ink)}
+.score:first-of-type{margin-left:auto}
+.score span{font-family:var(--chunky);font-size:11px;letter-spacing:.08em;color:var(--muted)}
+.score b{font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:.03em;line-height:1;color:var(--paper);font-variant-numeric:tabular-nums;min-width:.6em;text-align:center}
+.score.cur b{color:var(--sun)}
+.score.hot{background:var(--pink)}
+.score.hot span,.score.hot b{color:var(--ink)}
+.score b.bump{animation:bump .45s cubic-bezier(.3,1.8,.5,1)}
+@keyframes bump{40%{transform:scale(1.6) rotate(-8deg)}}
+
+/* ---------- arena ---------- */
+.arena{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:10px}
+.card{position:relative;min-width:0;display:flex;flex-direction:column;background:var(--paper);color:var(--ink);border:3.5px solid var(--ink);border-radius:18px;box-shadow:5px 5px 0 var(--ink);overflow:hidden;transition:box-shadow .25s}
+.card[data-side="b"]{box-shadow:5px 5px 0 var(--pink)}
+.card.ok{box-shadow:5px 5px 0 var(--ok)}
+.card.bad{box-shadow:5px 5px 0 var(--bad)}
+.art{position:relative;height:var(--art);display:grid;place-items:center;border-bottom:3px solid var(--ink);overflow:hidden;background:repeating-conic-gradient(from 0deg at 50% 62%,#FFD23F 0deg 10deg,#FFB02E 10deg 20deg)}
+.card.db .art{background:radial-gradient(circle at 50% 58%,#FFF6C9 0 18%,#FFB02E 42%,#FF6A3C 72%,#C9304A)}
+.art::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 55%,rgba(255,255,255,.5),transparent 60%);pointer-events:none}
+.art img{position:relative;z-index:1;width:92%;height:92%;object-fit:contain;filter:drop-shadow(3px 4px 0 rgba(27,16,48,.4));-webkit-user-drag:none;user-select:none}
+.card.db .art img{object-position:50% 100%;height:96%;margin-top:4%}
+.art .fb{display:none;position:relative;z-index:1;font-family:var(--display);font-size:calc(var(--art)*.5);color:var(--paper);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill}
+.card.noimg .art img{display:none}
+.card.noimg .art .fb{display:block}
+.info{display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 6px 9px;text-align:center}
+.nm{margin:0;width:100%;min-height:2.1em;display:flex;align-items:center;justify-content:center;font-family:var(--chunky);font-weight:400;font-size:17px;line-height:1.05;color:var(--ink);overflow-wrap:anywhere}
+.val{height:46px;display:flex;align-items:baseline;justify-content:center;gap:3px;font-family:var(--display);color:var(--violet);white-space:nowrap}
+.val b{font-weight:400;font-size:44px;letter-spacing:.02em;line-height:1.05;font-variant-numeric:tabular-nums}
+.val small{font-size:20px;letter-spacing:.03em;color:var(--text-ink)}
+.val .q{color:var(--pink);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;animation:qwig 1.4s ease-in-out infinite}
+@keyframes qwig{25%{transform:rotate(-10deg) scale(1.08)}75%{transform:rotate(10deg) scale(1.08)}}
+.card.ok .val{color:#159a52}
+.card.bad .val{color:#D8283A}
+.val.pop{animation:bump .5s cubic-bezier(.3,1.8,.5,1)}
+.cap{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#6b5a90;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.card.enter{animation:card-in .55s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes card-in{from{transform:translateX(45%) scale(.7) rotate(8deg);opacity:0}}
+.arena.shake{animation:shake .45s}
+@keyframes shake{20%{transform:translateX(-9px) rotate(-1deg)}40%{transform:translateX(8px) rotate(1deg)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+
+.vs{position:absolute;z-index:4;left:50%;top:calc(var(--art)/2 + 4px);width:58px;height:58px;margin:-29px 0 0 -29px;display:grid;place-items:center;border-radius:50%;background:var(--sun);border:3.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink);font-family:var(--display);font-size:26px;letter-spacing:.02em;color:var(--ink);transform:rotate(-8deg);transition:background-color .2s}
+.vs::before{content:"";position:absolute;inset:-9px;border-radius:50%;border:3px dashed rgba(255,247,230,.75);animation:spin 9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.vs.ok{background:var(--ok);animation:vs-pop .5s cubic-bezier(.3,1.8,.5,1)}
+.vs.bad{background:var(--bad);color:#fff;-webkit-text-stroke:1.5px var(--ink);animation:vs-pop .5s cubic-bezier(.3,1.8,.5,1)}
+@keyframes vs-pop{0%{transform:scale(.4) rotate(-40deg)}100%{transform:scale(1) rotate(-8deg)}}
+.vs.spin{animation:vs-spin .45s ease-in-out}
+@keyframes vs-spin{to{transform:rotate(352deg)}}
+.plus{position:absolute;z-index:6;left:50%;top:calc(var(--art)/2 - 30px);pointer-events:none;font-family:var(--display);font-size:30px;color:var(--ok);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;opacity:0}
+
+/* ---------- pergunta + botões ---------- */
+.ask{margin:14px 4px 10px;min-height:2.7em;display:flex;align-items:center;justify-content:center;text-align:center;font-size:16px;line-height:1.3;color:var(--paper);text-wrap:balance}
+.ask b{color:var(--sun)}
+.ask em{font-style:normal;font-family:var(--chunky);color:var(--cyan);text-transform:uppercase;letter-spacing:.02em}
+.ask.swap{animation:bump .5s cubic-bezier(.3,1.8,.5,1)}
+.ctrl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.big{min-width:0;height:66px;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 8px;font-size:24px}
+.big svg{flex:none;width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
+.big .bt{min-width:0;display:flex;flex-direction:column;align-items:flex-start;line-height:1}
+.big .bt b{font-weight:400;letter-spacing:.03em}
+.big .bt small{font-family:var(--body);font-size:12px;font-weight:900;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.big.up{background:var(--ok)}
+.big.down{background:var(--orange)}
+.big.chosen{transform:translateY(3px);box-shadow:0 1px 0 var(--ink);filter:brightness(1.08)}
+.big.ghost{opacity:.5}
+.big.wide{font-size:19px}
+.kbd-hint{margin:12px 0 0;text-align:center;font-size:12px;color:var(--muted)}
+.kbd-hint kbd{font-size:11px}
+@media (pointer:coarse){ .kbd-hint{display:none} }
+
+@media (max-width:360px){
+  .arena{gap:10px}
+  .nm{font-size:15px}
+  .val b{font-size:36px}
+  .vs{width:50px;height:50px;margin:-25px 0 0 -25px;font-size:22px}
+  .big{font-size:20px;gap:5px}
+  .big svg{width:22px;height:22px}
+}
+@media (min-width:880px){
+  :root{--art:230px}
+  .arena{gap:44px;margin-top:16px}
+  .nm{font-size:23px}
+  .val{height:62px}
+  .val b{font-size:60px}
+  .val small{font-size:26px}
+  .cap{font-size:13px}
+  .vs{width:78px;height:78px;margin:-39px 0 0 -39px;font-size:36px}
+  .ask{font-size:20px;margin:20px 4px 14px}
+  .ctrl{max-width:560px;margin:0 auto}
+  .big{height:72px;font-size:28px}
+}
+
+/* ---------- burst ---------- */
+.burst-layer{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:45}
+.burst-layer .burst{top:40%}
+
+/* ---------- modais ---------- */
+.duel{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-top:12px}
+.mini{min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px 8px;background:#fff;border:2.5px solid var(--ink);border-radius:14px;text-align:center}
+.mini img{width:72px;height:72px;object-fit:contain}
+.mini.db img{object-position:50% 0;object-fit:cover}
+.mini b{font-family:var(--chunky);font-weight:400;font-size:14px;line-height:1.05;color:var(--ink);overflow-wrap:anywhere}
+.mini span{font-family:var(--display);font-size:22px;letter-spacing:.03em;color:var(--violet);white-space:nowrap}
+.mini.lose span{color:#D8283A}
+.duel i{font-style:normal;font-family:var(--display);font-size:22px;color:var(--pink)}
+.quote{position:relative;margin:14px 0 0;padding:10px 12px 10px 54px;background:#fff;border:2.5px solid var(--ink);border-radius:14px;min-height:52px;display:flex;align-items:center}
+.quote svg{position:absolute;left:6px;top:50%;width:42px;height:42px;margin-top:-21px}
+.bg-card .quote p{margin:0;font-size:14.5px;color:var(--ink)}
+.bg-card .quote p b{color:var(--violet)}
+.fact{margin:10px 0 0!important;font-size:13.5px!important}
+.fact b{color:var(--violet)}
+.bigscore{margin:10px 0 0;text-align:center;font-family:var(--display);font-size:64px;line-height:1;letter-spacing:.03em;color:var(--sun);-webkit-text-stroke:2.5px var(--ink);paint-order:stroke fill;text-shadow:4px 4px 0 var(--pink)}
+.bigscore small{font-size:32px;color:var(--violet);-webkit-text-stroke:0;text-shadow:none}
+.emoji{margin:8px 0 0;text-align:center;font-size:20px;letter-spacing:2px;line-height:1.4;overflow-wrap:anywhere}
+.next-in{margin:12px 0 0;text-align:center;font-size:13px}
+.next-in b{font-family:var(--chunky);font-weight:400;font-size:16px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.recs{display:flex;flex-direction:column;gap:6px}
+.recs div{display:grid;grid-template-columns:118px 1fr;align-items:center;gap:8px;font-family:var(--chunky);font-size:13px;color:var(--ink)}
+.recs i{display:block;min-width:30px;height:22px;padding:0 7px;border:2.5px solid var(--ink);border-radius:7px;background:var(--violet);color:#fff;font-style:normal;text-align:right;line-height:17px;font-size:12px}
+.recs i.zero{background:#E6DEF5;color:#6b5a90}
+.dhist{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:3px;align-items:end;height:74px;margin-top:4px}
+.dhist span{position:relative;display:block;border:2px solid var(--ink);border-radius:5px 5px 2px 2px;background:var(--cyan);min-height:6px}
+.dhist span.win{background:var(--sun)}
+.dhist span.none{background:transparent;border-style:dashed;border-color:#BBA7E4;height:6px}
+.dhist span.today{box-shadow:0 0 0 2px var(--pink)}
+.dlab{display:flex;justify-content:space-between;margin-top:4px;font-size:11px;color:#6b5a90}
+.bg-card .stat-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.bg-card .stat-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.bg-card .stat-grid .stat span{font-size:10px;letter-spacing:0}
+.demo{flex:none;display:inline-grid;place-items:center;min-width:30px;height:30px;padding:0 6px;border:2.5px solid var(--ink);border-radius:8px;font-family:var(--chunky);font-size:13px;color:var(--ink)}
+.demo.up{background:var(--ok)}.demo.down{background:var(--orange)}
+.bg-card li{align-items:center}
+</style>
+</head><body>
+<div class="wrap">
+  <header id="bar"></header>
+  <div class="layout">
+    <div id="mascot"></div>
+    <main class="game">
+      <!-- menu -->
+      <section id="menu" aria-label="Escolha a categoria">
+        <div class="hero"><h1>MAIS <span>ou</span> MENOS</h1><p>O da direita tem <b>mais</b> ou <b>menos</b>? Acertou, continua. Errou, acabou.</p></div>
+        <button class="btn daily" type="button" id="dailyBtn"></button>
+        <div class="sect"><h2>INFINITO</h2><span>cada categoria tem seu recorde</span></div>
+        <div class="cats" id="cats"></div>
+      </section>
+
+      <!-- jogo -->
+      <section id="play" hidden aria-label="Partida">
+        <div class="hud">
+          <button class="icon-btn" type="button" id="toMenu" aria-label="Voltar pras categorias" title="Categorias"></button>
+          <span class="pill" id="catTag">Peso</span>
+          <div class="score cur" title="Sequência atual"><span id="curLbl">SEQ</span><b id="cur">0</b></div>
+          <div class="score" id="recBox" title="Seu recorde nessa categoria"><span id="recLbl">REC</span><b id="rec">0</b></div>
+        </div>
+        <div class="arena" id="arena"><div class="vs" id="vs" aria-hidden="true">VS</div><div class="plus" id="plus" aria-hidden="true">+1</div></div>
+        <p class="ask" id="ask"></p>
+        <div class="ctrl" id="ctrl"></div>
+        <p class="kbd-hint">Teclado: <kbd>↑</kbd> ou <kbd>M</kbd> = mais · <kbd>↓</kbd> ou <kbd>N</kbd> = menos</p>
+        <p class="sr" id="sr" aria-live="polite"></p>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="burst-layer" aria-hidden="true"><div class="burst" id="burst"></div></div>
+
+<script src="../shared/falas.js"></script><script src="../shared/bugado.js"></script>
+<script src="../pokemon/pokedex.js"></script><script src="../dragonball/personagens.js"></script>
+<script src="falas-maisoumenos.js"></script>
+<script>
+(() => {
+'use strict';
+const B = window.Bugado;
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const slug = s => B.normalize(s).replace(/[^a-z0-9]/g, '');
+const ART = n => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${n}.png`;
+const SPR = n => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${n}.png`;
+const fmt1 = x => Number(x).toLocaleString('pt-BR', { maximumFractionDigits:1 });
+const GID = 'maisoumenos', DKEY = 'fliperama.maisoumenos.daily', HELPKEY = 'fliperama.maisoumenos.seenHelp';
+const DAILY_N = 15, DAILY_WIN = 10;
+const RM = B.RM;
+const ARW_UP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V5"/><path d="m5 11 7-7 7 7"/></svg>';
+const ARW_DN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15"/><path d="m5 13 7 7 7-7"/></svg>';
+const MINI_BUGADO = '<svg viewBox="0 0 120 120" aria-hidden="true"><path d="M27 50 L21 10 L52 30 Z" fill="#2EE6D6" stroke="#1B1030" stroke-width="6" stroke-linejoin="round"/><path d="M93 50 L99 10 L68 30 Z" fill="#2EE6D6" stroke="#1B1030" stroke-width="6" stroke-linejoin="round"/><path d="M18 70 C18 36 38 22 60 22 C82 22 102 36 102 70 C102 98 84 108 60 108 C36 108 18 98 18 70Z" fill="#2EE6D6" stroke="#1B1030" stroke-width="6"/><path d="M29 62 H56" stroke="#1B1030" stroke-width="6" stroke-linecap="round"/><path d="M64 62 H91" stroke="#1B1030" stroke-width="6" stroke-linecap="round"/><path d="M50 87 Q61 91 71 81" fill="none" stroke="#1B1030" stroke-width="5" stroke-linecap="round"/></svg>';
+
+/* ---------------- dados ---------------- */
+const PK = (window.POKEDEX || []).filter(r => r[5] > 0 && r[6] > 0)
+  .map(r => ({ id:'p' + r[0], kind:'pk', num:r[0], name:r[1], gen:r[2], h:r[5], w:r[6], img:ART(r[0]) }));
+// Pokémon mais conhecidos aparecem mais (gen 1 x3, gens 2–4 x2)
+const PKW = []; PK.forEach(p => { const k = p.gen === 1 ? 3 : p.gen <= 4 ? 2 : 1; for (let i = 0; i < k; i++) PKW.push(p); });
+const DBC = (window.DB_CHARS || []).filter(c => c.img && c.poder >= 1)
+  .map((c, i) => ({ id:'d' + i, kind:'db', name:c.nome, poder:c.poder, img:c.img, key:slug(c.nome), fem:c.genero === 'Feminino' }));
+const TIER = ['', 'Gente comum', 'Lutador fraco', 'Mestre clássico', 'Início do Z', 'Elite de Namek', 'Era Androides', 'Era Cell e Boo', 'Elite do Super', 'Topo do universo', 'Anjo ou Zeno'];
+
+const MET = {
+  peso:  { name:'peso', get:x => x.w, dec:true, cap:'de peso', hid:'pesa quanto?', up:'mais pesado', down:'mais leve',
+           ask:(b, a) => `<b>${b}</b> pesa <em>mais</em> ou <em>menos</em> que <b>${a}</b>?` },
+  altura:{ name:'altura', get:x => x.h, dec:true, cap:'de altura', hid:'mede quanto?', up:'mais alto', down:'mais baixo',
+           ask:(b, a) => `<b>${b}</b> é <em>mais</em> ou <em>menos</em> alto que <b>${a}</b>?` },
+  dex:   { name:'nº da Pokédex', get:x => x.num, cap:'na Pokédex', hid:'nº na Pokédex?', up:'vem depois', down:'vem antes',
+           ask:(b, a) => `O nº de <b>${b}</b> na Pokédex é <em>maior</em> ou <em>menor</em> que o de <b>${a}</b>?` },
+  poder: { name:'poder', get:x => x.poder, cap:null, hid:'nível de poder?', up:'mais forte', down:'mais fraco',
+           ask:(b, a) => `<b>${b}</b> é <em>mais</em> ou <em>menos</em> forte que <b>${a}</b>?` }
+};
+const fmtV = (v, m) => m === 'peso' ? `${fmt1(v)} kg` : m === 'altura' ? `${fmt1(v)} m` : m === 'dex' ? `nº ${v}` : `nível ${v}`;
+const numTxt = (v, m) => MET[m].dec ? fmt1(v) : String(Math.round(v));
+function valHTML(v, m){
+  if (m === 'peso') return `<b>${numTxt(v, m)}</b><small>kg</small>`;
+  if (m === 'altura') return `<b>${numTxt(v, m)}</b><small>m</small>`;
+  if (m === 'dex') return `<small>nº</small><b>${v}</b>`;
+  return `<b>${v}</b><small>/10</small>`;
+}
+const capOf = (v, m) => m === 'poder' ? TIER[v] || '' : MET[m].cap;
+
+const goku = DBC.find(c => c.key === 'goku');
+const CATS = {
+  peso:  { label:'Peso Pokémon',     short:'Peso',     sub:'Quem pesa mais? Em kg.',       pool:'pk', metrics:['peso'],          ico:SPR(143), c:'#FFD23F', talk:'mmEscolhaPeso' },
+  altura:{ label:'Altura Pokémon',   short:'Altura',   sub:'Quem é mais alto? Em metros.', pool:'pk', metrics:['altura'],        ico:SPR(321), c:'#2EE6D6', talk:'mmEscolhaAltura' },
+  dex:   { label:'Nº da Pokédex',    short:'Pokédex',  sub:'Quem vem depois na lista?',    pool:'pk', metrics:['dex'],           ico:SPR(1),   c:'#FF4F9A', talk:'mmEscolhaDex' },
+  misto: { label:'Misturado',        short:'Misturado',sub:'Peso ou altura, a pergunta avisa.', pool:'pk', metrics:['peso','altura'], ico:SPR(132), c:'#B9A6FF', talk:'mmEscolhaMisto' },
+  poder: { label:'Poder de Luta DB', short:'Poder DB', sub:'Dragon Ball: quem é mais forte?', pool:'db', metrics:['poder'],       ico:goku ? goku.img : '', hd:true, c:'#FF9A3C', talk:'mmEscolhaPoder' }
+};
+const poolOf = cat => CATS[cat].pool === 'db' ? DBC : PKW;
+
+/* ---------------- dificuldade ----------------
+   gap: log da razão (peso/altura) ou diferença (nº, poder).
+   Estágio sobe com a sequência: começo = valores bem diferentes; depois de ~8, bem colados. */
+const LOG = Math.log;
+const BANDS = {
+  ratio:[[LOG(4), Infinity], [LOG(2), Infinity], [LOG(1.25), LOG(3)], [1e-9, LOG(1.5)]],
+  dex:  [[350, Infinity], [150, Infinity], [30, 300], [1, 90]],
+  poder:[[4, 99], [2, 99], [1, 3], [1, 2]]
+};
+const stageOf = n => n < 3 ? 0 : n < 8 ? 1 : n < 15 ? 2 : 3;
+const gap = (m, va, vb) => MET[m].dec ? LOG(Math.max(va, vb) / Math.max(.05, Math.min(va, vb))) : Math.abs(va - vb);
+function closeness(m, va, vb){
+  const g = gap(m, va, vb);
+  if (m === 'dex') return g <= 15 ? 'close' : g >= 500 ? 'huge' : '';
+  if (m === 'poder') return g <= 1 ? 'close' : g >= 5 ? 'huge' : '';
+  return g <= LOG(1.15) ? 'close' : g >= LOG(8) ? 'huge' : '';
+}
+function pickChallenger(a, m, st, rnd, recent, pool){
+  const va = MET[m].get(a), [lo, hi] = (MET[m].dec ? BANDS.ratio : BANDS[m])[st];
+  let best = null, bestMiss = Infinity;
+  for (let i = 0; i < 600; i++){
+    const c = pool[Math.floor(rnd() * pool.length)];
+    if (c.id === a.id) continue;
+    const vc = MET[m].get(c); if (vc === va) continue;
+    const g = gap(m, va, vc);
+    let miss = g < lo ? lo - g : g > hi ? g - hi : 0;
+    if (recent.includes(c.id)) miss += 1000;
+    if (miss === 0) return c;
+    if (miss < bestMiss){ bestMiss = miss; best = c; }
+  }
+  return best;
+}
+
+/* ---------------- desafio do dia ---------------- */
+const chains = {};
+function dailyChain(day){
+  if (chains[day]) return chains[day];
+  const rnd = B.rng(day * 7919 + 0x3A11CE), items = [], metrics = [], recent = [];
+  let a = PKW[Math.floor(rnd() * PKW.length)]; items.push(a); recent.push(a.id);
+  for (let i = 0; i < DAILY_N; i++){
+    const m = ['peso','altura','dex'][Math.floor(rnd() * 3)];
+    const st = i < 3 ? 0 : i < 7 ? 1 : i < 11 ? 2 : 3;
+    const b = pickChallenger(a, m, st, rnd, recent, PKW);
+    items.push(b); metrics.push(m); recent.push(b.id); a = b;
+  }
+  return (chains[day] = { items, metrics });
+}
+function loadDaily(){
+  const d = B.store.get(DKEY), day = B.dayNumber();
+  if (d && d.day === day && Array.isArray(d.res)) return d;
+  return { day, res:[], done:false, score:0 };
+}
+const saveDaily = d => B.store.set(DKEY, d);
+const dailyEmoji = d => d.res.map(r => r ? '🟦' : '🟥').join('');
+function shareText(d){
+  return `Fliperama Bugado · Mais ou Menos #${d.day}\n${d.score}/${DAILY_N}${d.score === DAILY_N ? ' 🏆' : ''}\n${dailyEmoji(d)}\n${location.origin}${location.pathname}`;
+}
+
+/* ---------------- perfil ---------------- */
+function G(){ const g = B.game(GID); g.best = g.best || {}; g.hist = g.hist || {}; g.runs = g.runs || 0; g.correct = g.correct || 0; g.dailyPlayed = g.dailyPlayed || 0; return g; }
+
+/* ---------------- estado ---------------- */
+let screen = 'menu', R = null, busy = false, pendingXP = 0, timers = [];
+const later = (fn, ms) => { const t = setTimeout(fn, ms); timers.push(t); return t; };
+const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+function flushXP(){ if (pendingXP > 0){ const n = pendingXP; pendingXP = 0; B.gainXP(n); } }
+const nm = x => `<b>${esc(x.name)}</b>`;
+const preload = src => { if (src){ const i = new Image(); i.decoding = 'async'; i.src = src; } };
+
+function pickMetric(cat){ const ms = CATS[cat].metrics; return ms[Math.floor(Math.random() * ms.length)]; }
+
+function startRun(cat){
+  clearTimers(); busy = false;
+  const pool = poolOf(cat);
+  R = { cat, daily:false, streak:0, idx:0, recent:[], over:false, startBest:G().best[cat] || 0, beatSaid:false, won:false, answered:0, xp:0 };
+  R.metric = pickMetric(cat);
+  R.a = pool[Math.floor(Math.random() * pool.length)]; R.recent.push(R.a.id);
+  R.b = pickChallenger(R.a, R.metric, 0, Math.random, R.recent, pool); R.recent.push(R.b.id);
+  prepNext();
+  show('play'); buildArena();
+  B.talk(CATS[cat].talk, null, 'happy', 5500);
+}
+function startDaily(){
+  const d = loadDaily();
+  if (d.done){ openDailyResult(d); B.talk('mmDiarioJaFeito', { n:d.score }, 'smug', 6000); return; }
+  clearTimers(); busy = false;
+  const ch = dailyChain(d.day), idx = d.res.length;
+  R = { cat:'daily', daily:true, day:d.day, chain:ch, streak:idx, idx, over:false, startBest:0, beatSaid:true, won:false, answered:0, xp:0, recent:[] };
+  R.a = ch.items[idx]; R.b = ch.items[idx + 1]; R.metric = ch.metrics[idx];
+  prepNext();
+  show('play'); buildArena();
+  if (idx) B.talk('mmDiarioRetomou', { n:idx + 1 }, 'talk', 5500);
+  else B.talk('mmDiarioInicio', { n:d.day }, 'happy', 6500);
+}
+function prepNext(){
+  if (R.daily){
+    const i = R.idx + 1;
+    R.next = i < DAILY_N ? { c:R.chain.items[i + 1], metric:R.chain.metrics[i] } : null;
+  } else {
+    const m = pickMetric(R.cat);
+    R.next = { c:pickChallenger(R.b, m, stageOf(R.streak + 1), Math.random, R.recent, poolOf(R.cat)), metric:m };
+  }
+  if (R.next) preload(R.next.c.img);
+}
+function abandon(){
+  clearTimers();
+  if (R && !R.daily && !R.over && R.answered > 0){
+    const g = G(); g.runs++;
+    if (R.streak > (g.best[R.cat] || 0)) g.best[R.cat] = R.streak;
+    B.saveProfile();
+  }
+  flushXP();
+}
+function toMenu(talk = true){
+  abandon(); R = null; busy = false;
+  show('menu');
+  if (talk) B.talk('mmMenu', null, 'smug', 5000);
+}
+
+/* ---------------- render ---------------- */
+function show(s){
+  screen = s;
+  $('#menu').hidden = s !== 'menu'; $('#play').hidden = s !== 'play';
+  if (s === 'menu') renderMenu(); else renderHud();
+  window.scrollTo({ top:0 });
+}
+function renderMenu(){
+  const g = G(), d = loadDaily();
+  const st = d.done ? `<span class="pill d-st">${d.score}/${DAILY_N}</span>` : d.res.length ? `<span class="pill sun d-st">rodada ${d.res.length + 1}</span>` : '<span class="pill d-st new">novo!</span>';
+  $('#dailyBtn').innerHTML = `<span class="cal"><small>DIA</small><b>${d.day}</b></span>
+    <span class="d-txt"><b>DESAFIO DO DIA</b><span>${d.done ? 'Feito! Toca pra ver e compartilhar.' : '15 pares iguais pra todo mundo. Uma chance só.'}</span></span>${st}`;
+  $('#dailyBtn').setAttribute('aria-label', `Desafio do Dia número ${d.day}. ${d.done ? `Feito: ${d.score} de ${DAILY_N}.` : 'Ainda não jogado hoje.'}`);
+  $('#cats').innerHTML = Object.keys(CATS).map(k => {
+    const c = CATS[k], best = g.best[k] || 0;
+    return `<button class="btn cat" type="button" data-cat="${k}" style="--c:${c.c}" aria-label="${esc(c.label)}. Recorde: ${best}.">
+      <span class="ico"><img src="${esc(c.ico)}" alt="" width="64" height="64" loading="lazy"${c.hd ? ' class="hd"' : ''}></span>
+      <span class="t"><b>${c.label}</b><small>${c.sub}</small><span class="rec">Recorde ${best}</span></span></button>`;
+  }).join('');
+}
+function renderHud(){
+  if (!R) return;
+  const tag = $('#catTag');
+  if (R.daily){ tag.textContent = `Desafio #${R.day}`; tag.style.setProperty('--c', '#B9A6FF'); }
+  else { tag.textContent = CATS[R.cat].label; tag.style.setProperty('--c', CATS[R.cat].c); }
+  $('#curLbl').textContent = R.daily ? 'PONTOS' : 'SEQ';
+  $('#cur').textContent = R.daily ? `${R.streak}/${DAILY_N}` : R.streak;
+  const recBox = $('#recBox');
+  if (R.daily){ recBox.hidden = true; }
+  else {
+    recBox.hidden = false;
+    const best = Math.max(R.startBest, R.streak);
+    $('#rec').textContent = best;
+    recBox.classList.toggle('hot', R.streak > R.startBest && R.streak > 0);
+  }
+}
+function bump(el){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+
+function makeCard(item, m, hidden, side){
+  const el = document.createElement('article');
+  el.className = `card ${item.kind}${hidden ? ' hid' : ''}`;
+  el.dataset.side = side;
+  const v = MET[m].get(item);
+  el.innerHTML = `<div class="art"><img src="${esc(item.img)}" alt="" draggable="false" decoding="async"><span class="fb" aria-hidden="true">${esc(item.name[0])}</span></div>
+    <div class="info"><h3 class="nm">${esc(item.name)}</h3><div class="val">${hidden ? '<b class="q">?</b>' : valHTML(v, m)}</div><span class="cap">${hidden ? MET[m].hid : esc(capOf(v, m))}</span></div>`;
+  el.setAttribute('aria-label', hidden ? `${item.name}: valor escondido` : `${item.name}: ${fmtV(v, m)}`);
+  const img = el.querySelector('img');
+  img.addEventListener('error', () => el.classList.add('noimg'), { once:true });
+  return el;
+}
+function setCardValue(el, item, m, pop){
+  const v = MET[m].get(item), val = el.querySelector('.val');
+  el.classList.remove('hid', 'ok', 'bad');
+  val.innerHTML = valHTML(v, m);
+  el.querySelector('.cap').textContent = capOf(v, m);
+  el.setAttribute('aria-label', `${item.name}: ${fmtV(v, m)}`);
+  if (pop && !RM){ val.classList.remove('pop'); void val.offsetWidth; val.classList.add('pop'); }
+}
+function buildArena(){
+  const arena = $('#arena');
+  arena.querySelectorAll('.card').forEach(c => c.remove());
+  arena.classList.remove('shake');
+  const vs = $('#vs'); vs.className = 'vs'; vs.textContent = 'VS';
+  arena.appendChild(makeCard(R.a, R.metric, false, 'a'));
+  const nb = makeCard(R.b, R.metric, true, 'b'); if (!RM) nb.classList.add('enter');
+  arena.appendChild(nb);
+  renderAsk(false); renderCtrl(); renderHud();
+}
+function renderAsk(swap){
+  const ask = $('#ask');
+  ask.innerHTML = `<span>${MET[R.metric].ask(esc(R.b.name), esc(R.a.name))}</span>`;
+  if (swap && !RM){ ask.classList.remove('swap'); void ask.offsetWidth; ask.classList.add('swap'); }
+}
+function renderCtrl(){
+  const m = MET[R.metric], ctrl = $('#ctrl');
+  if (R.over){
+    ctrl.innerHTML = R.daily
+      ? `<button class="btn big wide primary" type="button" data-c="result">Ver resultado</button><button class="btn big wide" type="button" data-c="menu">Categorias</button>`
+      : `<button class="btn big wide primary" type="button" data-c="again">Jogar de novo</button><button class="btn big wide" type="button" data-c="menu">Categorias</button>`;
+    return;
+  }
+  ctrl.innerHTML = `<button class="btn big up" type="button" data-c="up" aria-label="Mais: ${m.up}">${ARW_UP}<span class="bt"><b>MAIS</b><small>${m.up}</small></span></button>
+    <button class="btn big down" type="button" data-c="down" aria-label="Menos: ${m.down}">${ARW_DN}<span class="bt"><b>MENOS</b><small>${m.down}</small></span></button>`;
+}
+
+/* ---------------- jogada ---------------- */
+function countUp(el, to, m, dur){
+  return new Promise(res => {
+    if (RM || dur <= 0){ el.textContent = numTxt(to, m); return res(); }
+    const from = MET[m].dec ? 0 : 1, t0 = performance.now(); let fr = 0, done = false;
+    const end = () => { if (done) return; done = true; el.textContent = numTxt(to, m); res(); };
+    setTimeout(end, dur + 120); // rAF para em aba escondida: garante que termina
+    (function f(t){
+      if (done) return;
+      const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      let v = from + (to - from) * e; v = MET[m].dec ? Math.round(v * 10) / 10 : Math.round(v);
+      el.textContent = numTxt(v, m);
+      if (++fr % 4 === 0 && k < 1) B.sfx.type();
+      if (k < 1) requestAnimationFrame(f); else end();
+    })(t0);
+  });
+}
+async function answer(dir){
+  if (screen !== 'play' || !R || R.over || busy || B.isModalOpen()) return;
+  busy = true;
+  const m = R.metric, va = MET[m].get(R.a), vb = MET[m].get(R.b);
+  const tie = va === vb, ok = tie || (dir === 'up' ? vb > va : vb < va);
+  const kind = closeness(m, va, vb);
+  if (R.daily){
+    const d = loadDaily();
+    if (d.day === R.day && !d.done){
+      d.res.push(ok ? 1 : 0);
+      if (!ok || d.res.length >= DAILY_N){ d.done = true; d.score = d.res.filter(Boolean).length; }
+      saveDaily(d);
+    }
+  }
+  const btn = $(`#ctrl [data-c="${dir}"]`), other = $(`#ctrl [data-c="${dir === 'up' ? 'down' : 'up'}"]`);
+  if (btn) btn.classList.add('chosen');
+  if (other) other.classList.add('ghost');
+  B.sfx.tap();
+  const cb = $('#arena .card[data-side="b"]');
+  cb.classList.remove('hid');
+  const val = cb.querySelector('.val');
+  val.innerHTML = valHTML(vb, m);
+  cb.querySelector('.cap').textContent = capOf(vb, m);
+  cb.setAttribute('aria-label', `${R.b.name}: ${fmtV(vb, m)}`);
+  await countUp(val.querySelector('b'), vb, m, m === 'poder' ? 450 : 750);
+  if (!R || screen !== 'play') return;
+  cb.classList.add(ok ? 'ok' : 'bad');
+  $('#sr').textContent = `${ok ? 'Certo' : 'Errado'}! ${R.b.name}: ${fmtV(vb, m)}. ${R.a.name}: ${fmtV(va, m)}.`;
+  if (ok) onCorrect(kind, tie); else onWrong(kind);
+}
+
+const MILES = { 5:5, 10:10, 15:15, 20:20, 30:30 };
+function onCorrect(kind, tie){
+  R.streak++; R.idx++; R.answered++;
+  const g = G(); g.correct++; B.saveProfile();
+  pendingXP += 2; R.xp += 2;
+  const vs = $('#vs'); vs.className = 'vs ok'; vs.textContent = '✓';
+  plusPop();
+  B.sfx.place(Math.min(R.streak, 14));
+  const bonus = MILES[R.streak] || 0;
+  if (bonus){ pendingXP += bonus; R.xp += bonus; later(() => { B.sfx.unit(); B.toast(`Sequência de ${R.streak}!`, `+${bonus} XP de bônus`); }, 250); }
+  if (!R.daily && R.streak === DAILY_WIN && !R.won){ R.won = true; B.registerWin(GID); }
+  renderHud(); bump($('#cur'));
+  if (!R.daily && R.streak > R.startBest) bump($('#rec'));
+  talkCorrect(kind, tie);
+  if (R.daily && R.idx >= DAILY_N){ busy = false; finishDaily(RM ? 600 : 1300); return; }
+  later(slide, RM ? 500 : 950);
+}
+function onWrong(kind){
+  R.over = true;
+  const vs = $('#vs'); vs.className = 'vs bad'; vs.textContent = '✗';
+  const arena = $('#arena'); arena.classList.remove('shake'); void arena.offsetWidth; if (!RM) arena.classList.add('shake');
+  B.sfx.err(); B.glitch();
+  talkWrong(kind);
+  renderCtrl(); busy = false;
+  if (R.daily) finishDaily(RM ? 900 : 1800, true);
+  else endRun();
+}
+function plusPop(){
+  const el = $('#plus'); if (RM) return;
+  el.animate([{ transform:'translate(-50%,0) scale(.4)', opacity:0 }, { transform:'translate(-50%,-26px) scale(1.2)', opacity:1, offset:.3 }, { transform:'translate(-50%,-54px) scale(1)', opacity:0 }], { duration:900, easing:'ease-out' });
+}
+async function slide(){
+  if (!R || screen !== 'play' || R.over || !R.next) return;
+  const arena = $('#arena'), ca = arena.querySelector('.card[data-side="a"]'), cb = arena.querySelector('.card[data-side="b"]');
+  const prevMetric = R.metric, nx = R.next;
+  R.a = R.b; R.b = nx.c; R.metric = nx.metric;
+  if (!R.daily){ R.recent.push(R.b.id); const lim = CATS[R.cat].pool === 'db' ? 16 : 40; while (R.recent.length > lim) R.recent.shift(); }
+  const nb = makeCard(R.b, R.metric, true, 'b');
+  const vs = $('#vs');
+  if (!RM){
+    B.sfx.flip();
+    const ra = ca.getBoundingClientRect(), rb = cb.getBoundingClientRect();
+    const dx = ra.left - rb.left, dy = ra.top - rb.top;
+    vs.className = 'vs spin'; vs.textContent = 'VS';
+    ca.animate([{ transform:'none', opacity:1 }, { transform:`translate(${-ra.width * .7}px, 10px) scale(.8) rotate(-10deg)`, opacity:0 }], { duration:380, easing:'ease-in', fill:'forwards' });
+    const mv = cb.animate([{ transform:'none' }, { transform:`translate(${dx}px, ${dy}px)` }], { duration:430, easing:'cubic-bezier(.5,0,.25,1.25)', fill:'forwards' });
+    await Promise.race([mv.finished.catch(() => {}), new Promise(r => setTimeout(r, 560))]);
+    if (!R || screen !== 'play') return;
+  }
+  ca.remove();
+  cb.getAnimations().forEach(a => a.cancel());
+  cb.dataset.side = 'a';
+  setCardValue(cb, R.a, R.metric, prevMetric !== R.metric);
+  if (!RM) nb.classList.add('enter');
+  arena.appendChild(nb);
+  vs.className = 'vs'; vs.textContent = 'VS';
+  prepNext(); renderAsk(prevMetric !== R.metric); renderCtrl();
+  busy = false;
+  if (prevMetric !== R.metric && !R.saidThis && Math.random() < .55) B.talk('mmMistoTroca', { metrica:MET[R.metric].name }, 'shock', 3500);
+}
+
+/* ---------------- falas ---------------- */
+function tvars(){
+  const m = R.metric, va = MET[m].get(R.a), vb = MET[m].get(R.b), aBig = va >= vb;
+  return { a:nm(R.a), b:nm(R.b), va:fmtV(va, m), valor:fmtV(vb, m),
+    maior:nm(aBig ? R.a : R.b), menor:nm(aBig ? R.b : R.a), vmaior:fmtV(Math.max(va, vb), m), vmenor:fmtV(Math.min(va, vb), m),
+    n:R.streak, rec:R.startBest, metrica:MET[m].name };
+}
+// falas genéricas usam “o {b}”; pra personagem feminina de DB troca o artigo (o → a, do → da…)
+const ART_F = { O:'A', o:'a', do:'da', Do:'Da', no:'na', No:'Na', pelo:'pela', Pelo:'Pela', pro:'pra', Pro:'Pra', ao:'à', Ao:'À' };
+function fixArt(s){
+  if (!R) return s;
+  [R.a, R.b].filter(x => x.fem).forEach(x => {
+    const n = esc(x.name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    s = s.replace(new RegExp(`(^|[^\\p{L}])(O|o|do|Do|no|No|pelo|Pelo|pro|Pro|ao|Ao) (<b>${n}</b>)`, 'gu'), (m, pre, a, nmh) => `${pre}${ART_F[a]} ${nmh}`);
+  });
+  return s;
+}
+const talk = (cat, vars, mood, hold) => B.say(fixArt(B.line(cat, vars)), mood, hold);
+const factCat = x => x.kind === 'pk' ? 'mmFato' + x.num : 'mmFatoDB' + x.key;
+const hasLines = cat => B.lines(cat).length > 0;
+function factFor(){
+  const opts = [R.b, R.a].map(factCat).filter(hasLines);
+  return opts.length ? opts[0] : null;
+}
+// categoria da fala conforme o tamanho real dos valores (piada de “pesadão” só com bicho pesado)
+function metricCat(prefix){
+  const m = R.metric, va = MET[m].get(R.a), vb = MET[m].get(R.b), mx = Math.max(va, vb), mn = Math.min(va, vb);
+  if (m === 'peso') return mx >= 80 && mn < 25 ? prefix + 'Peso' : mx < 25 ? prefix + 'PesoLeve' : mn >= 80 ? prefix + 'PesoPesado' : prefix;
+  if (m === 'altura') return mx >= 2 && mn < 1 ? prefix + 'Altura' : mx < .8 ? prefix + 'AlturaBaixo' : mn >= 2 ? prefix + 'AlturaAlto' : prefix;
+  return prefix + (m === 'dex' ? 'Dex' : 'Poder');
+}
+function talkCorrect(kind, tie){
+  const v = tvars(); R.saidThis = true;
+  if (tie){ talk('mmEmpate', v, 'shock', 5000); return; }
+  const n = R.streak;
+  if ([5, 10, 15, 20, 30].includes(n)){ talk('mmMarco' + n, v, 'happy', 6000); B.glitch('boing'); if (n >= 10) burst(`${n} SEGUIDAS!`, '#FFD23F'); return; }
+  if (n > 30 && n % 10 === 0){ talk('mmMarcoMuito', v, 'shock', 6000); burst(`${n}!`, '#FFD23F'); return; }
+  if (!R.daily && !R.beatSaid && R.startBest >= 3 && n === R.startBest + 1){
+    R.beatSaid = true; talk('mmRecordeBatido', v, 'happy', 6000); B.sfx.hint(); burst('RECORDE!', '#2EE6D6'); return;
+  }
+  if (Math.random() > .66){ R.saidThis = false; return; }
+  const fact = factFor(), r = Math.random();
+  let cat;
+  if (fact && r < .4) cat = fact;
+  else if (kind === 'close' && r < .85) cat = 'mmPerto';
+  else if (kind === 'huge' && r < .65) cat = 'mmFacil';
+  else cat = Math.random() < .6 ? metricCat('mmAcerto') : 'mmAcerto';
+  talk(cat, v, kind === 'close' ? 'shock' : Math.random() < .5 ? 'happy' : 'smug', 5000);
+}
+function talkWrong(kind){
+  const v = tvars(), r = Math.random();
+  let cat;
+  if (kind === 'huge') cat = 'mmErroObvio';
+  else if (kind === 'close' && r < .7) cat = 'mmErroPerto';
+  else cat = r < .7 ? metricCat('mmErro') : 'mmErro';
+  talk(cat, v, kind === 'close' ? 'shock' : 'dead', 7000);
+}
+function burst(txt, color){
+  const el = $('#burst');
+  el.style.fontSize = Math.max(28, Math.min(64, Math.floor(innerWidth * .9 / (txt.length * .52)))) + 'px';
+  B.burst(el, txt, color);
+}
+
+/* ---------------- fim de partida ---------------- */
+function endRun(){
+  const g = G(), n = R.streak, old = R.startBest;
+  g.runs++;
+  const rec = n > old;
+  let recBonus = 0;
+  if (rec){ g.best[R.cat] = n; if (n >= 3){ recBonus = 20; pendingXP += 20; R.xp += 20; } }
+  B.saveProfile();
+  const snap = { cat:R.cat, a:R.a, b:R.b, metric:R.metric, n, old, rec, recBonus, xp:R.xp };
+  B.sfx.lose();
+  later(() => {
+    if (rec && n >= 3){ B.sfx.win(); B.confetti(); }
+    openRunResult(snap);
+    flushXP(); // depois da bronca: se subir de nível, não atropela a fala do erro
+  }, RM ? 900 : 1700);
+}
+function miniHTML(x, m, lose){
+  return `<div class="mini ${x.kind}${lose ? ' lose' : ''}"><img src="${esc(x.img)}" alt="" width="72" height="72"><b>${esc(x.name)}</b><span>${fmtV(MET[m].get(x), m)}</span></div>`;
+}
+function quoteHTML(text){ return `<div class="quote">${MINI_BUGADO}<p>${text}</p></div>`; }
+function openRunResult(s){
+  const endCat = s.rec && s.n >= 3 ? 'mmNovoRecorde' : s.n === 0 ? 'mmFimZero' : s.n < 5 ? 'mmFimCurto' : s.n < 10 ? 'mmFimMedio' : 'mmFimLongo';
+  const quote = B.line(endCat, { n:s.n });
+  const fc = [s.b, s.a].map(factCat).find(hasLines);
+  const fact = fc ? B.line(fc) : '';
+  const best = G().best[s.cat] || 0;
+  B.openModal(`<h2 class="big">${s.rec && s.n >= 3 ? 'NOVO RECORDE!' : 'FIM DE JOGO!'}</h2>
+    <p class="sub">${esc(CATS[s.cat].label)}${CATS[s.cat].metrics.length > 1 ? ` · rodada de ${MET[s.metric].name}` : ''}</p>
+    <div class="duel">${miniHTML(s.a, s.metric, false)}<i>VS</i>${miniHTML(s.b, s.metric, true)}</div>
+    <div class="stat-grid three"><div class="stat"><b>${s.n}</b><span>sequência</span></div><div class="stat"><b>${best}</b><span>recorde</span></div><div class="stat"><b>+${s.xp}</b><span>XP</span></div></div>
+    ${quoteHTML(quote)}
+    ${fact ? `<p class="fact"><b>Sabia?</b> ${fact}</p>` : ''}
+    <div class="m-actions"><button class="btn primary" type="button" data-act="again">Jogar de novo</button><button class="btn" type="button" data-act="menu">Categorias</button></div>`);
+}
+// grava o diário no perfil (uma vez por dia). Devolve true se gravou agora.
+function recordDailyStats(d){
+  const g = G();
+  if (!d.done || g.hist[d.day] !== undefined) return false;
+  g.hist[d.day] = d.score; g.dailyPlayed++;
+  g.lastDaily = { day:d.day, won:d.score >= DAILY_WIN, score:d.score };
+  if (d.score > (g.dailyBest || 0)) g.dailyBest = d.score;
+  Object.keys(g.hist).map(Number).filter(k => k < d.day - 120).forEach(k => delete g.hist[k]); // histórico velho
+  B.saveProfile();
+  if (d.score >= DAILY_WIN) B.registerWin(GID);
+  return true;
+}
+function finishDaily(delay, lost){
+  const d = loadDaily();
+  if (!R || !R.daily) return;
+  R.over = true;
+  if (d.day !== R.day || !d.done){ toMenu(false); return; }
+  if (recordDailyStats(d) && d.score === DAILY_N){ pendingXP += 20; R.xp += 20; }
+  renderCtrl();
+  if (lost) B.sfx.lose();
+  later(() => {
+    if (d.score >= DAILY_WIN){ B.sfx.win(); B.confetti(); }
+    openDailyResult(d, R ? R.xp : 0);
+    flushXP();
+  }, delay);
+}
+function openDailyResult(d, xp){
+  const perfect = d.score === DAILY_N;
+  const quote = B.line(perfect ? 'mmDiarioPerfeito' : 'mmDiarioFeito', { n:d.score });
+  B.openModal(`<h2 class="big">${perfect ? 'PERFEITO!' : d.score >= DAILY_WIN ? 'MANDOU BEM!' : 'DESAFIO FEITO'}</h2>
+    <p class="sub">Desafio do Dia #${d.day}${d.score >= DAILY_WIN ? ' · conta como vitória' : ` · ${DAILY_WIN} acertos contam como vitória`}</p>
+    <div class="bigscore">${d.score}<small>/${DAILY_N}</small></div>
+    <p class="emoji" aria-label="${d.score} acertos${d.score < DAILY_N ? ' e um erro' : ''}">${dailyEmoji(d)}</p>
+    ${xp ? `<p class="sub" style="text-align:center">+${xp} XP</p>` : ''}
+    ${quoteHTML(quote)}
+    <p class="next-in">Próximo desafio em <b id="countdown">--:--:--</b></p>
+    <div class="m-actions"><button class="btn cool" type="button" data-act="share">Compartilhar</button><button class="btn primary" type="button" data-act="menu">Jogar o infinito</button></div>`);
+  tick();
+}
+async function share(){
+  const d = loadDaily(); if (!d.done) return;
+  const ok = await B.copyText(shareText(d));
+  B.toast(ok ? 'Copiado!' : 'Não deu pra copiar', ok ? 'Cola no grupo e humilha geral.' : 'O navegador bloqueou. Tenta de novo.');
+}
+
+/* ---------------- modais: ajuda e estatísticas ---------------- */
+function openHelp(){
+  B.openModal(`<h2>Mais ou Menos</h2><p class="sub">O card da esquerda mostra o valor. O da direita esconde. Você diz se o da direita tem <b>mais</b> ou <b>menos</b>.</p>
+    <h3>Como joga</h3>
+    <ul><li><span class="demo up">▲</span><span><b>MAIS</b>: o da direita tem valor maior (ou igual).</span></li>
+    <li><span class="demo down">▼</span><span><b>MENOS</b>: o da direita tem valor menor (ou igual).</span></li>
+    <li><span class="demo">✓</span><span>Acertou: o da direita vai pra esquerda e chega um desafiante novo. Sequência +1.</span></li>
+    <li><span class="demo">✗</span><span>Errou: acabou a partida. Empate conta como acerto (mas é raro).</span></li></ul>
+    <h3>Categorias</h3>
+    <p><b>Peso</b> (kg) e <b>Altura</b> (m) dos Pokémon, <b>Nº da Pokédex</b> (quem vem depois na lista), <b>Misturado</b> (cada rodada é peso ou altura — lê a pergunta!) e <b>Poder de Luta DB</b>, com o nível de poder de 1 (gente comum) a 10 (anjos e Zeno). Cada uma tem seu recorde.</p>
+    <p>No começo os pares são bem diferentes. Depois de umas 8 seguidas, os valores ficam colados. Aí é que o bicho pega.</p>
+    <h3>Desafio do Dia</h3>
+    <p>15 pares, iguais pra todo mundo, uma chance por dia. ${DAILY_WIN} ou mais acertos contam como vitória. Dá pra compartilhar o resultado.</p>
+    <h3>XP</h3>
+    <p>+2 por acerto, bônus nas sequências de 5, 10, 15, 20 e 30, e +20 por recorde novo. Sequência de 10 conta como vitória no fliperama.</p>
+    <p>Teclado: <kbd>↑</kbd> ou <kbd>M</kbd> = mais · <kbd>↓</kbd> ou <kbd>N</kbd> = menos · <kbd>R</kbd> joga de novo.</p>
+    <div class="m-actions"><button class="btn primary" type="button" data-act="close">Bora!</button></div>`);
+}
+function openStats(){
+  const g = G(), day = B.dayNumber();
+  const bests = Object.keys(CATS).map(k => g.best[k] || 0), max = Math.max(1, ...bests);
+  const recs = Object.keys(CATS).map((k, i) => `<div><span>${CATS[k].label}</span><i class="${bests[i] ? '' : 'zero'}" style="width:${Math.max(12, bests[i] / max * 100)}%">${bests[i]}</i></div>`).join('');
+  const days = []; for (let dd = day - 13; dd <= day; dd++) days.push(dd);
+  const bars = days.map(dd => {
+    const s = g.hist[dd];
+    if (s === undefined) return `<span class="none${dd === day ? ' today' : ''}" title="Dia #${dd}: não jogou"></span>`;
+    return `<span class="${s >= DAILY_WIN ? 'win' : ''}${dd === day ? ' today' : ''}" style="height:${Math.max(8, s / DAILY_N * 100)}%" title="Dia #${dd}: ${s}/${DAILY_N}"></span>`;
+  }).join('');
+  const hs = Object.values(g.hist), avg = hs.length ? (hs.reduce((a, b) => a + b, 0) / hs.length).toFixed(1).replace('.', ',') : '–';
+  B.openModal(`<h2>Estatísticas</h2><p class="sub">O Bugado anota tudo. Até o que você queria esquecer.</p>
+    <div class="stat-grid four"><div class="stat"><b>${g.runs}</b><span>partidas</span></div><div class="stat"><b>${g.correct}</b><span>acertos</span></div><div class="stat"><b>${Math.max(0, ...bests)}</b><span>recorde</span></div><div class="stat"><b>${g.wins || 0}</b><span>vitórias</span></div></div>
+    <h3>Recorde por categoria</h3><div class="recs">${recs}</div>
+    <h3>Desafio do Dia</h3>
+    <div class="stat-grid three"><div class="stat"><b>${g.dailyPlayed}</b><span>jogados</span></div><div class="stat"><b>${g.dailyBest || 0}</b><span>melhor</span></div><div class="stat"><b>${avg}</b><span>média</span></div></div>
+    <div class="dhist" aria-label="Últimos 14 desafios">${bars}</div>
+    <div class="dlab"><span>há 13 dias</span><span>hoje</span></div>
+    <div class="m-actions"><button class="btn primary" type="button" data-act="close">Fechar</button></div>`);
+}
+B.onAct('again', () => { B.closeModal(true); if (R && !R.daily) startRun(R.cat); else toMenu(false); });
+B.onAct('menu', () => { B.closeModal(true); toMenu(); });
+B.onAct('share', share);
+
+/* ---------------- relógio ---------------- */
+function tick(){
+  const el = document.getElementById('countdown');
+  if (el){
+    const now = new Date(), next = new Date(now); next.setHours(24, 0, 0, 0);
+    const t = Math.max(0, Math.floor((next - now) / 1000));
+    el.textContent = [Math.floor(t / 3600), Math.floor(t / 60) % 60, t % 60].map(x => String(x).padStart(2, '0')).join(':');
+  }
+  if (screen === 'menu' && !B.isModalOpen() && renderMenu.day !== B.dayNumber()){ renderMenu.day = B.dayNumber(); renderMenu(); }
+}
+setInterval(tick, 1000);
+
+/* ---------------- eventos ---------------- */
+$('#cats').addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if (b){ B.sfx.tap(); startRun(b.dataset.cat); } });
+$('#dailyBtn').addEventListener('click', () => { B.sfx.tap(); startDaily(); });
+$('#toMenu').innerHTML = B.ICON.back;
+$('#toMenu').addEventListener('click', () => { B.sfx.tap(); toMenu(); });
+$('#ctrl').addEventListener('click', e => {
+  const b = e.target.closest('[data-c]'); if (!b) return;
+  const c = b.dataset.c;
+  if (c === 'up' || c === 'down') answer(c);
+  else { B.sfx.tap(); if (c === 'again') startRun(R.cat); else if (c === 'menu') toMenu(); else if (c === 'result') openDailyResult(loadDaily(), R.xp); }
+});
+document.addEventListener('keydown', e => {
+  if (B.isModalOpen() || screen !== 'play' || !R || e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key.toLowerCase();
+  if (!R.over && (k === 'arrowup' || k === 'm')){ e.preventDefault(); answer('up'); }
+  else if (!R.over && (k === 'arrowdown' || k === 'n')){ e.preventDefault(); answer('down'); }
+  else if (R.over && !R.daily && k === 'r'){ e.preventDefault(); startRun(R.cat); }
+});
+addEventListener('pagehide', () => { if (R && !R.daily && !R.over && R.answered > 0){ const g = G(); if (R.streak > (g.best[R.cat] || 0)){ g.best[R.cat] = R.streak; B.saveProfile(); } } flushXP(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) flushXP(); });
+
+/* ---------------- montagem ---------------- */
+const P = B.profile();
+B.mountBar($('#bar'), { title:'Mais ou Menos', color:'#5CC8FF', buttons:[
+  { id:'btnHelp', icon:'help', label:'Como jogar', onClick: openHelp },
+  { id:'btnStats', icon:'stats', label:'Estatísticas', onClick: openStats },
+  { id:'btnSound', icon: P.sound ? 'on' : 'off', label:'Som', onClick: () => { B.setSound(!B.profile().sound); $('#btnSound').innerHTML = B.ICON[B.profile().sound ? 'on' : 'off']; } }
+]});
+B.mountMascot($('#mascot'), { pokeCat:'cutucarMaisMenos' });
+const wide = matchMedia('(min-width: 880px)');
+const applyStack = () => B.setStack(wide.matches);
+(wide.addEventListener ? wide.addEventListener('change', applyStack) : wide.addListener(applyStack)); applyStack();
+
+if (!PK.length){ B.say('A Pokédex não carregou. Recarrega a página, treinador.', 'dead', 60000); return; }
+recordDailyStats(loadDaily()); // se a página fechou no meio da gravação do diário
+renderMenu.day = B.dayNumber();
+show('menu');
+B.chatter({ active: () => screen === 'play' && !!R && !R.over });
+if (!B.store.get(HELPKEY)){ B.store.set(HELPKEY, 1); openHelp(); }
+setTimeout(() => {
+  const d = loadDaily();
+  if (d.done && Math.random() < .35) B.talk('mmDiarioJaFeito', { n:d.score }, 'smug', 6000);
+  else B.talk('mmInicio', null, 'happy', 6000);
+}, 350);
+})();
+</script>
+</body></html>
