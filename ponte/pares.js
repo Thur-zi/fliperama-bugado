@@ -1,8 +1,8 @@
-/* Desafios da Ponte — gerados e conferidos com os vetores reais (contexto/vetores.bin).
+/* Desafios da Ponte: gerados e conferidos com os vetores reais (contexto/vetores.bin).
    Regra: "conectada" = a palavra está entre as 400 mais parecidas da anterior (lista direcional).
    par     = menor nº de ligações usando só palavras do dia a dia (segredos + as 1.000 mais comuns)
    min     = menor nº de ligações possível usando qualquer palavra do vocabulário (dá birdie!)
-   caminho = um exemplo de caminho no par (partida … alvo). */
+   caminho = um exemplo de caminho no par (partida ... alvo). */
 window.PONTE_K = 400;
 window.PONTE_PARES = [
 {a:'abacaxi',b:'prisão',par:4,min:3,caminho:['abacaxi','mel','lua','caverna','prisão']},

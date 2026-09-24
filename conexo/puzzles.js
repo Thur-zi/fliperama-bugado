@@ -1,4 +1,4 @@
-/* Conexo — puzzles feitos à mão.
+/* Conexo: puzzles feitos à mão.
    Cada P(...) recebe 4 grupos em ordem de dificuldade (1 amarelo → 4 roxo):
    ['Tema', 'PALAVRA', 'PALAVRA', 'PALAVRA', 'PALAVRA']
    Resultado: window.CONEXO = [ {grupos:[{tema, nivel, palavras:[...]}, ...]}, ... ] */
@@ -7,7 +7,7 @@ window.CONEXO = window.CONEXO || [];
 const P = (...g) => window.CONEXO.push({ grupos: g.map((x, i) => ({ tema: x[0], nivel: i + 1, palavras: x.slice(1) })) });
 
 P(['Frutas', 'BANANA','MANGA','UVA','CAJU'],
-  ['Partes da camisa (a MANGA ficou com fome)', 'GOLA','PUNHO','BOLSO','BOTÃO'],
+  ['Partes da camisa (a MANGA foi pras frutas)', 'GOLA','PUNHO','BOLSO','BOTÃO'],
   ['Times do Rio', 'FLAMENGO','VASCO','BOTAFOGO','FLUMINENSE'],
   ['Pão de ___', 'QUEIJO','AÇÚCAR','LÓ','MEL']);
 
@@ -69,7 +69,7 @@ P(['Temperos', 'ALHO','CEBOLA','COMINHO','SALSA'],
 P(['Bichos do mar', 'TUBARÃO','BALEIA','GOLFINHO','POLVO'],
   ['Sítio do Picapau Amarelo', 'EMÍLIA','NARIZINHO','PEDRINHO','VISCONDE'],
   ['Coisas do BBB', 'PAREDÃO','LÍDER','ANJO','ESPIADINHA'],
-  ['Gírias pra cabeça (a CUCA não é do Sítio aqui)', 'CUCA','COCO','MELÃO','CACHOLA']);
+  ['Gírias pra cabeça (essa CUCA não é a do Sítio)', 'CUCA','COCO','MELÃO','CACHOLA']);
 
 P(['Cômodos da casa', 'SALA','COZINHA','BANHEIRO','VARANDA'],
   ['Jogos de baralho', 'TRUCO','BURACO','POKER','CANASTRA'],
@@ -77,7 +77,7 @@ P(['Cômodos da casa', 'SALA','COZINHA','BANHEIRO','VARANDA'],
   ['Ordinais que têm outro sentido', 'QUARTO','SEGUNDO','SEXTA','OITAVA']);
 
 P(['Heróis da Marvel', 'HULK','THOR','VISÃO','GROOT'],
-  ['Sentidos (sem a visão, que foi pros Vingadores)', 'TATO','OLFATO','PALADAR','AUDIÇÃO'],
+  ['Sentidos (o VISÃO foi pra Marvel)', 'TATO','OLFATO','PALADAR','AUDIÇÃO'],
   ['Pedras preciosas', 'RUBI','SAFIRA','ESMERALDA','TOPÁZIO'],
   ['Ao contrário vira outra (ATOR↔ROTA, ROMA↔AMOR, SACO↔OCAS, OVAL↔LAVO)', 'ATOR','ROMA','SACO','OVAL']);
 
@@ -188,7 +188,7 @@ P(['Tipos de Pokémon', 'ÁGUA','GRAMA','PEDRA','DRAGÃO'],
 
 P(['Peixes', 'TRUTA','TILÁPIA','PACU','BAGRE'],
   ['Gírias pra "legal"', 'MASSA','IRADO','DAORA','TOP'],
-  ['Gírias pra "amigo" (e a TRUTA não entrou)', 'PARÇA','MANO','BRODER','CHAPA'],
+  ['Gírias pra "amigo" (TRUTA aqui é peixe)', 'PARÇA','MANO','BRODER','CHAPA'],
   ['Interjeição regional (NE, Sul, MG, Pará)', 'OXE','BAH','UAI','ÉGUA']);
 
 P(['Sinais de pontuação', 'VÍRGULA','TRAVESSÃO','ASPAS','PARÊNTESES'],
@@ -204,7 +204,7 @@ P(['Shrek e companhia', 'SHREK','FIONA','BISCOITO','PINÓQUIO'],
 P(['Produtos de limpeza', 'SABÃO','AMACIANTE','ALVEJANTE','DETERGENTE'],
   ['Coisas do banheiro', 'CHUVEIRO','BIDÊ','BOX','PRIVADA'],
   ['Outros nomes pra privada', 'TRONO','VASO','PATENTE','LATRINA'],
-  ['Patentes do Exército (PATENTE não é uma)', 'CABO','SARGENTO','MAJOR','CORONEL']);
+  ['Patentes do Exército (PATENTE aqui é privada KKKK)','CABO','SARGENTO','MAJOR','CORONEL']);
 
 P(['Coisas de praia', 'GUARDA-SOL','CANGA','AREIA','BIQUÍNI'],
   ['Vendido na areia do Rio', 'GLOBO','PICOLÉ','MILHO','QUEIJO'],
@@ -254,7 +254,7 @@ P(['Ferramentas', 'MARTELO','ALICATE','SERROTE','FURADEIRA'],
 P(['Feriados', 'CARNAVAL','PÁSCOA','FINADOS','TIRADENTES'],
   ['Folclore brasileiro', 'SACI','CURUPIRA','IARA','BOITATÁ'],
   ['Monstros de filme de terror', 'ZUMBI','VAMPIRO','MÚMIA','LOBISOMEM'],
-  ['Fruta no começo (COCO-ricó, PERA-lta, AMORA-l, es-PINHA)', 'COCORICÓ','PERALTA','AMORAL','ESPINHA']);
+  ['Fruta escondida (COCO-ricó, PERA-lta, AMORA-l, es-PINHA)', 'COCORICÓ','PERALTA','AMORAL','ESPINHA']);
 
 P(['Esportes com bola', 'FUTEBOL','BASQUETE','VÔLEI','HANDEBOL'],
   ['Artes marciais', 'JUDÔ','KARATÊ','CAPOEIRA','JIU-JITSU'],

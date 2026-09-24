@@ -1,5 +1,5 @@
 /* ==========================================================
-   Conexo — ache os 4 grupos escondidos entre 16 palavras.
+   Conexo: ache os 4 grupos escondidos entre 16 palavras.
    Diário (igual pra todo mundo) + Infinito (puzzle não jogado).
    ========================================================== */
 (() => {
@@ -118,30 +118,57 @@ function renderControls(){
   $('tabInf').classList.toggle('on', mode === 'inf'); $('tabInf').setAttribute('aria-selected', mode === 'inf');
   $('dayNo').innerHTML = `#${today}` + (SD.done ? '<i class="done-dot" title="Diário feito"></i>' : '');
   const h = $('hint');
-  if (!done) h.innerHTML = S.solved.length ? `Faltam <b>${4 - S.solved.length}</b> grupo${S.solved.length === 3 ? '' : 's'}.` : 'Ache <b>4 grupos</b> de 4 palavras com algo em comum.';
-  else if (mode === 'daily') h.innerHTML = S.won ? 'Diário de hoje: <b>vencido!</b> Volta amanhã pro próximo.' : 'Diário de hoje: perdeu. Amanhã tem revanche.';
-  else h.innerHTML = S.won ? 'Resolvido! Bora pro <b>próximo</b>?' : 'Esse não foi. O próximo vai.';
+  if (!done) h.innerHTML = S.solved.length ? `Falta${S.solved.length === 3 ? '' : 'm'} <b>${4 - S.solved.length}</b> grupo${S.solved.length === 3 ? '' : 's'}` : 'Acha <b>4 grupos</b> de 4 palavras que têm algo em comum';
+  else if (mode === 'daily') h.innerHTML = S.won ? 'Diário de hoje <b>feito!</b> Amanhã tem outro' : 'Perdeu o de hoje. Amanhã tem revanche';
+  else h.innerHTML = S.won ? 'Resolvido! Bora pro <b>próximo</b>?' : 'Esse não foi, bora pro próximo';
 }
 
-/* palavras sempre cabem: diminui a fonte até caber (até 2 linhas) */
+/* palavras sempre cabem: diminui a fonte até caber (até 2 linhas).
+   Palavra comprida que ficaria miúda numa linha só quebra em duas com hífen (MORAN-GUINHO). */
+const VOW = /[AEIOUYÁÉÍÓÚÂÊÔÃÕÀÜ]/;
+function hyphenAt(word){
+  // ponto de quebra perto do meio: antes de consoante+vogal, sem separar CH/LH/NH nem BR/CL etc.
+  let best = -1, bd = 99;
+  for (let i = 3; i <= word.length - 3; i++){
+    if (VOW.test(word[i]) || !VOW.test(word[i + 1])) continue;
+    let j = i;
+    if (word[i] === 'H' && /[CLNPT]/.test(word[i - 1])) j = i - 1;
+    else if (/[RL]/.test(word[i]) && /[BCDFGKPTV]/.test(word[i - 1])) j = i - 1;
+    const d = Math.abs(j - word.length / 2);
+    if (j >= 3 && word.length - j >= 3 && d < bd){ bd = d; best = j; }
+  }
+  return best;
+}
 function fitTile(t){
   const w = t.firstElementChild; if (!w) return;
-  let fs = innerWidth >= 880 ? 20 : 17; w.style.fontSize = fs + 'px';
-  w.style.letterSpacing = w.textContent.length >= 9 ? '-.02em' : '';
-  const ch = t.clientHeight - 8; let guard = 0;
-  while (fs > 8.5 && (w.scrollWidth > w.clientWidth + .5 || w.offsetHeight > ch) && guard++ < 40){ fs -= .5; w.style.fontSize = fs + 'px'; }
+  const word = t.dataset.w || w.textContent, base = innerWidth >= 880 ? 20 : 17, ch = t.clientHeight - 8;
+  const fit = () => {
+    let fs = base, guard = 0; w.style.fontSize = fs + 'px';
+    while (fs > 8.5 && (w.scrollWidth > w.clientWidth + .5 || w.offsetHeight > ch) && guard++ < 40){ fs -= .5; w.style.fontSize = fs + 'px'; }
+    return fs;
+  };
+  w.textContent = word;
+  w.style.letterSpacing = word.length >= 9 ? '-.02em' : '';
+  let fs = fit();
+  const cut = !/\s/.test(word) && fs < 12.5 ? hyphenAt(word) : -1;
+  if (cut > 0){
+    w.innerHTML = `${esc(word.slice(0, cut))}-<br>${esc(word.slice(cut))}`;
+    const fs2 = fit();
+    if (fs2 >= fs + 2) t.setAttribute('aria-label', word);
+    else { w.textContent = word; fit(); }
+  }
 }
 function fitBar(d){
   const b = d.querySelector('b'), s = d.querySelector('span'); if (!b || !s) return;
   const wide = innerWidth >= 880; let fb = wide ? 24 : 20, fsz = wide ? 14.5 : 13, guard = 0;
   const apply = () => { b.style.fontSize = fb + 'px'; s.style.fontSize = fsz + 'px'; };
-  // palavras numa linha só (encolhe; se nem assim couber, quebra)
+  // palavras numa linha só (encolhe até 12px; se nem assim couber, quebra em duas linhas)
   s.style.whiteSpace = 'nowrap'; apply();
-  while (s.scrollWidth > s.clientWidth + .5 && fsz > 9 && guard++ < 20){ fsz -= .5; apply(); }
-  if (s.scrollWidth > s.clientWidth + .5) s.style.whiteSpace = 'normal';
+  while (s.scrollWidth > s.clientWidth + .5 && fsz > 12 && guard++ < 20){ fsz -= .5; apply(); }
+  if (s.scrollWidth > s.clientWidth + .5){ s.style.whiteSpace = 'normal'; fsz = wide ? 14 : 13; apply(); }
   guard = 0;
-  while ((b.offsetHeight + s.offsetHeight + 2 > d.clientHeight - 8 || b.scrollWidth > b.clientWidth + .5) && (fb > 11 || fsz > 9) && guard++ < 40){
-    fb = Math.max(11, fb - 1); if (fb <= 14) fsz = Math.max(9, fsz - .5); apply();
+  while ((b.offsetHeight + s.offsetHeight + 2 > d.clientHeight - 8 || b.scrollWidth > b.clientWidth + .5) && (fb > 13 || fsz > 12) && guard++ < 40){
+    fb = Math.max(13, fb - 1); if (fb <= 15) fsz = Math.max(12, fsz - .5); apply();
   }
 }
 function fitAll(){ board.querySelectorAll('.tile').forEach(fitTile); board.querySelectorAll('.solved').forEach(fitBar); }
@@ -182,7 +209,7 @@ function submit(){
   toggles = 0; saidIndeciso = false; perWord = {};
   if (S.tried.includes(key)){
     B.sfx.meh(); animate(tilesOf(sel), 'shake');
-    B.toast('Já tentou essa!', 'Repetir não custa vida. Só vergonha.');
+    B.toast('Já tentou essa', 'Repetir não gasta vida, só a dignidade');
     talk('cxRepetido', tw, 'smug', 6000);
     return;
   }
@@ -205,7 +232,7 @@ function correct(gi){
       S.order = S.order.filter(w => !g.palavras.includes(w));
       S.solved.push(gi); S.found = S.solved.length; sel = [];
       busy = false; save(); render(gi);
-      burst(g.nivel === 4 ? 'PEGADINHA!' : pick(['ISSO!', 'BOA!', 'ACHOU!', 'CONEXÃO!', 'NA MOSCA!']), BURST_COLOR[g.nivel]);
+      burst(g.nivel === 4 ? 'PEGADINHA!' : pick(['ISSO!', 'BOA!', 'ACHOU!', 'AÍ SIM!', 'NA MOSCA!']), BURST_COLOR[g.nivel]);
       if (S.solved.length === 4) return win();
       if (S.solved.length === 1 && g.nivel === 4) talk('cxRoxoPrimeiro', { grupo: g.tema }, 'shock', 6500);
       else if (combo >= 3 && Math.random() < .5) talk('cxCombo', { n: combo }, 'happy', 5000);
@@ -221,8 +248,8 @@ function wrong(best, key, tw){
   animate(tilesOf(sel), 'shake');
   renderLives(true); save();
   if (left <= 0) return lose();
-  if (best === 3){ B.toast('Quase! Faltou 1', 'Três dessas são do mesmo grupo.'); burst('QUASE!', '#FF4F9A'); }
-  else burst(pick(['ERROU!', 'NOPE!', 'NÃO!', 'EITA!']), '#FF3B3B');
+  if (best === 3){ B.toast('Quase! Faltou 1', '3 dessas são do mesmo grupo'); burst('QUASE!', '#FF4F9A'); }
+  else burst(pick(['ERROU!', 'NÃO!', 'EITA!', 'XIII!']), '#FF3B3B');
   if (left === 1) talk('cxUltimaVida', tw, 'shock', 6500);
   else if (best === 3) talk('cxQuase', tw, 'shock', 6000);
   else if (left === 2 && Math.random() < .4) talk('cxDuasVidas', tw, 'smug', 6000);
@@ -296,13 +323,13 @@ function clearSel(){
 /* ---------- resultado / compartilhar ---------- */
 function shareText(){
   const head = mode === 'daily' ? `Fliperama Bugado · Conexo #${S.day}` : `Fliperama Bugado · Conexo Infinito #${S.idx + 1}`;
-  const tail = S.won ? (S.mistakes ? `Venci com ${S.mistakes} erro${S.mistakes > 1 ? 's' : ''}` : 'Perfeito, zero erros!') : `Perdi (${S.found}/4 grupos)`;
+  const tail = S.won ? (S.mistakes ? `Venci com ${S.mistakes} erro${S.mistakes > 1 ? 's' : ''}` : 'Zero erro, perfeito') : `Perdi, achei ${S.found} de 4`;
   const rows = S.attempts.map(a => a.map(l => EMOJI[l]).join(''));
   return [head, tail, ...rows, location.origin + location.pathname].join('\n');
 }
 async function share(){
   const text = shareText();
-  if (await B.copyText(text)){ B.toast('Copiado!', 'Cola no grupo e se exibe.'); talk('cxCompartilhou', null, 'happy'); return; }
+  if (await B.copyText(text)){ B.toast('Copiado!', 'Cola no grupo e se exibe'); talk('cxCompartilhou', null, 'happy'); return; }
   if (navigator.share){ try { await navigator.share({ text }); return; } catch(e){} }
   const box = document.querySelector('.bg-card #shareBox');
   if (box){ box.hidden = false; box.value = text; box.focus(); box.select(); }
@@ -311,7 +338,7 @@ function openResult(){
   const P = ALL[S.idx], g = B.game('conexo');
   const title = S.won ? (S.mistakes === 0 ? 'PERFEITO!' : S.mistakes === 3 ? 'NO SUFOCO!' : 'VENCEU!') : 'GAME OVER';
   const label = mode === 'daily' ? `Diário #${S.day}` : `Infinito · puzzle ${S.idx + 1}`;
-  const sub = S.won ? `Achou os 4 grupos com ${S.mistakes} erro${S.mistakes === 1 ? '' : 's'}.` : `Achou ${S.found} de 4 grupos antes das vidas acabarem.`;
+  const sub = S.won ? (S.mistakes ? `Achou os 4 com ${S.mistakes} erro${S.mistakes === 1 ? '' : 's'}` : 'Achou os 4 sem errar nenhuma') : `Achou ${S.found} de 4 antes de acabar as vidas`;
   const rows = S.attempts.map(a => `<div>${a.map(l => `<i class="l${l}"></i>`).join('')}</div>`).join('');
   const groups = P.grupos.slice().sort((a, b) => a.nivel - b.nivel).map(gr => `<div class="l${gr.nivel}"><b>${esc(gr.tema)}</b>${gr.palavras.map(esc).join(' · ')}</div>`).join('');
   const roxo = P.grupos.find(gr => gr.nivel === 4);
@@ -319,7 +346,7 @@ function openResult(){
   B.openModal(`<h2 class="big">${title}</h2>
     <p class="sub">${label} · ${sub}</p>
     <div class="grid-emoji" aria-label="Tentativas">${rows}</div>
-    <div class="pills"><span class="pill sun">+${S.xp} XP</span><span class="pill">Sequência: ${g.streak || 0}</span>${S.won && !S.mistakes ? '<span class="pill pink">Sem erros!</span>' : ''}</div>
+    <div class="pills"><span class="pill sun">+${S.xp} XP</span><span class="pill">Sequência: ${g.streak || 0}</span>${S.won && !S.mistakes ? '<span class="pill pink">Zero erro</span>' : ''}</div>
     <div class="m-actions res"><button class="btn primary" data-act="share">Compartilhar</button><button class="btn cool" data-act="next">${mode === 'daily' ? 'Jogar Infinito' : 'Próximo puzzle'}</button></div>
     <textarea id="shareBox" hidden readonly rows="6" aria-label="Resultado pra copiar"></textarea>
     ${quote ? `<div class="quote">${quote}</div>` : ''}
@@ -343,7 +370,7 @@ function openStats(){
   const d = Object.assign({ 0:0, 1:0, 2:0, 3:0, x:0 }, g.dist || {});
   const max = Math.max(1, ...Object.values(d));
   const row = (k, lbl) => `<div class="r${k === 'x' ? ' lose' : ''}${S.done && ((S.won && String(S.mistakes) === String(k)) || (!S.won && k === 'x')) ? ' hl' : ''}"><span>${lbl}</span><i style="width:${Math.max(8, d[k] / max * 100)}%">${d[k]}</i></div>`;
-  const ld = g.lastDaily && g.lastDaily.day === today ? (g.lastDaily.won ? 'feito e vencido' : 'feito (perdeu)') : 'ainda não jogou';
+  const ld = g.lastDaily && g.lastDaily.day === today ? (g.lastDaily.won ? 'ganhou' : 'perdeu') : 'ainda não jogou';
   B.openModal(`<h2>Tuas estatísticas</h2>
     <p class="sub">Diário de hoje: <b>${ld}</b></p>
     <div class="stat-grid">
@@ -360,27 +387,27 @@ function openStats(){
 }
 function openHelp(){
   B.openModal(`<h2>Como joga o Conexo</h2>
-    <p class="sub">16 palavras. Escondidos nelas, <b>4 grupos de 4</b> que têm algo em comum. Teu trabalho: achar os quatro.</p>
+    <p class="sub">São 16 palavras e no meio delas tem <b>4 grupos de 4</b> que têm alguma coisa em comum. Teu trabalho é achar os quatro.</p>
     <h3>Passo a passo</h3>
     <ul>
-      <li><span class="tag2">1</span><span>Toca em <b>4 palavras</b> que você acha que combinam.</span></li>
-      <li><span class="tag2">2</span><span>Aperta <b>Enviar</b>. Se acertou, o grupo vira uma faixa colorida lá em cima.</span></li>
-      <li><span class="tag2">3</span><span>Errou? Perde um coração. São <b>4 vidas</b>. Se 3 de 4 estiverem certas, eu aviso: "Quase!"</span></li>
-      <li><span class="tag2">4</span><span>Tentar de novo uma combinação que já deu errado <b>não gasta vida</b>. Mas eu vou rir.</span></li>
+      <li><span class="tag2">1</span><span>Toca em <b>4 palavras</b> que cê acha que combinam.</span></li>
+      <li><span class="tag2">2</span><span>Aperta <b>Enviar</b>. Se acertar, o grupo vira uma faixa colorida lá em cima.</span></li>
+      <li><span class="tag2">3</span><span>Errou, perde um coração. São <b>4 vidas</b>. Se 3 das 4 tiverem certas eu aviso: "Quase!"</span></li>
+      <li><span class="tag2">4</span><span>Mandar de novo uma combinação que já deu errado <b>não gasta vida</b>. Mas eu vou rir.</span></li>
     </ul>
     <div class="ex"><span class="sel">MANGA</span><span class="sel">UVA</span><span class="sel">CAJU</span><span class="sel">BANANA</span><span class="bar">FRUTAS</span></div>
     <h3>As cores</h3>
     <div class="cx-legend">
-      <div><i style="background:var(--g1)"></i>Amarelo: o fácil. Até teu tio acha.</div>
-      <div><i style="background:var(--g2)"></i>Verde: médio. Pede um neurônio extra.</div>
-      <div><i style="background:var(--g3)"></i>Azul: difícil. Tem armadilha.</div>
-      <div><i style="background:var(--g4)"></i>Roxo: a pegadinha. Palavra escondida, "___ de pão", anagrama... maldade pura.</div>
+      <div><i style="background:var(--g1)"></i><span>Amarelo: o fácil, até teu tio acha</span></div>
+      <div><i style="background:var(--g2)"></i><span>Verde: médio, pede um neurônio a mais</span></div>
+      <div><i style="background:var(--g3)"></i><span>Azul: difícil, tem armadilha</span></div>
+      <div><i style="background:var(--g4)"></i><span>Roxo: a pegadinha. Palavra escondida, "___ de pão", anagrama... maldade pura</span></div>
     </div>
     <h3>Dicas do Bugado</h3>
     <ul>
-      <li><span class="tag2" style="--c:var(--pink)">!</span><span>Tem palavra que parece servir em dois grupos. É de propósito. Desconfia.</span></li>
+      <li><span class="tag2" style="--c:var(--pink)">!</span><span>Tem palavra que parece servir em dois grupos. É de propósito, desconfia.</span></li>
       <li><span class="tag2" style="--c:var(--cyan)">?</span><span>Travou? <b>Embaralha</b>. Ver as palavras em outra ordem ajuda de verdade.</span></li>
-      <li><span class="tag2">★</span><span><b>Diário</b>: um puzzle por dia, igual pra todo mundo. <b>Infinito</b>: quantos aguentar.</span></li>
+      <li><span class="tag2">★</span><span><b>Diário</b>: um por dia, igual pra todo mundo. <b>Infinito</b>: quantos cê aguentar.</span></li>
     </ul>
     <div class="m-actions"><button class="btn primary" data-act="close">Bora jogar</button></div>`);
   talk('cxAjuda', null, 'smug');
@@ -397,7 +424,7 @@ function setMode(m, silent){
 function greet(){
   if (S.done){
     if (mode === 'daily') talk('cxDiarioFeito', null, 'smug', 6000);
-    else sayRaw('Esse aqui já foi. Aperta <b>Próximo puzzle</b> que eu sorteio outro.', 'smug');
+    else sayRaw('Esse já foi mano. Aperta <b>Próximo puzzle</b> que eu sorteio outro', 'smug');
   } else talk(mode === 'daily' ? 'cxInicioDiario' : 'cxInicioInfinito', null, 'talk', 6000);
 }
 $('tabDaily').addEventListener('click', () => { B.sfx.tap(); if (mode !== 'daily') setMode('daily'); });
@@ -433,6 +460,17 @@ const mq = matchMedia('(min-width:880px)');
 const applyStack = () => { B.setStack(mq.matches); setTimeout(fitAll, 30); };
 (mq.addEventListener ? mq.addEventListener('change', applyStack) : mq.addListener(applyStack));
 applyStack();
+/* balão de altura fixa no celular: fala comprida encolhe a letra (até 12px) em vez de empurrar o tabuleiro */
+const bubble = document.querySelector('#mascot .bg-bubble'), bubbleP = bubble && bubble.querySelector('p');
+function fitBubble(){
+  if (!bubbleP) return;
+  bubbleP.style.fontSize = ''; bubbleP.style.lineHeight = ''; bubble.classList.remove('grow');
+  if (mq.matches) return;
+  let fs = parseFloat(getComputedStyle(bubbleP).fontSize), g = 0;
+  while (bubbleP.scrollHeight > bubbleP.clientHeight + 1 && fs > 12 && g++ < 8){ fs -= .5; bubbleP.style.fontSize = fs + 'px'; bubbleP.style.lineHeight = '1.2'; }
+  if (bubbleP.scrollHeight > bubbleP.clientHeight + 1) bubble.classList.add('grow');
+}
+if (bubbleP) new MutationObserver(fitBubble).observe(bubbleP, { childList: true, characterData: true, subtree: true });
 B.chatter({ active: () => !S.done && !busy && !B.isModalOpen(), idleCat: 'cxMixParado', randomCat: 'cxMixAleatorio' });
 
 buildMap(); render('enter');

@@ -27,7 +27,7 @@ const fill = (s, v={}) => String(s).replace(/\{(\w+)\}/g, (m,k) => v[k] !== unde
 
 /* ---------------- perfil global ---------------- */
 const PKEY = 'fliperama.profile';
-const TITLES = ['Estagiário do Fliperama','Apertador de Botão','Chutador Profissional','Aprendiz de Lápis','Rato de Fliperama','Viciado em Diário','Sensei do Nada','Lenda do Recreio','Deus Grego do Tempo Livre','Isso Não Existe'];
+const TITLES = ['Estagiário do Fliperama','Apertador de Botão','Chutador Profissional','Passageiro do 330','Rato de Fliperama','Viciado em Diário','Titular no Mineirão','Lenda do Recreio','Cabuloso Demais','Isso Não Existe'];
 function defaults(){ return { xp:0, sound:true, streak:0, lastWin:null, seen:{}, games:{} }; }
 let P = store.get(PKEY);
 if (!P){
@@ -188,7 +188,7 @@ let mascotEl = null, moodEl = null, sayEl = null, typeTimer = null, moodTimer = 
 // monta <button mascote> + balão dentro de `el`. opts.stack = balão embaixo.
 function mountMascot(el, opts={}){
   el.classList.add('bg-strip'); if (opts.stack) el.classList.add('stack');
-  el.innerHTML = `<button class="bg-mascot" type="button" aria-label="Bugado, o mascote. Cutuca ele.">${MASCOT_SVG}</button><div class="bg-bubble" aria-live="polite"><p>…</p></div>`;
+  el.innerHTML = `<button class="bg-mascot" type="button" aria-label="Bugado, o mascote. Cutuca ele.">${MASCOT_SVG}</button><div class="bg-bubble" aria-live="polite"><p>...</p></div>`;
   mascotEl = el.querySelector('.bg-mascot'); moodEl = el.querySelector('.bg-mood'); sayEl = el.querySelector('.bg-bubble p');
   mascotEl.addEventListener('click', () => {
     ac(); sfx.boing(); glitch('boing'); pokes++;
@@ -204,18 +204,26 @@ function say(html, m='talk', hold=4500){
   clearInterval(typeTimer); clearTimeout(moodTimer);
   lastSaid = Date.now();
   mood(m);
-  const plain = html.replace(/<[^>]+>/g,'');
+  const plain = html.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g,''); // <br> vira quebra de linha já durante a digitação
   sayEl.classList.toggle('long', plain.length > 105);
-  if (RM){ sayEl.innerHTML = html; }
+  sayEl.style.fontSize = '';
+  if (RM){ sayEl.innerHTML = html; fitBubble(); }
   else {
     let n = 0; sayEl.textContent = '';
     typeTimer = setInterval(() => {
       n += 2;
-      if (n >= plain.length){ clearInterval(typeTimer); sayEl.innerHTML = html; if (m==='talk') mood('neutral'); return; }
+      if (n >= plain.length){ clearInterval(typeTimer); sayEl.innerHTML = html; fitBubble(); if (m==='talk') mood('neutral'); return; }
       sayEl.textContent = plain.slice(0, n);
+      fitBubble();
     }, 16);
   }
   moodTimer = setTimeout(() => mood('neutral'), hold);
+}
+// se o balão tiver altura fixa e a fala não couber, diminui a letra (até 11px) em vez de cortar
+function fitBubble(){
+  const box = sayEl && sayEl.parentElement; if (!box) return;
+  let fs = parseFloat(getComputedStyle(sayEl).fontSize);
+  while (sayEl.scrollHeight > box.clientHeight - 6 && fs > 11){ fs -= .5; sayEl.style.fontSize = fs + 'px'; }
 }
 // fala uma linha de uma categoria (com variáveis)
 const talk = (cat, vars, m='talk', hold) => say(line(cat, vars), m, hold);

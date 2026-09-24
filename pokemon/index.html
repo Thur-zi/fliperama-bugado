@@ -3,20 +3,25 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2A1650">
 <title>Quem é esse Pokémon? · Fliperama Bugado</title>
-<meta name="description" content="Adivinhe o Pokémon secreto pelas pistas de tipo, geração, altura, peso, cor e evolução. Diário, Fácil, Infinito e Silhueta.">
+<meta name="description" content="Adivinha o Pokémon secreto pelas pistas de tipo, geração, altura, peso, cor e evolução. Tem Diário, Fácil, Infinito e Silhueta.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
-<link rel="stylesheet" href="../shared/base.css?v=2609241402">
+<link rel="stylesheet" href="../shared/base.css?v=2609242000">
 <style>
-:root{--c0:50px;--gap:4px;--dexred:#E3263F;--bad:#FF5A5A}
+:root{--c0:46px;--gap:3px;--dexred:#E3263F;--bad:#FF5A5A}
 
 /* ---------- layout ---------- */
 .layout{display:grid;gap:8px;margin-top:4px}
 #mascot{position:sticky;top:0;z-index:20;padding:6px 0 8px;background:linear-gradient(var(--night) 78%,rgba(42,22,80,0))}
+/* balão com altura fixa no celular: fala curta ou longa, nada embaixo pula */
+#mascot .bg-bubble{min-height:74px}
+#mascot .bg-bubble p{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
 .game{min-width:0;width:100%;max-width:760px;margin:0 auto}
 @media (min-width:880px){
   .layout{grid-template-columns:240px minmax(0,1fr);gap:24px;align-items:start;margin-top:14px}
   #mascot{top:14px;padding:0;background:none}
+  #mascot .bg-bubble{min-height:104px}
+  #mascot .bg-bubble p{-webkit-line-clamp:6}
 }
 
 /* ---------- modos ---------- */
@@ -32,10 +37,10 @@
 .led{flex:none;width:12px;height:12px;border-radius:50%;border:2.5px solid var(--ink)}
 .led.r{background:#ff7b7b}.led.y{background:var(--sun)}.led.g{background:var(--green)}
 .lens+.led{margin-left:6px}
-.dex-top h1{margin:0 0 0 4px;min-width:0;font-family:var(--display);font-weight:400;font-size:clamp(19px,6.2vw,28px);letter-spacing:.04em;line-height:1.05;color:var(--sun);-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;text-shadow:2px 2px 0 var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dex-top h1{margin:0 0 0 4px;min-width:0;font-family:var(--display);font-weight:400;font-size:clamp(18px,5.5vw,28px);letter-spacing:.03em;line-height:1.05;color:var(--sun);-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;text-shadow:2px 2px 0 var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dex-body{padding:12px}
-.meta{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:13px;color:var(--text-ink);min-width:0}
-.meta #modeDesc{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meta{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:13px;line-height:1.2;color:var(--text-ink);min-width:0}
+.meta #modeDesc{flex:1;min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .meta .count{margin-left:auto;flex:none}
 .meta .pill{flex:none}
 
@@ -44,6 +49,8 @@
 .stage::after{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(255,255,255,.55),transparent 55%);pointer-events:none}
 .stage img{position:relative;z-index:1;width:160px;height:160px;object-fit:contain;filter:brightness(0);transition:filter .9s ease,transform .7s cubic-bezier(.3,1.6,.5,1);-webkit-user-drag:none;user-select:none}
 .stage.reveal img{filter:brightness(1) drop-shadow(3px 4px 0 rgba(27,16,48,.45));transform:scale(1.08)}
+.stage.reveal .q{display:none}
+@media (min-width:880px){ .stage{height:220px} .stage img{width:200px;height:200px} }
 .stage .q{position:absolute;z-index:2;left:10px;top:6px;font-family:var(--display);font-size:24px;letter-spacing:.04em;color:#fff;-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;text-shadow:2px 2px 0 var(--ink);transform:rotate(-6deg)}
 
 /* ---------- busca + autocomplete ---------- */
@@ -55,9 +62,11 @@
 .search .go{flex:none;width:56px;height:52px;display:grid;place-items:center;padding:0}
 .search .go svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 .ac{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:30;margin:0;padding:4px;list-style:none;background:var(--paper);border:3px solid var(--ink);border-radius:14px;box-shadow:4px 4px 0 var(--ink);max-height:min(330px,46vh);overflow:auto;overscroll-behavior:contain}
-.ac li{display:flex;align-items:center;gap:10px;padding:2px 8px 2px 2px;border-radius:10px;cursor:pointer;color:var(--ink)}
+.ac li{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 10px 0 2px;border-radius:10px;cursor:pointer;color:var(--ink);overflow:hidden}
 .ac li[aria-selected="true"]{background:var(--sun);box-shadow:inset 0 0 0 2.5px var(--ink)}
-.ac img{flex:none;width:44px;height:44px;image-rendering:pixelated}
+/* os sprites de 96px têm muita borda vazia: amplia e corta um pouco */
+.ac img{flex:none;width:56px;height:56px;margin:-4px -4px -4px -2px;image-rendering:pixelated;object-fit:contain}
+.spr-x{visibility:hidden}
 .ac b{min-width:0;font-family:var(--chunky);font-weight:400;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ac .num{margin-left:auto;flex:none;font-family:var(--chunky);font-size:12px;color:#6b5a90}
 .ac .empty{cursor:default;padding:10px;font-size:14px;color:var(--text-ink)}
@@ -68,6 +77,11 @@
 .hints .btn svg{flex:none;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 .hints .btn.ready{background:var(--cyan);animation:wig 1.3s ease-in-out 3}
 .hints .btn.used{background:var(--green)}
+.hints .btn.used:disabled{opacity:1;box-shadow:0 1px 0 var(--ink)}
+.hints .btn .hl{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05}
+.hints .btn .hl small{font-size:11px;font-family:var(--body);font-weight:900}
+.hints .btn:disabled:not(.used){opacity:.62}
+@media (max-width:420px){ .hints:has(#giveUp) .btn:disabled:not(.used) svg{display:none} .hints:has(#giveUp) .btn{padding:0 4px} }
 .hints .btn.hot{background:var(--pink)}
 @keyframes wig{25%{transform:rotate(-3deg) scale(1.04)}75%{transform:rotate(3deg) scale(1.04)}}
 .hint-out{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -92,20 +106,24 @@
 /* ---------- tabela de chutes ---------- */
 .board{margin-top:16px}
 .heads,.row{display:grid;grid-template-columns:var(--c0) repeat(7,minmax(0,1fr));gap:var(--gap)}
-.heads span{font-family:var(--chunky);font-size:10.5px;letter-spacing:.02em;text-align:center;color:var(--muted);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:5px}
-.rows{display:flex;flex-direction:column;gap:7px}
-.poke,.tile{min-height:56px;border:2.5px solid var(--ink);border-radius:10px;box-shadow:0 3px 0 var(--ink)}
-.poke{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:0 1px 3px;background:var(--paper2);color:var(--ink)}
-.poke img{width:44px;height:44px;margin:-4px 0 -3px;image-rendering:pixelated}
-.poke span{max-width:100%;font-size:8.5px;line-height:1.05;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.heads>span{font-family:var(--chunky);font-size:12px;letter-spacing:0;text-align:center;color:var(--muted);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:5px}
+.rows{display:flex;flex-direction:column;gap:10px}
+/* no celular o nome vai numa linha própria em cima (inteiro, 12px) e a 1ª coluna fica só com o sprite */
+.rname{grid-column:1/-1;display:flex;align-items:baseline;gap:6px;min-width:0;margin-bottom:-1px;padding-left:2px;font-family:var(--chunky);font-size:13px;line-height:1.1;color:var(--paper);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rname small{font-family:var(--body);font-size:12px;font-weight:800;color:var(--muted)}
+.row.win .rname{color:var(--green)}
+.poke,.tile{min-height:54px;border:2.5px solid var(--ink);border-radius:10px;box-shadow:0 3px 0 var(--ink)}
+.poke{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:0;background:var(--paper2);color:var(--ink)}
+.poke img{width:60px;height:60px;margin:-6px;image-rendering:pixelated;object-fit:contain}
+.poke span{display:none;max-width:100%;font-size:10px;line-height:1.05;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;overflow:hidden;padding:3px 1px;color:var(--ink);text-align:center;line-height:1}
 .tile.g{background:var(--green)}
 .tile.y{background:var(--sun)}
 .tile.r{background:var(--bad)}
-.tile .v{font-family:var(--chunky);font-weight:400;font-size:15px;font-variant-numeric:tabular-nums}
-.tile .v.long{font-size:11.5px}
-.tile small{font-size:9px;font-weight:900}
-.ty{display:inline-block;max-width:100%;padding:2px 3px;border:2px solid var(--ink);border-radius:6px;background:var(--tc);color:#fff;font-family:var(--chunky);font-size:10px;letter-spacing:.02em;-webkit-text-stroke:2.5px var(--ink);paint-order:stroke fill;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .v{font-family:var(--chunky);font-weight:400;font-size:16px;font-variant-numeric:tabular-nums}
+.tile .v.long{font-size:12px}
+.tile small{font-size:11px;font-weight:900}
+.ty{display:inline-block;max-width:100%;padding:1px 2px;border:1.5px solid var(--ink);border-radius:6px;background:var(--tc);color:#fff;font-family:var(--chunky);font-size:11px;letter-spacing:0;-webkit-text-stroke:2.5px var(--ink);paint-order:stroke fill;white-space:nowrap;overflow:hidden;text-overflow:clip}
 .ty.none{background:#E6DEF5;color:#6b5a90;-webkit-text-stroke:0}
 .sw{display:block;flex:none;width:20px;height:20px;border-radius:50%;border:2.5px solid var(--ink);background:var(--sw);box-shadow:inset -3px -3px 0 rgba(0,0,0,.15)}
 .arr{display:block;flex:none;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent}
@@ -122,7 +140,7 @@
 .slist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px}
 .sitem{display:flex;align-items:center;gap:6px;min-width:0;padding:2px 10px 2px 2px;background:var(--bad);color:var(--ink);border:2.5px solid var(--ink);border-radius:10px;box-shadow:0 3px 0 var(--ink)}
 .sitem.ok{background:var(--green)}
-.sitem img{flex:none;width:40px;height:40px;image-rendering:pixelated}
+.sitem img{flex:none;width:48px;height:48px;margin:-4px -2px -4px -4px;image-rendering:pixelated;object-fit:contain}
 .sitem b{min-width:0;font-family:var(--chunky);font-weight:400;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sitem i{margin-left:auto;font-style:normal;font-family:var(--chunky);font-size:16px}
 
@@ -130,13 +148,16 @@
   :root{--c0:66px;--gap:6px}
   .lg{display:inline}.sm{display:none}
   small.lg{display:block}
+  .rname{display:none}
+  .rows{gap:7px}
   .poke,.tile{min-height:68px}
-  .poke img{width:56px;height:56px}
-  .poke span{font-size:10px}
+  .poke{padding:0 2px 3px}
+  .poke img{width:64px;height:64px;margin:-9px -6px -6px}
+  .poke span{display:block;font-size:11px}
   .tile .v{font-size:19px}.tile .v.long{font-size:16px}
-  .tile small{font-size:10.5px}
-  .ty{font-size:12px;padding:2px 5px}
-  .heads span{font-size:12px}
+  .tile small{font-size:11px}
+  .ty{font-size:12px;padding:2px 5px;border-width:2px;letter-spacing:.02em}
+  .heads>span{font-size:12px;letter-spacing:.02em}
   .sw{width:22px;height:22px}
 }
 
@@ -155,12 +176,15 @@
 .bg-card h2.wc-name{text-align:center;margin-top:12px;overflow-wrap:anywhere}
 .wc-types{display:flex;justify-content:center;gap:6px;margin-top:6px}
 .wc-types .ty{font-size:14px;padding:3px 10px;border-width:2.5px}
-.wc-data{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:6px;margin-top:12px}
-.wc-data div{background:#fff;border:2.5px solid var(--ink);border-radius:10px;padding:6px 4px;text-align:center}
-.wc-data span{display:block;font-size:10.5px;font-weight:800;letter-spacing:.04em;color:#6b5a90;text-transform:uppercase}
-.wc-data b{font-family:var(--chunky);font-weight:400;font-size:16px;color:var(--ink)}
+/* 5 dados: 3 em cima + 2 embaixo ocupando a largura toda (sem buraco) */
+.wc-data{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:12px}
+.wc-data div{grid-column:span 2;min-width:0;background:#fff;border:2.5px solid var(--ink);border-radius:10px;padding:6px 4px;text-align:center}
+.wc-data div:nth-child(n+4){grid-column:span 3}
+.wc-data span{display:block;font-size:11.5px;font-weight:800;letter-spacing:.03em;color:#6b5a90;text-transform:uppercase}
+.wc-data b{font-family:var(--chunky);font-weight:400;font-size:17px;color:var(--ink)}
+@media (min-width:480px){ .wc-data{grid-template-columns:repeat(5,minmax(0,1fr))} .wc-data div,.wc-data div:nth-child(n+4){grid-column:auto} }
 .st-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:10px}
-.st-tabs .btn{height:38px;padding:0 2px;font-size:13px;background:var(--paper2)}
+.st-tabs .btn{height:42px;padding:0 2px;font-size:14px;background:var(--paper2)}
 .st-tabs .btn.on{background:var(--sun)}
 .dist{display:flex;flex-direction:column;gap:5px}
 .dist-row{display:grid;grid-template-columns:46px 1fr;align-items:center;gap:8px;font-family:var(--chunky);font-size:13px;color:var(--ink)}
@@ -171,7 +195,13 @@
 .bg-card li .demo{align-self:center}
 .bg-card li{align-items:center}
 .bg-card .stat-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
-.bg-card .stat-grid.four .stat span{font-size:10px;letter-spacing:0}
+.bg-card .stat-grid.four{gap:6px}
+.bg-card .stat-grid.four .stat{padding:8px 1px;min-width:0}
+.bg-card .stat-grid.four .stat span{font-size:11px;letter-spacing:0}
+/* ajuda: etiqueta dos modos com largura igual, texto alinhado */
+.bg-card li > .pill{flex:none;min-width:84px;text-align:center}
+.bg-card .m-actions .btn{flex-basis:120px}
+.wc-screen img.spr,.stage img.spr,.res-art.spr{image-rendering:pixelated}
 </style>
 </head><body>
 <div class="wrap">
@@ -190,11 +220,11 @@
         <div class="dex-top"><span class="lens"></span><span class="led r"></span><span class="led y"></span><span class="led g"></span><h1>Quem é esse Pokémon?</h1></div>
         <div class="dex-body">
           <div class="meta"><span class="pill sun" id="modeTag">Diário</span><span id="modeDesc"></span><span class="pill count" id="count">0 chutes</span></div>
-          <div class="stage" id="stage" hidden><span class="q">?</span><img id="stageImg" alt="Silhueta do Pokémon secreto" width="160" height="160" draggable="false"></div>
+          <div class="stage" id="stage" hidden><span class="q">?</span><img id="stageImg" alt="Silhueta do Pokémon secreto" width="160" height="160" draggable="false" decoding="async" onerror="pkImgFail(this)"></div>
           <div id="play">
             <form class="search" id="form" autocomplete="off" role="search">
               <input id="guess" type="text" inputmode="search" enterkeyhint="go" spellcheck="false" autocapitalize="off" autocorrect="off"
-                placeholder="Digita um Pokémon…" aria-label="Nome do Pokémon" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="ac">
+                placeholder="Digita um Pokémon" aria-label="Nome do Pokémon" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="ac">
               <button class="btn primary go" type="submit" aria-label="Chutar"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h6M15 12h6"/><circle cx="12" cy="12" r="3"/></svg></button>
               <ul class="ac" id="ac" role="listbox" aria-label="Sugestões" hidden></ul>
             </form>
@@ -211,8 +241,8 @@
 </div>
 <div class="burst-layer" aria-hidden="true"><div class="burst" id="burst"></div></div>
 
-<script src="../shared/falas.js?v=2609241402"></script><script src="../shared/bugado.js?v=2609241402"></script>
-<script src="pokedex.js?v=2609241402"></script><script src="falas-pokemon.js?v=2609241402"></script>
+<script src="../shared/falas.js?v=2609242000"></script><script src="../shared/bugado.js?v=2609242000"></script>
+<script src="pokedex.js?v=2609242000"></script><script src="falas-pokemon.js?v=2609242000"></script>
 <script>
 (() => {
 'use strict';
@@ -226,6 +256,16 @@ const pad = n => '#' + String(n).padStart(3, '0');
 const fmt = x => Number(x).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
 const plural = (n, a, b) => `${n} ${n === 1 ? a : b}`;
 const coarse = matchMedia('(pointer: coarse)').matches;
+// imagem que falha: sprite tenta a arte oficial (e vice-versa) e, se nada vier, some sem ícone quebrado
+window.pkImgFail = img => {
+  const n = img.dataset.n;
+  if (n && !img.dataset.f){ img.dataset.f = '1'; const art = img.src.includes('official-artwork'); img.classList.toggle('spr', art); img.src = art ? SPR(n) : ART(n); }
+  else img.classList.add('spr-x');
+};
+const IMGFAIL = 'onerror="pkImgFail(this)"';
+const sprImg = (n, eager) => `<img src="${SPR(n)}" data-n="${n}" alt="" width="96" height="96" decoding="async"${eager ? '' : ' loading="lazy"'} ${IMGFAIL}>`;
+const preloaded = new Set();
+function preload(url){ if (preloaded.has(url)) return; preloaded.add(url); const i = new Image(); i.decoding = 'async'; i.src = url; }
 
 /* ---------------- dados ---------------- */
 const TYPES = {
@@ -246,20 +286,20 @@ const LEGEND = new Set([144,145,146,150,151,243,244,245,249,250,251,772,773,905,
 [[377,386],[480,494],[638,649],[716,721],[785,809],[888,898],[1001,1004],[1014,1017]].forEach(([a,b]) => { for (let i = a; i <= b; i++) LEGEND.add(i); });
 
 const COLS = [
-  { k:'gen',   short:'Ger.',   full:'Geração' },
-  { k:'t1',    short:'Tipo 1', full:'Tipo 1' },
-  { k:'t2',    short:'Tipo 2', full:'Tipo 2' },
-  { k:'h',     short:'Alt.',   full:'Altura' },
-  { k:'w',     short:'Peso',   full:'Peso' },
-  { k:'color', short:'Cor',    full:'Cor' },
-  { k:'stage', short:'Evo',    full:'Estágio de evolução' }
+  { k:'gen',   short:'Ger.',   tiny:'Ger', full:'Geração' },
+  { k:'t1',    short:'Tipo 1', tiny:'T1',  full:'Tipo 1' },
+  { k:'t2',    short:'Tipo 2', tiny:'T2',  full:'Tipo 2' },
+  { k:'h',     short:'Alt.',   tiny:'Alt', full:'Altura' },
+  { k:'w',     short:'Peso',   tiny:'Peso', full:'Peso' },
+  { k:'color', short:'Cor',    tiny:'Cor', full:'Cor' },
+  { k:'stage', short:'Evo',    tiny:'Evo', full:'Estágio de evolução' }
 ];
 
 const MODES = {
-  diario:  { label:'Diário',   daily:true,  sil:false, seed:0x51ED27, desc:'Mesmo Pokémon pra todo mundo hoje' },
-  facil:   { label:'Fácil',    daily:true,  sil:false, seed:0xFACE12, gens:3, desc:'Só gerações 1 a 3 · diário' },
-  infinito:{ label:'Infinito', daily:false, sil:false, desc:'Sorteio aleatório · XP pela metade' },
-  silhueta:{ label:'Silhueta', daily:false, sil:true,  desc:'Só a sombra · chute pelo nome' }
+  diario:  { label:'Diário',   daily:true,  sil:false, seed:0x51ED27, desc:'Um por dia, o mesmo pra todo mundo' },
+  facil:   { label:'Fácil',    daily:true,  sil:false, seed:0xFACE12, gens:3, desc:'Diário só com as gerações 1 a 3' },
+  infinito:{ label:'Infinito', daily:false, sil:false, desc:'Sorteio aleatório, metade do XP' },
+  silhueta:{ label:'Silhueta', daily:false, sil:true,  desc:'Só a sombra, chuta pelo nome' }
 };
 const POOLS = {}; Object.keys(MODES).forEach(m => { POOLS[m] = MODES[m].gens ? DEX.filter(p => p.gen <= MODES[m].gens) : DEX; });
 const PERMS = {};
@@ -319,7 +359,7 @@ function compare(p, s){
   ];
 }
 function typeHTML(t){
-  if (!t) return '<span class="ty none"><span class="lg">Nenhum</span><span class="sm">—</span></span>';
+  if (!t) return '<span class="ty none"><span class="lg">Nenhum</span><span class="sm">–</span></span>';
   const [nm, c, ab] = TYPES[t];
   return `<span class="ty" style="--tc:${c}"><span class="lg">${nm}</span><span class="sm">${ab}</span></span>`;
 }
@@ -356,11 +396,11 @@ function rowHTML(p, cmp, anim){
     const label = `${cellText(c.k, p)}: ${ST_TXT[r.s]}${arrTxt}`;
     return `<div class="tile ${r.s}${cls}" style="--d:${(i + 1) * 120}ms" role="cell" title="${esc(label)}" aria-label="${esc(label)}">${cellInner(c.k, p)}${r.a ? `<i class="arr ${r.a}"></i>` : ''}</div>`;
   }).join('');
-  return `<div class="row${win ? ' win' : ''}" role="row"><div class="poke${cls}" role="rowheader" title="${esc(p.name)} ${pad(p.num)}"><img src="${SPR(p.num)}" alt="" width="96" height="96" loading="lazy"><span>${esc(p.name)}</span></div>${cells}</div>`;
+  return `<div class="row${win ? ' win' : ''}" role="row"><div class="rname" aria-hidden="true">${esc(p.name)} <small>${pad(p.num)}</small></div><div class="poke${cls}" role="rowheader" title="${esc(p.name)} ${pad(p.num)}" aria-label="${esc(p.name)}">${sprImg(p.num, true)}<span>${esc(p.name)}</span></div>${cells}</div>`;
 }
 function sitemHTML(p, anim){
   const ok = p.num === S.secret;
-  return `<div class="sitem${ok ? ' ok' : ''}${anim ? ' pop' : ''}"><img src="${SPR(p.num)}" alt="" width="96" height="96" loading="lazy"><b>${esc(p.name)}</b><i aria-label="${ok ? 'certo' : 'errado'}">${ok ? '✓' : '✗'}</i></div>`;
+  return `<div class="sitem${ok ? ' ok' : ''}${anim ? ' pop' : ''}">${sprImg(p.num, true)}<b>${esc(p.name)}</b><i aria-label="${ok ? 'certo' : 'errado'}">${ok ? '✓' : '✗'}</i></div>`;
 }
 
 /* ---------------- render ---------------- */
@@ -377,7 +417,7 @@ function renderStage(){
   st.hidden = !show;
   if (!show) return;
   const img = $('#stageImg'), src = ART(S.secret);
-  if (img.getAttribute('src') !== src){ st.classList.remove('reveal'); img.src = src; }
+  if (img.dataset.n !== String(S.secret)){ st.classList.remove('reveal'); img.classList.remove('spr', 'spr-x'); delete img.dataset.f; img.dataset.n = S.secret; img.src = src; }
   st.classList.toggle('reveal', S.done);
   img.alt = S.done ? SECRET().name : 'Silhueta do Pokémon secreto';
 }
@@ -389,11 +429,12 @@ function renderHints(){
   let html = HINTS[m.sil ? 'sil' : 'normal'].map(h => {
     const used = S.hints.includes(h.id), ready = wrong >= h.at;
     const icon = used ? '' : ready ? (h.id === 'sil' ? EYE : B.ICON.star) : B.ICON.lock;
-    const txt = used ? `✓ ${h.label}` : ready ? `${h.label} <small>−10 XP</small>` : `${h.label} · ${h.at - wrong}`;
-    const aria = used ? `Dica ${h.label} usada` : ready ? `Usar dica: ${h.label} (custa 10 XP)` : `Dica ${h.label} bloqueada: faltam ${h.at - wrong} chutes errados`;
-    return `<button type="button" class="btn${used ? ' used' : ready ? ' ready' : ''}" data-hint="${h.id}" ${used || !ready ? 'disabled' : ''} aria-label="${aria}">${icon}<span>${txt}</span></button>`;
+    const txt = used ? `✓ ${h.label}` : ready ? `<span class="hl">${h.label}<small>−10 XP</small></span>` : `${h.label} · ${h.at - wrong}`;
+    const aria = used ? `Dica ${h.label} já usada` : ready ? `Usar a dica ${h.label} (custa 10 XP)` : `Dica ${h.label} trancada: libera com mais ${h.at - wrong} ${h.at - wrong === 1 ? 'chute errado' : 'chutes errados'}`;
+    if (ready && !used && h.id === 'sil') preload(ART(S.secret));
+    return `<button type="button" class="btn${used ? ' used' : ready ? ' ready' : ''}" data-hint="${h.id}" ${used || !ready ? 'disabled' : ''} aria-label="${aria}">${icon}${used || ready ? txt : `<span>${txt}</span>`}</button>`;
   }).join('');
-  if (!m.daily) html += `<button type="button" class="btn" id="giveUp" aria-label="Desistir desta rodada">Desistir</button>`;
+  if (!m.daily) html += `<button type="button" class="btn" id="giveUp" aria-label="Desistir dessa rodada">Desistir</button>`;
   box.innerHTML = html;
   const s = SECRET(); const chips = [];
   if (S.hints.includes('tipos')) chips.push(typeFull(s.t1), s.t2 ? typeFull(s.t2) : '<span class="ty none">só um tipo</span>');
@@ -404,13 +445,13 @@ function renderResult(){
   const r = $('#result'); $('#play').hidden = S.done; r.hidden = !S.done;
   if (!S.done){ r.innerHTML = ''; return; }
   const s = SECRET(), n = S.guesses.length, m = MODE();
-  r.innerHTML = `<div class="res">${$('#stage').hidden ? `<img class="res-art" src="${ART(s.num)}" alt="${esc(s.name)}" width="96" height="96">` : ''}
-    <div class="res-txt"><small>${S.won ? 'Capturado!' : 'Você desistiu. Era:'}</small><b>${esc(s.name)}</b>
+  r.innerHTML = `<div class="res">${$('#stage').hidden ? `<img class="res-art" src="${ART(s.num)}" data-n="${s.num}" alt="${esc(s.name)}" width="96" height="96" ${IMGFAIL}>` : ''}
+    <div class="res-txt"><small>${S.won ? 'Acertou!' : 'Cê desistiu. Era o'}</small><b>${esc(s.name)}</b>
     <span>${pad(s.num)} · ${plural(n, 'chute', 'chutes')}${S.won ? ` · +${S.xp} XP` : ''}</span></div></div>
     <div class="res-actions"><button class="btn" type="button" data-r="card">Ver ficha</button>
     ${S.won ? '<button class="btn cool" type="button" data-r="share">Compartilhar</button>' : ''}
-    ${m.daily ? '<button class="btn" type="button" data-r="stats">Estatísticas</button>' : '<button class="btn primary" type="button" data-r="next">Nova rodada</button>'}</div>
-    ${m.daily ? `<p class="next-in">Próximo Pokémon em <b id="countdown">--:--:--</b><br>ou joga o <button class="linkish" type="button" data-r="inf">Infinito</button> enquanto isso</p>` : ''}`;
+    ${m.daily ? '<button class="btn" type="button" data-r="stats">Estatísticas</button>' : '<button class="btn primary" type="button" data-r="next">Próximo</button>'}</div>
+    ${m.daily ? `<p class="next-in">Tem Pokémon novo em <b id="countdown">--:--:--</b><br>enquanto isso joga o <button class="linkish" type="button" data-r="inf">Infinito</button></p>` : ''}`;
   tickCountdown();
 }
 function renderBoard(){
@@ -419,10 +460,10 @@ function renderBoard(){
     b.innerHTML = `<div class="slist" id="rows">${list.map(p => sitemHTML(p, false)).join('')}</div>`;
   } else {
     const s = SECRET();
-    b.innerHTML = `<div class="heads" aria-hidden="true"><span title="Pokémon">Poké</span>${COLS.map(c => `<span title="${c.full}">${c.short}</span>`).join('')}</div>
+    b.innerHTML = `<div class="heads" aria-hidden="true"><span title="Pokémon">Poké</span>${COLS.map(c => `<span title="${c.full}"><span class="lg">${c.short}</span><span class="sm">${c.tiny}</span></span>`).join('')}</div>
       <div class="rows" id="rows" role="table" aria-label="Chutes, o mais novo em cima">${list.map(p => rowHTML(p, compare(p, s), false)).join('')}</div>`;
   }
-  if (!S.guesses.length) b.insertAdjacentHTML('beforeend', `<p class="empty-board" id="emptyBoard">${MODE().sil ? 'Seus chutes aparecem aqui.' : 'Seus chutes aparecem aqui, o mais novo em cima. Verde = igual, amarelo = tipo na outra posição, seta = o secreto é maior ou menor.'}</p>`);
+  if (!S.guesses.length) b.insertAdjacentHTML('beforeend', `<p class="empty-board" id="emptyBoard">${MODE().sil ? 'Teus chutes vão aparecer aqui.' : 'Teus chutes vão aparecer aqui, o mais novo em cima. Verde é igual ao secreto, amarelo é tipo certo na posição errada e a seta diz se o do secreto é maior ou menor.'}</p>`);
 }
 function renderAll(){ renderModes(); renderMeta(); renderStage(); renderHints(); renderResult(); renderBoard(); }
 
@@ -444,8 +485,8 @@ function openList(){
   opts = search(q); act = opts.length ? 0 : -1;
   if (!q){ closeList(); return; }
   acEl.innerHTML = opts.length
-    ? opts.map((p, i) => `<li role="option" id="ac-${i}" data-i="${i}" aria-selected="${i === act}"><img src="${SPR(p.num)}" alt="" width="96" height="96" loading="lazy"><b>${esc(p.name)}</b><span class="num">${pad(p.num)}</span></li>`).join('')
-    : `<li class="empty" role="option" aria-disabled="true">Nenhum Pokémon ${MODE().gens ? 'das gerações 1–3 ' : ''}com esse nome${S.guesses.length ? ' (ou você já chutou)' : ''}.</li>`;
+    ? opts.map((p, i) => `<li role="option" id="ac-${i}" data-i="${i}" aria-selected="${i === act}">${sprImg(p.num, i < 8)}<b>${esc(p.name)}</b><span class="num">${pad(p.num)}</span></li>`).join('')
+    : `<li class="empty" role="option" aria-disabled="true">Nenhum Pokémon com esse nome${MODE().gens ? ' nas gerações 1 a 3' : ''}${S.guesses.length ? ', ou cê já chutou ele' : ''}.</li>`;
   acEl.hidden = false; input.setAttribute('aria-expanded', 'true'); syncAct();
 }
 function closeList(){ acEl.hidden = true; acEl.innerHTML = ''; opts = []; act = -1; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); }
@@ -493,7 +534,7 @@ function guess(p){
   const s = SECRET(), m = MODE();
   S.guesses.push(p.num);
   const n = S.guesses.length, win = p.num === S.secret;
-  if (win){ S.done = true; S.won = true; }
+  if (win){ S.done = true; S.won = true; preload(ART(p.num)); }
   if (S.mode === 'diario' && !win && n === 1){ G().lastDaily = { day:S.day, won:false }; B.saveProfile(); }
   save();
   const empty = $('#emptyBoard'); if (empty) empty.remove();
@@ -506,7 +547,7 @@ function guess(p){
   const delay = B.RM ? 200 : m.sil ? 420 : COLS.length * 120 + 520;
   clearTimeout(talkT);
   if (win){
-    renderHints(); B.say('…', 'shock', 1500);
+    renderHints(); B.say('pera...', 'shock', 1500);
     pendingWin = setTimeout(onWin, delay);
   } else {
     if (m.sil) B.sfx.meh();
@@ -521,7 +562,7 @@ function revealSfx(cmp){
 }
 function afterWrong(n){
   const h = HINTS[MODE().sil ? 'sil' : 'normal'].find(x => x.at === wrongCount());
-  if (h && !S.done){ B.toast('Dica liberada!', `${h.label} disponível (−10 XP)`); B.sfx.hint(); renderHints(); }
+  if (h && !S.done){ B.toast('Dica liberada!', `${h.label} tá ali embaixo, custa 10 XP`); B.sfx.hint(); renderHints(); }
 }
 function features(p, s, cmp){
   const f = { greens: cmp.filter(c => c.s === 'g').length, tipo:'' };
@@ -648,14 +689,14 @@ function shareText(){
   });
   let body;
   if (m.sil){ const out = []; for (let i = 0; i < rows.length; i += 10) out.push(rows.slice(i, i + 10).join('')); body = out.join('\n'); }
-  else body = rows.length > 12 ? [...rows.slice(0, 5), `… +${rows.length - 10} chutes …`, ...rows.slice(-5)].join('\n') : rows.join('\n');
+  else body = rows.length > 12 ? [...rows.slice(0, 5), `... +${rows.length - 10} chutes ...`, ...rows.slice(-5)].join('\n') : rows.join('\n');
   const title = m.daily ? `Fliperama Bugado · Pokémon${S.mode === 'facil' ? ' Fácil' : ''} #${S.day}` : `Fliperama Bugado · Pokémon (${m.label})`;
   const extra = S.hints.length ? ` · 💡${S.hints.length}` : '';
   return `${title}\n${plural(n, 'chute', 'chutes')}${extra}\n${body}\n${location.origin}${location.pathname}`;
 }
 async function share(){
   const ok = await B.copyText(shareText());
-  B.toast(ok ? 'Copiado!' : 'Não deu pra copiar', ok ? 'Cola no grupo e humilha geral.' : 'O navegador bloqueou. Tenta de novo.');
+  B.toast(ok ? 'Copiado!' : 'Não deu pra copiar', ok ? 'Agora cola no grupo e humilha geral' : 'O navegador bloqueou, tenta de novo');
 }
 
 /* ---------------- modais ---------------- */
@@ -663,13 +704,13 @@ function openCard(){
   const s = SECRET(), n = S.guesses.length, m = MODE();
   const data = [['Geração', s.gen], ['Altura', fmt(s.h) + ' m'], ['Peso', fmt(s.w) + ' kg'], ['Cor', s.color], ['Estágio', s.stage]];
   B.openModal(`<div class="wc-top"><span class="lens"></span><span class="led r"></span><span class="led y"></span><span class="led g"></span><b>POKÉDEX</b><span class="num">${pad(s.num)}</span></div>
-    <div class="wc-screen"><img src="${ART(s.num)}" alt="${esc(s.name)}" width="190" height="190"></div>
+    <div class="wc-screen"><img src="${ART(s.num)}" data-n="${s.num}" alt="${esc(s.name)}" width="190" height="190" ${IMGFAIL}></div>
     <h2 class="big wc-name">${esc(s.name)}!</h2>
     <div class="wc-types">${typeFull(s.t1)}${s.t2 ? typeFull(s.t2) : ''}</div>
     <div class="wc-data">${data.map(([a, b]) => `<div><span>${a}</span><b>${b}</b></div>`).join('')}</div>
-    ${S.won ? `<div class="stat-grid four"><div class="stat"><b>${n}</b><span>chutes</span></div><div class="stat"><b>+${S.xp}</b><span>XP</span></div><div class="stat"><b>${S.hints.length}</b><span>dicas</span></div><div class="stat"><b>${streakShown(S.mode)}</b><span>sequência</span></div></div>`
-      : `<p class="sub" style="text-align:center">Fica pra próxima. Pelo menos agora você nunca mais esquece ele.</p>`}
-    <div class="m-actions">${S.won ? '<button class="btn cool" type="button" data-act="share">Compartilhar</button>' : ''}${m.daily ? '<button class="btn" type="button" data-act="stats">Estatísticas</button>' : '<button class="btn primary" type="button" data-act="next">Nova rodada</button>'}<button class="btn" type="button" data-act="close">Fechar</button></div>`);
+    ${S.won ? `<div class="stat-grid four"><div class="stat"><b>${n}</b><span>chutes</span></div><div class="stat"><b>+${S.xp}</b><span>XP</span></div><div class="stat"><b>${S.hints.length}</b><span>dicas</span></div><div class="stat"><b>${streakShown(S.mode)}</b><span>seguidas</span></div></div>`
+      : `<p class="sub" style="text-align:center">Fica pra próxima. Agora cê nunca mais esquece esse.</p>`}
+    <div class="m-actions">${S.won ? '<button class="btn cool" type="button" data-act="share">Compartilhar</button>' : ''}${m.daily ? '<button class="btn" type="button" data-act="stats">Estatísticas</button>' : '<button class="btn primary" type="button" data-act="next">Próximo</button>'}<button class="btn" type="button" data-act="close">Fechar</button></div>`);
 }
 function openStats(m){
   const s = MS(m), cur = S.mode === m && S.won ? S.lastBucket || bucketOf(S.guesses.length) : null;
@@ -677,31 +718,31 @@ function openStats(m){
   const max = Math.max(1, ...BUCKETS.map(b => s.dist[b] || 0));
   const tabs = Object.keys(MODES).map(k => `<button class="btn${k === m ? ' on' : ''}" type="button" data-act="st-${k}" aria-pressed="${k === m}">${MODES[k].label}</button>`).join('');
   const bars = BUCKETS.map(b => { const v = s.dist[b] || 0; return `<div class="dist-row"><span>${b}</span><i class="${b === cur ? 'hot' : ''}" style="width:${Math.max(9, v / max * 100)}%">${v}</i></div>`; }).join('');
-  B.openModal(`<h2>Estatísticas</h2><p class="sub">Por modo. O Bugado anota tudo, inclusive o que você queria esquecer.</p>
+  B.openModal(`<h2>Estatísticas</h2><p class="sub">Separado por modo. Eu anoto tudo, até o que cê queria esquecer.</p>
     <div class="st-tabs">${tabs}</div>
     <div class="stat-grid"><div class="stat"><b>${s.played}</b><span>jogos</span></div><div class="stat"><b>${s.wins}</b><span>vitórias</span></div><div class="stat"><b>${avg}</b><span>média</span></div>
     <div class="stat"><b>${s.best || '–'}</b><span>melhor</span></div><div class="stat"><b>${streakShown(m)}</b><span>sequência</span></div><div class="stat"><b>${s.maxStreak}</b><span>recorde</span></div></div>
     <h3>Chutes até acertar</h3><div class="dist">${bars}</div>
-    <p class="sub" style="margin-top:12px">${MODES[m].daily ? 'Sequência = dias seguidos acertando.' : 'Sequência = rodadas seguidas sem desistir.'}</p>
+    <p class="sub" style="margin-top:12px">${MODES[m].daily ? 'Sequência é quantos dias seguidos cê acertou.' : 'Sequência é quantas rodadas seguidas cê acertou sem desistir.'}</p>
     <div class="m-actions"><button class="btn primary" type="button" data-act="close">Fechar</button></div>`);
 }
 function openHelp(){
-  B.openModal(`<h2>Quem é esse Pokémon?</h2><p class="sub">Descobre o Pokémon secreto. Chute quantas vezes quiser — cada chute mostra o quanto ele parece com o secreto.</p>
+  B.openModal(`<h2>Quem é esse Pokémon?</h2><p class="sub">Tem um Pokémon secreto. Digita o nome de qualquer Pokémon e chuta. Cada chute vira uma linha mostrando o quanto ele parece com o secreto. Chute é infinito, vai até acertar.</p>
     <h3>As cores</h3>
     <ul><li><span class="demo g">✓</span><span>Verde: igualzinho ao secreto.</span></li>
-    <li><span class="demo y">~</span><span>Amarelo: o secreto tem esse tipo, mas na outra posição (Tipo 1 ↔ Tipo 2).</span></li>
+    <li><span class="demo y">~</span><span>Amarelo: o secreto tem esse tipo, só que na outra coluna (Tipo 1 no lugar do Tipo 2 ou o contrário).</span></li>
     <li><span class="demo r">✗</span><span>Vermelho: não bate.</span></li>
-    <li><span class="demo r"><i class="arr up"></i></span><span>Seta pra cima: o valor do secreto é <b>maior</b>. Pra baixo: <b>menor</b>.</span></li></ul>
+    <li><span class="demo r"><i class="arr up"></i></span><span>Seta pra cima: o número do secreto é <b>maior</b>. Seta pra baixo: é <b>menor</b>.</span></li></ul>
     <h3>As colunas</h3>
-    <p><b>Ger.</b> geração (1–9) · <b>Tipo 1 / Tipo 2</b> (ou nenhum) · <b>Alt.</b> altura em metros · <b>Peso</b> em kg · <b>Cor</b> da Pokédex · <b>Evo</b> estágio de evolução (1, 2 ou 3). No celular os tipos vêm abreviados: FOG = Fogo, ÁGU = Água, PSÍ = Psíquico…</p>
+    <p><b>Ger</b> é a geração (1 a 9). <b>Tipo 1</b> e <b>Tipo 2</b> (no celular aparece T1 e T2 e o tipo vem abreviado: FOG é Fogo, ÁGU é Água). <b>Alt</b> é a altura em metros, <b>Peso</b> em kg, <b>Cor</b> é a cor oficial da Pokédex e <b>Evo</b> é o estágio de evolução (1, 2 ou 3).</p>
     <h3>Modos</h3>
-    <ul><li><span class="pill sun">Diário</span><span>Um Pokémon por dia, igual pra todo mundo.</span></li>
-    <li><span class="pill sun">Fácil</span><span>Diário só com as gerações 1 a 3.</span></li>
-    <li><span class="pill">Infinito</span><span>Sorteio aleatório, joga quanto quiser (XP pela metade).</span></li>
-    <li><span class="pill pink">Silhueta</span><span>Só a sombra, chute pelo nome. O clássico do intervalo do desenho.</span></li></ul>
+    <ul><li><span class="pill sun">Diário</span><span>Um Pokémon por dia, o mesmo pra todo mundo.</span></li>
+    <li><span class="pill sun">Fácil</span><span>Diário também, só com as gerações 1 a 3.</span></li>
+    <li><span class="pill">Infinito</span><span>Sorteia um atrás do outro, joga quanto quiser. Vale metade do XP.</span></li>
+    <li><span class="pill pink">Silhueta</span><span>Só aparece a sombra e cê chuta pelo nome, igual no intervalo do desenho.</span></li></ul>
     <h3>Dicas e XP</h3>
-    <p>Depois de 5 chutes errados libera a silhueta; depois de 10, a primeira letra. Cada dica custa 10 XP. Vitória vale até 50 XP (−3 por chute extra).</p>
-    <p>Teclado: digita, <kbd>↑</kbd> <kbd>↓</kbd> escolhe, <kbd>Enter</kbd> chuta, <kbd>/</kbd> volta pra busca.</p>
+    <p>Com 5 chutes errados libera a silhueta e com 10 libera a primeira letra (na Silhueta as dicas são os tipos e a primeira letra). Cada dica custa 10 XP. Acertar vale até 50 XP, e cada chute a mais tira 3.</p>
+    <p>No PC: digita, escolhe com <kbd>↑</kbd> <kbd>↓</kbd>, <kbd>Enter</kbd> chuta e <kbd>/</kbd> volta pra caixa de texto.</p>
     <div class="m-actions"><button class="btn primary" type="button" data-act="close">Bora!</button></div>`);
 }
 B.onAct('share', share);
@@ -763,7 +804,7 @@ const wide = matchMedia('(min-width: 880px)');
 const applyStack = () => B.setStack(wide.matches);
 (wide.addEventListener ? wide.addEventListener('change', applyStack) : wide.addListener(applyStack)); applyStack();
 
-if (!DEX.length){ B.say('A Pokédex não carregou. Recarrega a página, treinador.', 'dead', 60000); return; }
+if (!DEX.length){ B.say('a Pokédex não carregou mano, recarrega a página', 'dead', 60000); return; }
 const startMode = MODES[B.store.get(MODE_KEY)] ? B.store.get(MODE_KEY) : 'diario';
 S = load(startMode);
 if (S.won && !S.rewarded) reward(true);

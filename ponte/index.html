@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
-<link rel="stylesheet" href="../shared/base.css?v=2609241402">
+<link rel="stylesheet" href="../shared/base.css?v=2609242000">
 <style>
 :root{ --pt:#C3B1FF; --wood:#FFF7E6; --grain:rgba(122,84,40,.07); --water:#3FA7E0; --water2:#2A7FC0;
   --d0:var(--green); --d1:var(--orange); --d2:var(--sun); --d3:var(--cyan); --d4:#A99BFF; }
@@ -19,7 +19,10 @@
 .route{grid-area:route;min-width:0}
 .entry{grid-area:entry;min-width:0}
 .bridgewrap{grid-area:bridge;min-width:0;position:relative}
-#mascot .bg-bubble{min-height:52px}
+/* balão com altura fixa no celular: a fala muda e a entrada não pula (fala longa encolhe a letra) */
+#mascot .bg-bubble{height:78px;min-height:0;overflow:hidden}
+#mascot .bg-bubble p{max-height:100%;overflow:hidden}
+#mascot .bg-bubble.grow{height:auto}
 .legend{display:none}
 
 /* ---------- rota A → B ---------- */
@@ -33,7 +36,8 @@
 .rt-arrow .dash{stroke-dasharray:4 5;animation:dashmove 1s linear infinite}
 @keyframes dashmove{to{stroke-dashoffset:-9}}
 .infobar{display:flex;align-items:center;justify-content:center;gap:6px 12px;margin-top:6px;flex-wrap:wrap}
-.modechip{cursor:pointer;font-family:var(--chunky);background:var(--pt);color:var(--ink);letter-spacing:.03em}
+.modechip{position:relative;cursor:pointer;font-family:var(--chunky);background:var(--pt);color:var(--ink);letter-spacing:.03em}
+.modechip::after{content:"";position:absolute;inset:-10px -6px}
 .modechip.free{background:var(--cyan)}
 .cnt{font-family:var(--chunky);font-size:13px;color:var(--muted);white-space:nowrap}
 .cnt b{font-weight:400;color:var(--paper);font-size:17px;font-variant-numeric:tabular-nums}
@@ -42,14 +46,14 @@
 /* ---------- ponta + entrada ---------- */
 .tip{display:flex;flex-direction:column;gap:6px;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--pt);padding:9px 12px 10px}
 .tip-top{display:flex;align-items:baseline;gap:8px;min-width:0}
-.tip-lbl{flex:none;font-family:var(--chunky);font-size:11px;letter-spacing:.14em;color:#6b5a90}
+.tip-lbl{flex:none;font-family:var(--chunky);font-size:12px;letter-spacing:.1em;color:#6b5a90}
 .tip-w{min-width:0;font-family:var(--chunky);font-weight:400;font-size:22px;line-height:1.1;color:var(--violet);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .m-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
-.m-lbl{font-family:var(--chunky);font-size:11px;letter-spacing:.12em;color:#6b5a90;white-space:nowrap}
+.m-lbl{font-family:var(--chunky);font-size:12px;letter-spacing:.08em;color:#6b5a90;white-space:nowrap}
 .m-val{font-family:var(--chunky);font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.m-track{position:relative;height:18px;border:3px solid var(--ink);border-radius:99px;background:#eadff9;overflow:hidden}
+.m-track{position:relative;height:20px;border:3px solid var(--ink);border-radius:99px;background:#eadff9;overflow:hidden}
 .m-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--c,var(--d4));border-right:3px solid var(--ink);border-radius:0 99px 99px 0;transition:width .7s cubic-bezier(.3,1.4,.5,1),background-color .3s}
-.m-goal{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-family:var(--chunky);font-size:10px;letter-spacing:.08em;color:#6b5a90}
+.m-goal{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-family:var(--chunky);font-size:12px;line-height:1;letter-spacing:.06em;color:#6b5a90}
 .guess{display:flex;gap:8px;margin-top:10px}
 .guess input{flex:1;min-width:0;height:54px;border:3px solid var(--ink);border-radius:14px;background:var(--paper);color:var(--ink);font-family:var(--chunky);font-size:22px;letter-spacing:.02em;padding:0 14px;box-shadow:0 4px 0 var(--ink);outline:none;transition:box-shadow .12s}
 .guess input::placeholder{color:#9a8bbb;font-family:var(--body);font-weight:800;font-size:15.5px;letter-spacing:0}
@@ -63,10 +67,10 @@
 .msg b{color:var(--paper)}
 .actions{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
 .actions .sp{flex:1}
-.btn.mini{position:relative;height:38px;padding:0 12px;font-size:14px;border-radius:11px;box-shadow:0 3px 0 var(--ink);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn.mini{position:relative;height:40px;padding:0 12px;font-size:14px;border-radius:11px;box-shadow:0 3px 0 var(--ink);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
 .btn.mini svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 .btn.mini:active{box-shadow:0 0 0 var(--ink)}
-.btn.mini .tag{position:absolute;top:-9px;right:-6px;font-family:var(--chunky);font-weight:400;font-size:11px;line-height:1.2;background:var(--ink);color:var(--sun);border:2px solid var(--sun);border-radius:99px;padding:0 6px}
+.btn.mini .tag{position:absolute;top:-9px;right:-6px;font-family:var(--chunky);font-weight:400;font-size:12px;line-height:1.2;background:var(--ink);color:var(--sun);border:2px solid var(--sun);border-radius:99px;padding:0 6px}
 .donecard{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--pink);padding:10px 12px}
 .donecard .dc-txt{flex:1 1 180px;font-size:15px;line-height:1.3}
 .donecard .dc-txt b{font-family:var(--chunky);font-weight:400;font-size:18px;color:var(--violet)}
@@ -74,16 +78,16 @@
 
 /* ---------- a ponte ---------- */
 .b-head{display:flex;justify-content:space-between;align-items:baseline;margin:4px 2px 8px}
-.b-head span{font-family:var(--chunky);font-size:11px;letter-spacing:.18em;color:var(--muted)}
+.b-head span{font-family:var(--chunky);font-size:12px;letter-spacing:.12em;color:var(--muted)}
 .bridge{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;align-items:stretch}
 .plank{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;min-height:52px;padding:6px 12px 6px 8px;
   background:repeating-linear-gradient(90deg,transparent 0 22px,var(--grain) 22px 24px),var(--wood);color:var(--ink);border:3px solid var(--ink);border-left:10px solid var(--c,var(--ink));border-radius:12px;box-shadow:0 4px 0 var(--ink)}
 .plank .pk-n{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--paper);font-family:var(--chunky);font-size:13px;line-height:1}
 .plank .pk-w{min-width:0;font-family:var(--chunky);font-size:20px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.plank .pk-w em{font-style:normal;font-family:var(--chunky);font-size:10px;letter-spacing:.08em;color:var(--paper);background:var(--violet);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:3px}
+.plank .pk-w em{font-style:normal;font-family:var(--chunky);font-size:12px;letter-spacing:.06em;color:var(--paper);background:var(--violet);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:3px}
 .plank .pk-d{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:84px}
 .plank .pk-d small{font-family:var(--chunky);font-size:13px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
-.plank .pk-d small i{font-style:normal;font-size:10px;letter-spacing:.06em;color:#6b5a90}
+.plank .pk-d small i{font-style:normal;font-size:12px;letter-spacing:.03em;color:#6b5a90}
 .plank .pk-bar{display:block;width:84px;height:8px;border:2px solid var(--ink);border-radius:99px;background:#eadff9;overflow:hidden}
 .plank .pk-bar i{display:block;height:100%;background:var(--c,var(--d4))}
 .plank.start{--c:var(--cyan)}
@@ -91,7 +95,7 @@
 .plank.goal{--c:var(--sun);background:repeating-linear-gradient(-45deg,transparent 0 10px,rgba(255,210,63,.18) 10px 20px),var(--wood);border-style:dashed;border-left-style:solid}
 .plank.goal .pk-n{background:var(--sun);color:var(--ink);border:2px solid var(--ink)}
 .plank.goal.reached{border-style:solid;background:var(--sun);box-shadow:0 4px 0 var(--ink),0 0 0 4px rgba(61,220,132,.6)}
-.plank.hinted .pk-w::after{content:"dica";font-family:var(--chunky);font-size:10px;letter-spacing:.06em;color:var(--ink);background:var(--cyan);border:1.5px solid var(--ink);border-radius:6px;padding:0 5px;margin-left:6px;vertical-align:3px}
+.plank.hinted .pk-w::after{content:"dica";font-family:var(--chunky);font-size:12px;letter-spacing:.06em;color:var(--ink);background:var(--cyan);border:1.5px solid var(--ink);border-radius:6px;padding:0 5px;margin-left:6px;vertical-align:3px}
 .plank.last{box-shadow:0 4px 0 var(--ink),0 0 0 3px var(--pt)}
 
 
@@ -99,7 +103,7 @@
 .link{position:relative;height:28px;display:flex;align-items:center;justify-content:center}
 .link::before,.link::after{content:"";position:absolute;top:-2px;bottom:-2px;width:4px;background:#C9A06A;border-left:1.5px solid var(--ink);border-right:1.5px solid var(--ink)}
 .link::before{left:22%}.link::after{right:22%}
-.link span{position:relative;z-index:1;font-family:var(--chunky);font-size:11.5px;letter-spacing:.04em;color:var(--ink);background:var(--c,var(--paper));border:2px solid var(--ink);border-radius:99px;padding:0 8px;line-height:1.5}
+.link span{position:relative;z-index:1;font-family:var(--chunky);font-size:12px;letter-spacing:.04em;color:var(--ink);background:var(--c,var(--paper));border:2px solid var(--ink);border-radius:99px;padding:0 8px;line-height:1.5}
 .link.strong{--c:var(--green)} .link.ok{--c:var(--paper)} .link.weak{--c:var(--orange)}
 .river{position:relative;height:62px;margin:4px 0;border:3px solid var(--ink);border-radius:14px;overflow:hidden;
   background:radial-gradient(ellipse 18px 6px at 20px 16px,rgba(255,255,255,.45) 55%,transparent 60%) 0 0/60px 30px,
@@ -163,6 +167,7 @@
   .game{grid-template-columns:minmax(0,640px) 320px;justify-content:center;column-gap:30px;row-gap:12px;align-items:start;
     grid-template-areas:"bar bar" "route side" "entry side" "bridge bridge";grid-template-rows:auto auto 1fr auto}
   .side{grid-row:2/4;position:sticky;top:12px}
+  #mascot .bg-bubble{height:auto;min-height:112px}
   .legend{display:block}
   .route{padding:12px 16px}
   .rt-w{font-size:40px}
@@ -181,7 +186,7 @@
   .link{height:auto;width:38px;align-self:stretch;min-height:52px}
   .link::before,.link::after{top:auto;bottom:auto;left:-2px;right:-2px;width:auto;height:4px;border:0;border-top:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink)}
   .link::before{top:34%}.link::after{top:auto;bottom:34%}
-  .link span{font-size:11px;padding:0 6px}
+  .link span{font-size:12px;padding:0 6px}
   .bridge > .river{flex:1 1 100px;min-width:100px;height:70px;margin:0 6px}
   .river b{font-size:12px;white-space:normal;text-align:center;line-height:1.1;padding:0 6px}
 }
@@ -197,16 +202,16 @@
 .scoreline .pill{margin-left:6px;vertical-align:2px}
 .route-big{margin:10px 0 0;text-align:center;font-family:var(--display);font-size:34px;letter-spacing:.04em;line-height:1.05;color:var(--sun);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:3px 3px 0 var(--violet);overflow-wrap:anywhere}
 .stat-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
-.stat-grid.four .stat span{font-size:10px;letter-spacing:.02em}
+.stat-grid.four .stat span{font-size:12px;letter-spacing:0}
 .bg-card .chips{margin-top:4px}
 .note{margin:12px 0 0;font-size:13.5px!important;background:#F4EBFF;border:2px dashed #BBA7E4;border-radius:10px;padding:7px 10px}
 .share-ta{width:100%;min-height:110px;margin-top:10px;border:2.5px solid var(--ink);border-radius:10px;padding:8px;font:inherit;font-size:14px;color:var(--ink);background:#fff}
 /* exemplo animado da ajuda */
 .demo{margin-top:10px;background:var(--night);border:3px solid var(--ink);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:0}
 .demo .d-pk{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--wood);border:2.5px solid var(--ink);border-left:8px solid var(--c,var(--d4));border-radius:9px;padding:3px 10px;font-family:var(--chunky);font-size:16px;color:var(--ink)}
-.demo .d-pk small{font-family:var(--chunky);font-size:11.5px;color:#6b5a90}
+.demo .d-pk small{font-family:var(--chunky);font-size:12px;color:#6b5a90}
 .demo .d-ln{height:18px;display:flex;justify-content:center;align-items:center}
-.demo .d-ln span{font-family:var(--chunky);font-size:10.5px;color:var(--ink);background:var(--paper);border:2px solid var(--ink);border-radius:99px;padding:0 7px;line-height:1.3}
+.demo .d-ln span{font-family:var(--chunky);font-size:12px;color:var(--ink);background:var(--paper);border:2px solid var(--ink);border-radius:99px;padding:0 7px;line-height:1.3}
 .demo .d-no{align-self:center;margin:2px 0;font-family:var(--chunky);font-size:12px;color:var(--paper);background:var(--red);border:2px solid var(--ink);border-radius:8px;padding:1px 8px}
 .demo > *{animation:demo 9s ease infinite}
 .demo > :nth-child(2){animation-delay:.0s}
@@ -224,18 +229,18 @@
     <div class="legend" aria-hidden="true">
       <h3>Distância até o alvo</h3>
       <ul>
-        <li><span class="sw" style="--c:var(--d0)"></span>até 400: liga! A ponte fecha</li>
+        <li><span class="sw" style="--c:var(--d0)"></span>até 400: liga, a ponte fecha</li>
         <li><span class="sw" style="--c:var(--d1)"></span>até 1.000: pertinho</li>
         <li><span class="sw" style="--c:var(--d2)"></span>até 3.000: morno</li>
         <li><span class="sw" style="--c:var(--d3)"></span>até 7.000: frio</li>
         <li><span class="sw" style="--c:var(--d4)"></span>mais que isso: gelado</li>
       </ul>
-      <p class="keys">O número é a posição do alvo na lista de palavras parecidas com a tua. Menor = mais perto. <kbd>Enter</kbd> coloca a tábua.</p>
+      <p class="keys">O número é a posição do alvo na lista de palavras parecidas com a tua. Quanto menor, mais perto. <kbd>Enter</kbd> bota a tábua.</p>
     </div>
   </aside>
 
   <section class="route" id="route" aria-label="Desafio">
-    <div class="rt"><span class="rt-w a" id="rtA">…</span><span class="rt-arrow" aria-hidden="true"><svg viewBox="0 0 70 28"><path class="dash" d="M4 14h56"/><path d="m52 6 10 8-10 8"/></svg></span><span class="rt-w b" id="rtB">…</span></div>
+    <div class="rt"><span class="rt-w a" id="rtA">...</span><span class="rt-arrow" aria-hidden="true"><svg viewBox="0 0 70 28"><path class="dash" d="M4 14h56"/><path d="m52 6 10 8-10 8"/></svg></span><span class="rt-w b" id="rtB">...</span></div>
     <div class="infobar">
       <button class="chip modechip" id="modeChip" type="button" title="Trocar modo">DIÁRIO</button>
       <span class="cnt par">par <b id="nPar">–</b></span>
@@ -246,15 +251,15 @@
 
   <section class="entry" id="entry">
     <div class="tip" id="tip" aria-live="polite">
-      <div class="tip-top"><span class="tip-lbl">PONTA DA PONTE</span><b class="tip-w" id="tipW">…</b></div>
+      <div class="tip-top"><span class="tip-lbl">PONTA DA PONTE</span><b class="tip-w" id="tipW">...</b></div>
       <div>
-        <div class="m-head"><span class="m-lbl">DISTÂNCIA ATÉ O ALVO</span><span class="m-val" id="mVal">calculando…</span></div>
+        <div class="m-head"><span class="m-lbl">DISTÂNCIA ATÉ O ALVO</span><span class="m-val" id="mVal">calculando...</span></div>
         <div class="m-track"><i class="m-fill" id="mFill"></i><span class="m-goal">LIGA</span></div>
       </div>
     </div>
     <form class="guess" id="form" autocomplete="off">
-      <input id="inp" type="text" maxlength="32" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" placeholder="carregando…" aria-label="Próxima palavra da ponte" disabled>
-      <button class="btn primary go" id="go" type="submit" disabled aria-label="Colocar tábua"><svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg><span>Pôr</span></button>
+      <input id="inp" type="text" maxlength="32" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" placeholder="carregando..." aria-label="Próxima palavra da ponte" disabled>
+      <button class="btn primary go" id="go" type="submit" disabled aria-label="Colocar tábua"><svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg><span>Vai</span></button>
     </form>
     <p class="msg" id="msg" role="status"></p>
     <div class="actions" id="actions">
@@ -276,7 +281,7 @@
     <div class="burst" id="burst" aria-hidden="true"></div>
     <div class="loader" id="loader">
       <h2>CARREGANDO AS TÁBUAS</h2>
-      <p id="ldSub">São 16 mil palavras. Se você já jogou Contexto, é rapidinho.</p>
+      <p id="ldSub">São 16 mil palavras. Se cê já jogou o Contexto é rapidinho</p>
       <div class="ld-track"><i class="ld-fill" id="ldFill"></i></div>
       <span class="ld-txt" id="ldTxt">0%</span>
     </div>
@@ -284,11 +289,11 @@
   </section>
 </div>
 
-<script src="../shared/falas.js?v=2609241402"></script>
-<script src="../shared/bugado.js?v=2609241402"></script>
-<script src="../contexto/vocab.js?v=2609241402"></script>
-<script src="pares.js?v=2609241402"></script>
-<script src="falas-ponte.js?v=2609241402"></script>
+<script src="../shared/falas.js?v=2609242000"></script>
+<script src="../shared/bugado.js?v=2609242000"></script>
+<script src="../contexto/vocab.js?v=2609242000"></script>
+<script src="pares.js?v=2609242000"></script>
+<script src="falas-ponte.js?v=2609242000"></script>
 <script>
 (() => {
 const B = Bugado, $ = s => document.querySelector(s), RM = B.RM;
@@ -316,7 +321,7 @@ const G = B.game('ponte');
 const fmt = n => Number(n).toLocaleString('pt-BR');
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const bw = w => `<b>${esc(w)}</b>`;
-const q = w => `‘${esc(w)}’`;
+const q = w => `<b>${esc(w)}</b>`;
 const tickCh = new MessageChannel(), tickQ = [];
 tickCh.port1.onmessage = () => { const f = tickQ.shift(); if (f) f(); };
 const tick = () => new Promise(res => { tickQ.push(res); tickCh.port2.postMessage(0); });
@@ -391,7 +396,7 @@ function posIn(sims, w, x){
 /* ================= entrada ================= */
 const RULES = [['oes','ao'],['aes','ao'],['aos','ao'],['ns','m'],['ais','al'],['eis','el'],['eis','il'],['ois','ol'],['uis','ul'],['is','il'],['res','r'],['zes','z'],['ses','s'],['les','l'],['s','']];
 function resolve(raw){
-  const s = String(raw).toLowerCase().trim().replace(/^[\s.,;:!?"'“”‘’()]+|[\s.,;:!?"'“”‘’()]+$/g, '');
+  const s = String(raw).toLowerCase().trim().replace(/^[\s.,;:!?"'\u201C\u201D\u2018\u2019()]+|[\s.,;:!?"'\u201C\u201D\u2018\u2019()]+$/g, '');
   if (!s) return { err:'empty' };
   if (!/^[a-zà-öø-ÿ-]+$/.test(s)) return { err:'invalid', s };
   if (EXACT.has(s) && EXACT.get(s) < N) return { i:EXACT.get(s), s };
@@ -472,22 +477,22 @@ function render(){
   $('#tipW').textContent = lw;
   const ld = ready ? (S.done && S.won ? 1 : dists[dists.length - 1]) : null;
   const fill = $('#mFill');
-  if (!ld){ fill.style.width = '0%'; $('#mVal').textContent = ready ? '—' : 'calculando…'; }
+  if (!ld){ fill.style.width = '0%'; $('#mVal').textContent = ready ? '-' : 'calculando...'; }
   else {
     const bd = bandOf(ld);
     fill.style.width = meterPct(ld).toFixed(1) + '%'; fill.style.setProperty('--c', bd[2]);
     $('#mVal').innerHTML = S.done && S.won ? '<b>CHEGOU!</b>' : `<b>${fmt(ld)}</b> · ${bd[1]}`;
   }
-  inp.placeholder = !ready ? 'carregando…' : `o que tem a ver com “${lw}”?`;
+  inp.placeholder = !ready ? 'carregando...' : `o que tem a ver com ${lw}?`;
   if (S.done){
     const p = steps(), diff = p - S.par;
     $('#dcTxt').innerHTML = S.won
       ? `Ponte pronta em <b>${p}</b> passo${p === 1 ? '' : 's'} (par ${S.par}: ${golf(diff)})${S.hints ? ` com ${S.hints} dica${S.hints > 1 ? 's' : ''}` : ''}.`
-      : `Ponte caiu. Um caminho era ${S.caminho.map(bw).join(' → ')}.`;
+      : `A ponte caiu. Dava pra ir por ${S.caminho.map(bw).join(' → ')}`;
     $('#bNext').textContent = daily ? 'Jogar livre' : 'Nova ponte';
   }
   // a ponte
-  if (!ready){ box.innerHTML = '<div class="thinking">Medindo as distâncias…</div>'; return; }
+  if (!ready){ box.innerHTML = '<div class="thinking">Medindo as distâncias...</div>'; return; }
   let h = plankHTML(S.a, 'A', dists[0], 'start' + (S.chain.length || S.done ? '' : ' last'));
   const ci = chainIdx();
   S.chain.forEach((w, k) => {
@@ -520,16 +525,16 @@ async function submit(){
   if (!ready || busy || !S || S.done) return;
   const raw = inp.value, res = resolve(raw);
   if (res.err === 'empty'){ anim(form, 'shake'); return; }
-  if (res.err === 'invalid'){ anim(form, 'shake'); B.sfx.meh(); setMsg('Uma palavra só, só com letras.'); say('pnInvalida', null, 'smug'); return; }
+  if (res.err === 'invalid'){ anim(form, 'shake'); B.sfx.meh(); setMsg('Manda uma palavra só, sem número nem espaço'); say('pnInvalida', null, 'smug'); return; }
   if (res.err === 'unknown'){
-    anim(form, 'shake'); B.sfx.err(); B.glitch(); setMsg(`Não conheço “${esc(res.s)}”. Não contou como erro.`);
+    anim(form, 'shake'); B.sfx.err(); B.glitch(); setMsg(`Não conheço ${q(res.s)}. Não contou como erro`);
     say('pnDesconhecida', { palavra:bw(res.s) }, 'smug'); inp.select(); return;
   }
   const i = res.i, w = VOCAB[i], prev = lastIdx(), de = VOCAB[prev];
   const vars = { palavra:bw(w), de:bw(de), a:bw(S.a), b:bw(S.b), k:fmt(K), par:S.par, orig: res.plural ? bw(res.s) : '' };
-  if (STOP.has(w)){ anim(form, 'shake'); B.sfx.meh(); setMsg(`“${esc(w)}” é palavra de ligação. Não vale como tábua.`); say('pnFuncao', vars, 'smug'); inp.select(); return; }
+  if (STOP.has(w)){ anim(form, 'shake'); B.sfx.meh(); setMsg(`${q(w)} é palavra de ligação, não vale como tábua`); say('pnFuncao', vars, 'smug'); inp.select(); return; }
   if (chainIdx().includes(i)){
-    anim(form, 'shake'); B.sfx.meh(); setMsg(`${q(w)} já tá na ponte.`); say('pnRepetida', vars, 'smug'); inp.select();
+    anim(form, 'shake'); B.sfx.meh(); setMsg(`${q(w)} já tá na ponte`); say('pnRepetida', vars, 'smug'); inp.select();
     const el = box.querySelector(`.plank[data-w="${CSS.escape(w)}"]`); if (el){ el.scrollIntoView({ block:'nearest', behavior: RM ? 'auto' : 'smooth' }); anim(el, 'flash'); }
     return;
   }
@@ -538,7 +543,7 @@ async function submit(){
   if (p > K){
     S.tries++; S.miss++; save(); render();
     anim(form, 'shake'); splash(w);
-    setMsg(`${q(w)} ficou na posição <b>${fmt(p)}</b> de ${q(de)}: ${p <= K * 2 ? 'quase!' : 'longe demais'}, precisa ser até ${fmt(K)}.`);
+    setMsg(`${q(w)} ficou em <b>#${fmt(p)}</b> na lista de ${q(de)}. ${p <= K * 2 ? 'Quase! Precisa' : 'Longe demais, precisa'} ser até #${fmt(K)}`);
     inp.select();
     if (i === IB){ B.sfx.meh(); say('pnAlvoCedo', vars, 'smug', 6000); }
     else if ([3,5,8,12,18,25].includes(S.miss)){ B.sfx.err(); vars.k = S.miss; say('pnTentativas', vars, 'shock', 6000); }
@@ -642,7 +647,7 @@ function askGiveUp(){
   B.openModal(`
     <h2>Largar a obra?</h2>
     <p class="sub">${B.line('pnDesistirPergunta', { b:bw(S.b) })}</p>
-    <p>Eu mostro um caminho de ${bw(S.a)} até ${bw(S.b)}. ${S.mode === 'daily' ? 'O diário de hoje conta como perdido.' : 'Conta como desistência.'}</p>
+    <p>Eu te mostro um caminho de ${bw(S.a)} até ${bw(S.b)}. ${S.mode === 'daily' ? 'O diário de hoje conta como perdido.' : 'Conta como desistência.'}</p>
     <div class="m-actions">
       <button class="btn primary" type="button" data-act="close">Nada, vou continuar</button>
       <button class="btn hot" type="button" data-act="giveup">Desisto, mostra</button>
@@ -706,7 +711,7 @@ function showResult(){
     ${title}
     <p class="sub">${B.line(S.won ? 'vitoriaGeral' : 'derrotaGeral')}</p>
     <div class="route-big">${esc(S.a.toUpperCase())} → ${esc(S.b.toUpperCase())}</div>
-    <p class="scoreline">${S.won ? `Par ${S.par}: você fez em ${p} <span class="pill ${diff <= 0 ? '' : diff === 1 ? 'sun' : 'pink'}">${golf(diff)}</span>` : `Par ${S.par}: desistiu com ${p} passo${p === 1 ? '' : 's'}`}</p>
+    <p class="scoreline">${S.won ? `Par ${S.par}, cê fez em ${p} <span class="pill ${diff <= 0 ? '' : diff === 1 ? 'sun' : 'pink'}">${golf(diff)}</span>` : `Par ${S.par}, desistiu com ${p} passo${p === 1 ? '' : 's'}`}</p>
     <div class="stat-grid four">
       <div class="stat"><b>${p}</b><span>passos</span></div>
       <div class="stat"><b>${S.tries}</b><span>erros</span></div>
@@ -714,10 +719,10 @@ function showResult(){
       ${S.won ? `<div class="stat"><b>+${S.xp}</b><span>XP</span></div>` : daily ? `<div class="stat"><b>${G.dLastWin >= S.day - 1 ? G.dStreak : 0}</b><span>seguidos</span></div>` : `<div class="stat"><b>${lvl.lvl}</b><span>nível</span></div>`}
     </div>
     <h3>Tua ponte</h3>
-    <div class="chips">${chipsHTML(S.won ? mine : [...mine, '…', S.b], S.hinted)}</div>
+    <div class="chips">${chipsHTML(S.won ? mine : [...mine, '...', S.b], S.hinted)}</div>
     <h3>Um caminho no par (${S.par})</h3>
     <div class="chips">${chipsHTML(S.caminho)}</div>
-    ${S.min < S.par ? `<p class="note">Segredo: dá pra fazer em <b>${S.min}</b> usando palavras menos comuns. ${S.won && p <= S.min ? 'E você achou!' : 'Fica o desafio.'}</p>` : ''}
+    ${S.min < S.par ? `<p class="note">Segredo: dá pra fazer em <b>${S.min}</b> usando palavra menos comum. ${S.won && p <= S.min ? 'E cê achou, que isso' : 'Fica o desafio'}</p>` : ''}
     <div class="m-actions">
       <button class="btn primary" type="button" data-act="share">Copiar resultado</button>
       <button class="btn cool" type="button" data-act="next">${daily ? 'Jogar livre' : 'Nova ponte'}</button>
@@ -726,7 +731,7 @@ function showResult(){
 }
 B.onAct('share', async () => {
   const t = shareText();
-  if (await B.copyText(t)) B.toast('Copiado!', 'Cola no grupo. Sem entregar o caminho, hein.');
+  if (await B.copyText(t)) B.toast('Copiado!', 'Cola no grupo, só não entrega o caminho');
   else B.openModal(`<h2>Copia aí</h2><p class="sub">Teu navegador não deixou eu copiar sozinho.</p><textarea class="share-ta" readonly>${esc(t)}</textarea><div class="m-actions"><button class="btn primary" type="button" data-act="close">Fechar</button></div>`);
 });
 B.onAct('next', () => { B.closeModal(true); openMode('livre', { fresh:true }); });
@@ -788,11 +793,11 @@ function showModes(){
   const lGoing = l && !l.done && ((l.chain && l.chain.length) || l.tries);
   B.openModal(`
     <h2>Escolhe o modo</h2>
-    <p class="sub">O diário é igual pra todo mundo. O livre sorteia quantas pontes você aguentar.</p>
+    <p class="sub">O diário é igual pra todo mundo. O livre sorteia quantas pontes cê aguentar.</p>
     <div class="modes">
-      <button class="btn mode ${S && S.mode === 'daily' ? 'cur' : ''}" type="button" data-act="mode" data-m="daily" style="--c:var(--pt)"><b>Diário #${day}</b><span>Uma ponte por dia. Compara o placar com os amigos.</span><em>${dStatus}</em></button>
-      <button class="btn mode ${S && S.mode === 'livre' ? 'cur' : ''}" type="button" data-act="mode" data-m="${lGoing ? 'livre' : 'livrenew'}" style="--c:var(--cyan)"><b>Livre</b><span>${lGoing ? `Continua ${esc(l.a)} → ${esc(l.b)}.` : 'Ponte sorteada. Vale metade do XP.'}</span><em>${lGoing ? `${l.chain.length} passos` : 'novo'}</em></button>
-      ${lGoing ? '<button class="btn mode" type="button" data-act="mode" data-m="livrenew" style="--c:var(--sun)"><b>Livre: ponte nova</b><span>Larga a atual (não conta como derrota) e sorteia outra.</span><em>novo</em></button>' : ''}
+      <button class="btn mode ${S && S.mode === 'daily' ? 'cur' : ''}" type="button" data-act="mode" data-m="daily" style="--c:var(--pt)"><b>Diário #${day}</b><span>Uma ponte por dia, depois compara com os amigos.</span><em>${dStatus}</em></button>
+      <button class="btn mode ${S && S.mode === 'livre' ? 'cur' : ''}" type="button" data-act="mode" data-m="${lGoing ? 'livre' : 'livrenew'}" style="--c:var(--cyan)"><b>Livre</b><span>${lGoing ? `Continua ${esc(l.a)} → ${esc(l.b)}` : 'Ponte sorteada, vale metade do XP'}</span><em>${lGoing ? `${l.chain.length} passos` : 'novo'}</em></button>
+      ${lGoing ? '<button class="btn mode" type="button" data-act="mode" data-m="livrenew" style="--c:var(--sun)"><b>Livre: ponte nova</b><span>Larga a atual (não conta como derrota) e sorteia outra</span><em>novo</em></button>' : ''}
     </div>
     <div class="m-actions"><button class="btn" type="button" data-act="close">Voltar</button></div>`);
 }
@@ -804,12 +809,12 @@ B.onAct('mode', b => {
 
 function showStats(){
   const avg = G.wins ? G.sumDiff / G.wins : null;
-  const avgTxt = avg === null ? '—' : (avg > 0 ? '+' : '') + avg.toFixed(1).replace('.', ',');
+  const avgTxt = avg === null ? '-' : (avg > 0 ? '+' : '') + avg.toFixed(1).replace('.', ',');
   const day = B.dayNumber(), streak = G.dLastWin >= day - 1 ? G.dStreak : 0;
   const today = G.lastDaily && G.lastDaily.day === day ? (G.lastDaily.won ? `feito em ${G.lastDaily.passos}` : 'perdido') : 'pendente';
   B.openModal(`
     <h2>Tua ficha na Ponte</h2>
-    <p class="sub">Diário de hoje: <b>${today}</b>.</p>
+    <p class="sub">Diário de hoje: <b>${today}</b></p>
     <div class="stat-grid">
       <div class="stat"><b>${G.played}</b><span>jogos</span></div>
       <div class="stat"><b>${G.wins || 0}</b><span>pontes</span></div>
@@ -822,13 +827,13 @@ function showStats(){
       <div class="stat"><b>${streak}</b><span>diários seguidos</span></div>
       <div class="stat"><b>${G.dMax}</b><span>maior sequência</span></div>
     </div>
-    <p style="margin-top:14px">${!G.wins ? 'Nenhuma ponte ainda. Todo engenheiro começa com um palito de picolé.' : avg <= 0 ? 'Média no par ou abaixo. Tá construindo melhor que eu. Não gostei.' : avg <= 1 ? 'Um passinho acima do par, em média. Dá pra apertar.' : 'Tuas pontes são… panorâmicas. Bonitas, mas compridas.'}</p>
+    <p style="margin-top:14px">${!G.wins ? 'Nenhuma ponte ainda. Todo engenheiro começa no palito de picolé' : avg <= 0 ? 'Média no par ou abaixo, tá construindo melhor que eu. Não gostei' : avg <= 1 ? 'Na média um passinho acima do par, dá pra apertar' : 'Tuas pontes são panorâmicas KKKK bonitas, mas compridas'}</p>
     <div class="m-actions"><button class="btn primary" type="button" data-act="close">Fechar</button></div>`);
 }
 function showHelp(){
   B.openModal(`
-    <h2>Ponte pra quem nunca jogou</h2>
-    <p class="sub">Você recebe duas palavras que não têm nada a ver. Tua missão: ligar uma na outra, palavra por palavra.</p>
+    <h2>Como joga a Ponte</h2>
+    <p class="sub">Cê recebe duas palavras que não têm nada a ver uma com a outra. O jogo é ligar uma na outra, uma palavra de cada vez.</p>
     <div class="demo" aria-label="Exemplo: de gato até pizza">
       <div class="d-pk" style="--c:var(--d4)">gato <small>alvo 6.002</small></div>
       <div class="d-ln" style="animation-delay:.8s"><span>#7</span></div>
@@ -841,25 +846,25 @@ function showHelp(){
     </div>
     <h3>A regra</h3>
     <ul>
-      <li><span class="tag2">1</span><span><b>Cada palavra tem que ter a ver com a anterior.</b> Por baixo dos panos: ela precisa estar entre as <b>${fmt(K)}</b> palavras mais parecidas com a anterior (numa fila de 16 mil, por <b>sentido</b>).</span></li>
-      <li><span class="tag2" style="--c:var(--orange)">2</span><span>Se não tiver, a tábua cai no rio e eu digo a posição dela (tipo “#2.345, precisa até ${fmt(K)}”). Não perde nada, só conta um erro.</span></li>
-      <li><span class="tag2" style="--c:var(--green)">3</span><span>Quando o <b>alvo</b> ficar entre as ${fmt(K)} mais parecidas da tua última palavra, a ponte fecha sozinha. Vitória!</span></li>
+      <li><span class="tag2">1</span><span><b>Cada palavra que cê digita tem que ter a ver com a anterior.</b> Na prática: ela tem que tá entre as <b>${fmt(K)}</b> palavras mais parecidas com a anterior (de 16 mil, pelo <b>sentido</b>).</span></li>
+      <li><span class="tag2" style="--c:var(--orange)">2</span><span>Se não tiver, a tábua cai no rio e eu falo a posição dela (tipo #2.345, e precisava ser até #${fmt(K)}). Não perde nada, só conta um erro.</span></li>
+      <li><span class="tag2" style="--c:var(--green)">3</span><span>Quando o <b>alvo</b> tiver entre as ${fmt(K)} mais parecidas com tua última palavra, a ponte fecha sozinha e cê ganha.</span></li>
     </ul>
     <h3>A distância até o alvo</h3>
     <ul>
-      <li><span class="tag2" style="--c:var(--pt)">NÚMERO</span><span>Embaixo de cada tábua aparece a posição do alvo na lista da palavra. Menor = mais perto. Chegou a ${fmt(K)}? Liga.</span></li>
+      <li><span class="tag2" style="--c:var(--pt)">NÚMERO</span><span>Cada tábua mostra em que posição o alvo tá na lista dela. Quanto menor, mais perto. Chegou em ${fmt(K)}, liga.</span></li>
       <li><span class="tag2" style="--c:var(--d0)">CORES</span><span>Verde liga, laranja pertinho, amarelo morno, azul frio, lilás gelado.</span></li>
     </ul>
     <h3>O placar (tipo golfe)</h3>
     <ul>
-      <li><span class="tag2" style="--c:var(--sun)">PAR</span><span>É quantos passos eu levo usando palavras do dia a dia. Fez igual: <b>par</b>. Um a menos: <b>birdie</b>. Dois: <b>águia</b>. A mais: <b>bogey</b>.</span></li>
-      <li><span class="tag2" style="--c:var(--cyan)">DICA</span><span>Eu coloco uma palavra que chega mais perto do alvo. Custa XP.</span></li>
+      <li><span class="tag2" style="--c:var(--sun)">PAR</span><span>É quantos passos eu levo usando palavra do dia a dia. Fez igual: <b>par</b>. Um a menos: <b>birdie</b>. Dois a menos: <b>águia</b>. Passou: <b>bogey</b>.</span></li>
+      <li><span class="tag2" style="--c:var(--cyan)">DICA</span><span>Eu boto uma palavra que chega mais perto do alvo. Custa XP.</span></li>
       <li><span class="tag2" style="--c:#fff">DESFAZER</span><span>Tira a última tábua. É de graça, usa sem culpa.</span></li>
     </ul>
     <h3>Truques</h3>
     <ul>
-      <li><span class="tag2" style="--c:#FFF1B8">!</span><span>Pensa em onde a coisa fica, pra que serve, quem usa, do que é feita. Palavras comuns ligam mais fácil.</span></li>
-      <li><span class="tag2" style="--c:#FFF1B8">!</span><span>Plural e acento tanto faz. Palavra de ligação (que, para, com…) não vale.</span></li>
+      <li><span class="tag2" style="--c:#FFF1B8">!</span><span>Pensa onde a coisa fica, pra que serve, quem usa, do que é feita. Palavra comum liga mais fácil.</span></li>
+      <li><span class="tag2" style="--c:#FFF1B8">!</span><span>Plural e acento tanto faz. Palavra de ligação (que, para, com...) não vale.</span></li>
     </ul>
     <div class="m-actions"><button class="btn primary" type="button" data-act="close">Bora construir</button></div>`);
 }
@@ -889,13 +894,24 @@ B.mountMascot($('#mascot'), { pokeCat:'cutucarPonte' });
 const wide = matchMedia('(min-width:880px)');
 const applyStack = () => B.setStack(wide.matches);
 applyStack(); wide.addEventListener('change', applyStack);
+/* balão de altura fixa no celular: fala comprida encolhe a letra (até 12px) em vez de empurrar a ponte */
+const bubble = document.querySelector('#mascot .bg-bubble'), bubbleP = bubble && bubble.querySelector('p');
+function fitBubble(){
+  if (!bubbleP) return;
+  bubbleP.style.fontSize = ''; bubbleP.style.lineHeight = ''; bubble.classList.remove('grow');
+  if (wide.matches) return;
+  let fs = parseFloat(getComputedStyle(bubbleP).fontSize), g = 0;
+  while (bubbleP.scrollHeight > bubbleP.clientHeight + 1 && fs > 12 && g++ < 8){ fs -= .5; bubbleP.style.fontSize = fs + 'px'; bubbleP.style.lineHeight = '1.2'; }
+  if (bubbleP.scrollHeight > bubbleP.clientHeight + 1) bubble.classList.add('grow');
+}
+if (bubbleP) new MutationObserver(fitBubble).observe(bubbleP, { childList: true, characterData: true, subtree: true });
 const firstTime = !B.profile().seen.ponte;
 if (firstTime){ B.profile().seen.ponte = true; B.saveProfile(); $('#bHelp').classList.add('pulse'); }
 
 let loadTalk = null;
 async function boot(){
   loaderEl.hidden = false; box.hidden = true;
-  $('#ldSub').textContent = 'São 16 mil palavras. Se você já jogou Contexto, é rapidinho.';
+  $('#ldSub').textContent = 'São 16 mil palavras. Se cê já jogou o Contexto é rapidinho';
   const oldBtn = loaderEl.querySelector('.btn'); if (oldBtn) oldBtn.remove();
   say('pnCarregando', null, 'talk', 4000);
   loadTalk = setInterval(() => say('pnCarregando', null, Math.random() < .5 ? 'talk' : 'smug', 4000), 4200);
@@ -908,11 +924,11 @@ async function boot(){
     });
   } catch(err){
     clearInterval(loadTalk);
-    $('#ldSub').textContent = 'Deu ruim pra baixar as palavras. Confere a internet e tenta de novo.';
+    $('#ldSub').textContent = 'Deu ruim pra baixar as palavras. Confere a internet e tenta de novo';
     txtEl.textContent = 'erro: ' + (err && err.message || 'desconhecido');
     const b = document.createElement('button'); b.type = 'button'; b.className = 'btn primary'; b.textContent = 'Tentar de novo';
     b.onclick = boot; loaderEl.appendChild(b);
-    B.say('Tropecei no cabo da internet. A ponte ficou sem tábua. Tenta de novo?', 'dead', 99999);
+    B.say('Tropecei no cabo da internet mano, tenta de novo aí', 'dead', 99999);
     return;
   }
   clearInterval(loadTalk);
@@ -921,7 +937,7 @@ async function boot(){
   const l = B.store.get(KEY_L);
   const startLivre = G.lastMode === 'livre' && l && !l.done && ((l.chain && l.chain.length) || l.tries);
   await openMode(startLivre ? 'livre' : 'daily', { quiet: firstTime });
-  if (firstTime) B.say(`Oi! Eu sou o <b>Bugado</b>. Aqui você liga ${bw(S.a)} até ${bw(S.b)} com palavras que <b>têm a ver uma com a anterior</b>. Cada uma é uma tábua da ponte. Dúvida? Aperta o <b>?</b> lá em cima.`, 'talk', 10000);
+  if (firstTime) B.say(`Oi, eu sou o <b>Bugado</b>. Liga ${bw(S.a)} até ${bw(S.b)} com palavras que <b>têm a ver com a anterior</b>. Dúvida? Aperta o <b>?</b> lá em cima`, 'talk', 10000);
 }
 boot();
 B.chatter({ active: () => ready && S && !S.done, randomCat:'aleatorio', idleCat:'pnParadoTudo', every:[55,100], idleAfter:45 });

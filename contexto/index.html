@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
-<link rel="stylesheet" href="../shared/base.css?v=2609241402">
+<link rel="stylesheet" href="../shared/base.css?v=2609242000">
 <style>
 :root{ --ctx:#8F7BFF; --bg:var(--green); --by:var(--sun); --br:var(--pink); }
 .wrap.game{max-width:1060px;overflow-x:clip;padding-block:8px 28px}
@@ -19,8 +19,11 @@
 .meter{grid-area:meter;min-width:0}
 .lastwrap{grid-area:last;min-width:0;position:relative}
 .listwrap{grid-area:list;min-width:0}
-#mascot .bg-bubble{min-height:52px}
+/* balão com altura fixa de 3 linhas: fala nova não empurra a tela pra baixo */
+#mascot .bg-bubble{min-height:78px}
 .legend{display:none}
+@media (min-width:600px) and (max-width:879px){ .wrap.game{max-width:680px} #mascot .bg-bubble{min-height:62px} }
+@media (min-width:880px){ #mascot .bg-bubble{min-height:100px} }
 
 /* ---------- entrada ---------- */
 .guess{display:flex;gap:8px}
@@ -34,17 +37,18 @@
 .msg{margin:6px 2px 0;font-size:13.5px;color:var(--sun);min-height:0}
 .msg:empty{display:none}
 .infobar{display:flex;align-items:center;gap:7px;margin-top:10px;flex-wrap:wrap}
-.modechip{cursor:pointer;font-family:var(--chunky);background:var(--ctx);color:var(--ink);letter-spacing:.03em}
+.modechip{cursor:pointer;font-family:var(--chunky);background:var(--ctx);color:var(--ink);letter-spacing:.03em;min-height:40px;display:inline-flex;align-items:center;gap:6px;padding:0 12px}
+.modechip::after{content:"";width:7px;height:7px;border-right:2.5px solid currentColor;border-bottom:2.5px solid currentColor;transform:translateY(-2px) rotate(45deg)}
 .modechip.inf{background:var(--cyan)}
 .cnt{font-family:var(--chunky);font-size:13px;color:var(--muted);white-space:nowrap}
 .cnt b{font-weight:400;color:var(--paper);font-size:17px;font-variant-numeric:tabular-nums}
 .infobar .sp{flex:1}
-.btn.mini{height:36px;padding:0 11px;font-size:14px;border-radius:11px;box-shadow:0 3px 0 var(--ink);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn.mini{height:40px;min-width:40px;justify-content:center;padding:0 12px;font-size:14px;border-radius:11px;box-shadow:0 3px 0 var(--ink);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
 .btn.mini svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 .btn.mini:active{box-shadow:0 0 0 var(--ink)}
 .btn.mini{position:relative}
 .btn.mini .tag{position:absolute;top:-9px;right:-6px;font-family:var(--chunky);font-weight:400;font-size:11px;line-height:1.2;background:var(--ink);color:var(--sun);border:2px solid var(--sun);border-radius:99px;padding:0 6px}
-@media (max-width:420px){ #bGive span{display:none} #bGive{padding:0 9px} }
+@media (max-width:420px){ #bGive span{display:none} #bGive{padding:0;width:40px} }
 .donecard{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--pink);padding:10px 12px}
 .donecard .dc-txt{flex:1 1 180px;font-size:15px;line-height:1.3}
 .donecard .dc-txt b{font-family:var(--chunky);font-weight:400;font-size:19px;color:var(--violet)}
@@ -57,7 +61,7 @@
 .meter .fire{stroke:var(--pink)}
 .m-body{flex:1;min-width:0}
 .m-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
-.m-lbl{font-family:var(--chunky);font-size:11px;letter-spacing:.18em;color:var(--muted)}
+.m-lbl{font-family:var(--chunky);font-size:12px;letter-spacing:.14em;color:var(--muted)}
 .m-val{font-family:var(--chunky);font-size:14px;color:var(--paper);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .m-val b{font-weight:400;color:var(--sun)}
 .m-track{position:relative;height:18px;border:3px solid var(--ink);border-radius:99px;background:linear-gradient(90deg,rgba(255,79,154,.22) 0 24.5%,rgba(255,210,63,.22) 24.5% 41%,rgba(61,220,132,.22) 41%),var(--deep);overflow:hidden}
@@ -68,25 +72,25 @@
 .row{position:relative;display:flex;align-items:center;gap:10px;min-height:44px;padding:0 14px;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:12px;overflow:hidden;list-style:none}
 .row .fill{position:absolute;left:0;top:0;bottom:0;background:var(--c);border-right:3px solid var(--ink)}
 .row .w{position:relative;flex:1;min-width:0;font-family:var(--chunky);font-size:18px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.row .n{position:relative;flex:none;font-family:var(--chunky);font-size:18px;font-variant-numeric:tabular-nums}
-.row .tg{position:relative;flex:none;font-family:var(--chunky);font-size:10px;letter-spacing:.08em;color:var(--paper);background:var(--ink);border-radius:6px;padding:2px 6px}
+.row .n{position:relative;flex:none;font-family:var(--chunky);font-size:18px;font-variant-numeric:tabular-nums;line-height:1.2;padding:1px 7px;margin-right:-7px;border-radius:8px;background:rgba(255,247,230,.92)}
+.row .tg{position:relative;flex:none;font-family:var(--chunky);font-size:12px;letter-spacing:.08em;color:var(--paper);background:var(--ink);border-radius:6px;padding:2px 6px}
 .row.b-g{--c:var(--bg)} .row.b-y{--c:var(--by)} .row.b-r{--c:var(--br)}
 .row.secret{--c:var(--sun);box-shadow:0 0 0 3px var(--sun)}
 .row.cur{box-shadow:3px 3px 0 var(--cyan)}
 .lastwrap{min-height:8px}
-.lastwrap .lbl{display:block;font-family:var(--chunky);font-size:11px;letter-spacing:.18em;color:var(--muted);margin:0 0 4px 2px}
+.lastwrap .lbl{display:block;font-family:var(--chunky);font-size:12px;letter-spacing:.14em;color:var(--muted);margin:0 0 4px 2px}
 #last .row{min-height:54px;border-width:3.5px;box-shadow:4px 4px 0 var(--ctx)}
 #last .row .w,#last .row .n{font-size:22px}
 .list{display:flex;flex-direction:column;gap:6px;margin:0;padding:0}
 .list-head{display:flex;justify-content:space-between;align-items:baseline;margin:6px 2px 6px}
-.list-head span{font-family:var(--chunky);font-size:11px;letter-spacing:.18em;color:var(--muted)}
+.list-head span{font-family:var(--chunky);font-size:12px;letter-spacing:.14em;color:var(--muted)}
 .burst{top:26px}
 
 /* vazio + carregando */
 .empty{background:rgba(255,247,230,.06);border:3px dashed var(--line);border-radius:16px;padding:14px 16px;font-size:14.5px;line-height:1.45;color:var(--paper)}
 .empty p{margin:0 0 10px}
 .empty b{color:var(--sun);font-weight:900}
-.ex{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.ex{display:flex;flex-direction:column;gap:6px;margin:6px 0 0;padding:0}
 .ex .row{min-height:36px;opacity:.95}
 .ex .row .w,.ex .row .n{font-size:15px}
 .loader{background:var(--paper);color:var(--ink);border:4px solid var(--ink);border-radius:20px;box-shadow:6px 6px 0 var(--pink);padding:18px 18px 16px;text-align:center}
@@ -146,7 +150,9 @@
 .top100 li.got{background:#D9FBE7;font-weight:900}
 .top100 li.one{background:var(--sun)}
 .stat-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
-.stat-grid.four .stat span{font-size:10px;letter-spacing:.02em}
+.bg-card .stat span{display:block;font-size:12px;line-height:1.15;letter-spacing:0;text-transform:none}
+.bg-card .stat-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.bg-card li .tag2{min-width:86px;text-align:center}
 .xprows{margin-top:12px;border:2.5px solid var(--ink);border-radius:12px;background:#fff;overflow:hidden}
 .xprow{display:flex;justify-content:space-between;gap:10px;padding:7px 12px;font-size:14px;font-weight:800;border-bottom:1.5px dashed #d9cdef}
 .xprow:last-child{border-bottom:0}
@@ -163,19 +169,19 @@
   <aside class="side">
     <div id="mascot"></div>
     <div class="legend" aria-hidden="true">
-      <h3>Como ler os números</h3>
+      <h3>Como ler o número</h3>
       <ul>
         <li><span class="sw" style="--c:var(--green)"></span>1 a 300: quente, tá no assunto</li>
         <li><span class="sw" style="--c:var(--sun)"></span>301 a 1.500: morno, tá rondando</li>
-        <li><span class="sw" style="--c:var(--pink)"></span>mais de 1.500: frio, muda de ideia</li>
+        <li><span class="sw" style="--c:var(--pink)"></span>mais de 1.500: frio, muda de assunto</li>
       </ul>
-      <p class="keys">A posição 1 é a palavra secreta. Conta o SENTIDO, não as letras. <kbd>Enter</kbd> chuta.</p>
+      <p class="keys">O 1 é a palavra secreta, então número menor = mais perto. Vale o sentido, não as letras. <kbd>Enter</kbd> chuta</p>
     </div>
   </aside>
 
   <section class="entry" id="entry">
     <form class="guess" id="form" autocomplete="off">
-      <input id="inp" type="text" maxlength="32" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" placeholder="carregando…" aria-label="Teu chute: digita uma palavra" disabled>
+      <input id="inp" type="text" maxlength="32" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" placeholder="carregando..." aria-label="Teu chute: digita uma palavra" disabled>
       <button class="btn primary go" id="go" type="submit" disabled aria-label="Chutar"><svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg><span>Chutar</span></button>
     </form>
     <div class="donecard" id="doneCard" hidden>
@@ -198,7 +204,7 @@
   <section class="meter" id="meter" aria-label="Termômetro do teu melhor chute">
     <svg class="ice" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M4.9 6.5l14.2 11M4.9 17.5l14.2-11"/><path d="m9 4 3 2 3-2M9 20l3-2 3 2"/></svg>
     <div class="m-body">
-      <div class="m-head"><span class="m-lbl">TERMÔMETRO</span><span class="m-val" id="mVal">sem chute ainda</span></div>
+      <div class="m-head"><span class="m-lbl">TERMÔMETRO</span><span class="m-val" id="mVal">nenhum chute ainda</span></div>
       <div class="m-track"><i class="m-fill" id="mFill"></i><span class="m-tick" style="left:24.5%"></span><span class="m-tick" style="left:41%"></span></div>
     </div>
     <svg class="fire" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
@@ -211,8 +217,8 @@
 
   <section class="listwrap" id="listWrap">
     <div class="loader" id="loader">
-      <h2>CARREGANDO O CÉREBRO</h2>
-      <p id="ldSub">São 16 mil palavras. Só demora na primeira vez.</p>
+      <h2>CARREGANDO AS PALAVRAS</h2>
+      <p id="ldSub">São 16 mil. Só demora na primeira vez, depois abre na hora</p>
       <div class="ld-track"><i class="ld-fill" id="ldFill"></i></div>
       <span class="ld-txt" id="ldTxt">0%</span>
     </div>
@@ -220,11 +226,11 @@
   </section>
 </div>
 
-<script src="../shared/falas.js?v=2609241402"></script>
-<script src="../shared/bugado.js?v=2609241402"></script>
-<script src="vocab.js?v=2609241402"></script>
-<script src="segredos.js?v=2609241402"></script>
-<script src="falas-contexto.js?v=2609241402"></script>
+<script src="../shared/falas.js?v=2609242000"></script>
+<script src="../shared/bugado.js?v=2609242000"></script>
+<script src="vocab.js?v=2609242000"></script>
+<script src="segredos.js?v=2609242000"></script>
+<script src="falas-contexto.js?v=2609242000"></script>
 <script>
 (() => {
 const B = Bugado, $ = s => document.querySelector(s), RM = B.RM;
@@ -325,7 +331,7 @@ async function computeRanking(si){
 /* ================= entrada: normalização + de-flexão ================= */
 const RULES = [['oes','ao'],['aes','ao'],['aos','ao'],['ns','m'],['ais','al'],['eis','el'],['eis','il'],['ois','ol'],['uis','ul'],['is','il'],['res','r'],['zes','z'],['ses','s'],['les','l'],['s','']];
 function resolve(raw){
-  const s = String(raw).toLowerCase().trim().replace(/^[\s.,;:!?"'“”‘’()]+|[\s.,;:!?"'“”‘’()]+$/g, '');
+  const s = String(raw).toLowerCase().trim().replace(/^[\s.,;:!?"'\u201C\u201D\u2018\u2019()]+|[\s.,;:!?"'\u201C\u201D\u2018\u2019()]+$/g, '');
   if (!s) return { err:'empty' };
   if (!/^[a-zà-öø-ÿ-]+$/.test(s)) return { err:'invalid', s };
   if (EXACT.has(s) && EXACT.get(s) < N) return { i:EXACT.get(s), s };
@@ -391,19 +397,21 @@ function render(){
   $('#nHint').hidden = !S.hints; $('#nHint').textContent = S.hints;
   const live = ready && !S.done;
   inp.disabled = !live; $('#go').disabled = !live; $('#bHint').disabled = !live; $('#bGive').disabled = !live || !S.guesses.length;
-  inp.placeholder = ready ? 'digita uma palavra' : 'pensando…';
+  // partida acabou: dica e desistir não servem mais pra nada
+  $('#bHint').hidden = S.done; $('#bGive').hidden = S.done;
+  inp.placeholder = ready ? 'digita uma palavra' : 'pensando...';
   form.hidden = S.done; $('#doneCard').hidden = !S.done;
   if (S.done){
     $('#dcTxt').innerHTML = S.won
       ? `Acertou ${bw(S.secret)} em ${nGuesses()} chute${nGuesses() === 1 ? '' : 's'}${S.hints ? ` e ${S.hints} dica${S.hints > 1 ? 's' : ''}` : ''}!`
-      : `Desistiu. A palavra era ${bw(S.secret)}.`;
+      : `Desistiu. A palavra era ${bw(S.secret)}`;
     $('#bNext').textContent = daily ? 'Jogar Infinito' : 'Palavra nova';
   }
 
   // termômetro
   const best = bestRank();
   const fill = $('#mFill');
-  if (best === Infinity){ fill.style.width = '0%'; $('#mVal').textContent = 'sem chute ainda'; }
+  if (best === Infinity){ fill.style.width = '0%'; $('#mVal').textContent = 'nenhum chute ainda'; }
   else {
     fill.style.width = pct(best) + '%';
     fill.style.setProperty('--c', best <= 300 ? 'var(--green)' : best <= 1500 ? 'var(--sun)' : 'var(--pink)');
@@ -416,11 +424,12 @@ function render(){
   lastEl.innerHTML = lg ? `<span class="lbl">ÚLTIMO CHUTE</span><ul class="list">${rowHTML(lg)}</ul>` : '';
 
   // lista
-  if (!ready){ listBox.innerHTML = '<div class="thinking">O Bugado tá pensando na palavra…</div>'; return; }
+  if (!ready){ listBox.innerHTML = '<div class="thinking">Escolhendo a palavra, pera...</div>'; return; }
   if (!S.guesses.length && !S.done){
     listBox.innerHTML = `<div class="empty">
-      <p>Chuta <b>qualquer palavra</b>. Eu digo a <b>posição</b> dela numa fila de 16 mil, organizada pelo <b>sentido</b> parecido com a palavra secreta. A secreta é a <b>número 1</b>.</p>
-      <p>Tipo assim, se a secreta fosse “gato”:</p>
+      <p>Chuta <b>qualquer palavra</b>. Eu falo a <b>posição</b> dela numa fila de 16 mil, ordenada pelo <b>sentido</b>: quanto mais parecida com a secreta, mais perto do topo.</p>
+      <p>A secreta é a <b>número 1</b>. Então <b>número menor = mais perto</b>.</p>
+      <p>Tipo assim, se a secreta fosse <b>gato</b>:</p>
       <ul class="ex">${exampleRows()}</ul>
     </div>`;
     return;
@@ -446,11 +455,11 @@ function submit(){
   const raw = inp.value, res = resolve(raw);
   if (res.err === 'empty'){ anim(form, 'shake'); return; }
   if (res.err === 'invalid'){
-    anim(form, 'shake'); B.sfx.meh(); setMsg('Uma palavra só, só com letras.');
+    anim(form, 'shake'); B.sfx.meh(); setMsg('Uma palavra só, só com letra');
     say('ctxInvalida', null, 'smug'); return;
   }
   if (res.err === 'unknown'){
-    anim(form, 'shake'); B.sfx.err(); B.glitch(); setMsg(`Não conheço “${res.s}”. Não gastou chute.`);
+    anim(form, 'shake'); B.sfx.err(); B.glitch(); setMsg(`Não conheço ${res.s}, mas relaxa que não gastou chute`);
     say('ctxDesconhecida', { palavra:bw(res.s) }, 'smug'); inp.select(); return;
   }
   setMsg(''); inp.value = '';
@@ -489,7 +498,7 @@ function addGuess(i, hint, orig){
   if (hint) return r;
 
   // o que o Bugado fala
-  const n = nGuesses(), vars = { palavra:bw(w), n:fmt(r), melhor: prevBest === Infinity ? '—' : fmt(prevBest), orig: orig ? bw(orig) : '' };
+  const n = nGuesses(), vars = { palavra:bw(w), n:fmt(r), melhor: prevBest === Infinity ? '-' : fmt(prevBest), orig: orig ? bw(orig) : '' };
   let cat, mood = 'talk';
   if (orig && Math.random() < .6) cat = 'ctxPlural';
   else if (GENERIC.has(w)) { cat = 'ctxGenerico'; mood = 'smug'; }
@@ -539,10 +548,10 @@ function askGiveUp(){
   B.openModal(`
     <h2>Desistir?</h2>
     <p class="sub">${B.line('ctxDesistirPergunta')}</p>
-    <p>Eu revelo a palavra secreta e mostro as 100 mais perto dela. ${S.mode === 'daily' ? 'O diário de hoje conta como perdido.' : ''}</p>
+    <p>Eu mostro a palavra secreta e as 100 mais perto dela.${S.mode === 'daily' ? ' O diário de hoje conta como derrota.' : ''}</p>
     <div class="m-actions">
-      <button class="btn primary" type="button" data-act="close">Nada, vou continuar</button>
-      <button class="btn hot" type="button" data-act="giveup">Desisto, conta logo</button>
+      <button class="btn primary" type="button" data-act="close">Não, vou continuar</button>
+      <button class="btn hot" type="button" data-act="giveup">Desisto, fala logo</button>
     </div>`);
 }
 B.onAct('giveup', () => { B.closeModal(true); finish(false); });
@@ -597,7 +606,7 @@ function showResult(){
   const top = Array.from(R.order.slice(0, 100)).map((w, j) => `<li class="${j === 0 ? 'one' : guessed.has(w) ? 'got' : ''}"><i>${j + 1}</i>${esc(VOCAB[w])}</li>`).join('');
   const lvl = B.levelInfo();
   B.openModal(`
-    ${S.won ? '<h2 class="big">ACERTOU!</h2>' : '<h2>Fica pra próxima</h2>'}
+    ${S.won ? '<h2 class="big">ACERTOU!</h2>' : '<h2>Não foi dessa vez</h2>'}
     <p class="sub">${B.line(S.won ? 'vitoriaGeral' : 'derrotaGeral')}</p>
     <div class="secret-big">${esc(S.secret)}</div>
     <div class="stat-grid four">
@@ -611,7 +620,7 @@ function showResult(){
       <span class="band"><span class="sw" style="--c:var(--sun)"></span>${c.y}</span>
       <span class="band"><span class="sw" style="--c:var(--pink)"></span>${c.r}</span>
     </div>
-    <h3>As 100 mais perto de “${esc(S.secret)}”</h3>
+    <h3>As 100 mais perto de ${esc(S.secret)}</h3>
     <ol class="top100">${top}</ol>
     <div class="m-actions">
       <button class="btn primary" type="button" data-act="share">Copiar resultado</button>
@@ -621,8 +630,8 @@ function showResult(){
 }
 B.onAct('share', async () => {
   const t = shareText();
-  if (await B.copyText(t)) B.toast('Copiado!', 'Cola no grupo e passa vergonha junto.');
-  else B.openModal(`<h2>Copia aí</h2><p class="sub">Teu navegador não deixou eu copiar sozinho.</p><textarea class="share-ta" readonly>${esc(t)}</textarea><div class="m-actions"><button class="btn primary" type="button" data-act="close">Fechar</button></div>`);
+  if (await B.copyText(t)) B.toast('Copiado!', 'Cola no grupo e passa vergonha junto');
+  else B.openModal(`<h2>Copia aí</h2><p class="sub">O navegador não deixou eu copiar, copia na mão aí</p><textarea class="share-ta" readonly>${esc(t)}</textarea><div class="m-actions"><button class="btn primary" type="button" data-act="close">Fechar</button></div>`);
 });
 B.onAct('next', () => { B.closeModal(true); openMode('inf', { fresh:true }); });
 
@@ -665,11 +674,11 @@ function showModes(){
   const infGoing = inf && !inf.done && inf.guesses && inf.guesses.length;
   B.openModal(`
     <h2>Escolhe o modo</h2>
-    <p class="sub">O diário é igual pra todo mundo. O infinito é só teu, e nunca acaba.</p>
+    <p class="sub">O diário é igual pra geral. O infinito é só teu e não acaba nunca</p>
     <div class="modes">
-      <button class="btn mode ${S && S.mode === 'daily' ? 'cur' : ''}" type="button" data-act="mode" data-m="daily" style="--c:var(--ctx)"><b>Diário #${day}</b><span>Uma palavra por dia. Compara com os amigos.</span><em>${dStatus}</em></button>
-      <button class="btn mode ${S && S.mode === 'inf' ? 'cur' : ''}" type="button" data-act="mode" data-m="${infGoing ? 'inf' : 'infnew'}" style="--c:var(--cyan)"><b>Infinito</b><span>${infGoing ? 'Continua a palavra que você deixou pela metade.' : 'Palavra sorteada. Joga quantas quiser.'}</span><em>${infGoing ? `${inf.guesses.length} chutes` : 'novo'}</em></button>
-      ${infGoing ? '<button class="btn mode" type="button" data-act="mode" data-m="infnew" style="--c:var(--sun)"><b>Infinito: palavra nova</b><span>Larga a atual (ela não conta como derrota) e sorteia outra.</span><em>novo</em></button>' : ''}
+      <button class="btn mode ${S && S.mode === 'daily' ? 'cur' : ''}" type="button" data-act="mode" data-m="daily" style="--c:var(--ctx)"><b>Diário #${day}</b><span>Uma palavra por dia, a mesma pra todo mundo</span><em>${dStatus}</em></button>
+      <button class="btn mode ${S && S.mode === 'inf' ? 'cur' : ''}" type="button" data-act="mode" data-m="${infGoing ? 'inf' : 'infnew'}" style="--c:var(--cyan)"><b>Infinito</b><span>${infGoing ? 'Continua a palavra que cê largou pela metade' : 'Palavra sorteada, joga quantas quiser'}</span><em>${infGoing ? `${inf.guesses.length} chutes` : 'novo'}</em></button>
+      ${infGoing ? '<button class="btn mode" type="button" data-act="mode" data-m="infnew" style="--c:var(--sun)"><b>Infinito: palavra nova</b><span>Larga a atual (não conta como derrota) e sorteia outra</span><em>novo</em></button>' : ''}
     </div>
     <div class="m-actions"><button class="btn" type="button" data-act="close">Voltar</button></div>`);
 }
@@ -681,51 +690,51 @@ B.onAct('mode', b => {
 });
 
 function showStats(){
-  const avg = G.wins ? (G.sumGuesses / G.wins).toFixed(1).replace('.', ',') : '—';
+  const avg = G.wins ? (G.sumGuesses / G.wins).toFixed(1).replace('.', ',') : '-';
   const day = B.dayNumber(), streak = G.dLastWin >= day - 1 ? G.dStreak : 0;
   const today = G.lastDaily && G.lastDaily.day === day ? (G.lastDaily.won ? 'feito' : 'perdido') : 'pendente';
   B.openModal(`
     <h2>Tua ficha no Contexto</h2>
-    <p class="sub">Diário de hoje: <b>${today}</b>.</p>
-    <div class="stat-grid">
+    <p class="sub">Diário de hoje: <b>${today}</b></p>
+    <div class="stat-grid three">
       <div class="stat"><b>${G.played}</b><span>jogos</span></div>
       <div class="stat"><b>${G.wins || 0}</b><span>vitórias</span></div>
-      <div class="stat"><b>${avg}</b><span>média de chutes</span></div>
-      <div class="stat"><b>${G.best || '—'}</b><span>melhor</span></div>
-      <div class="stat"><b>${streak}</b><span>diários seguidos</span></div>
-      <div class="stat"><b>${G.dMax}</b><span>maior sequência</span></div>
       <div class="stat"><b>${G.gaveUp}</b><span>desistências</span></div>
+      <div class="stat"><b>${G.best || '-'}</b><span>melhor jogo</span></div>
+      <div class="stat"><b>${avg}</b><span>média de chutes</span></div>
+      <div class="stat"><b>${streak}</b><span>diários seguidos</span></div>
     </div>
-    <p style="margin-top:14px">${G.gaveUp > (G.wins || 0) ? 'Mais desistência que vitória. Eu não julgo. Julgo sim.' : G.wins ? 'Nada mal. Eu tô de olho nessa média.' : 'Ainda sem vitória. Todo mundo começa no gelo.'}</p>
+    <p class="sub" style="margin-top:10px">Maior sequência de diários: <b>${G.dMax}</b></p>
+    <p style="margin-top:14px">${G.gaveUp > (G.wins || 0) ? 'Mais desistência que vitória, tá feio hein KKKK' : G.wins ? 'Nada mal, tô de olho nessa média' : 'Nenhuma vitória ainda. Todo mundo começa no gelo'}</p>
     <div class="m-actions"><button class="btn primary" type="button" data-act="close">Fechar</button></div>`);
 }
 function showHelp(){
   B.openModal(`
-    <h2>Contexto pra quem nunca jogou</h2>
-    <p class="sub">É quente-ou-frio com palavras. Mas o que vale é o SENTIDO, não a escrita.</p>
+    <h2>Como joga o Contexto</h2>
+    <p class="sub">É quente ou frio com palavra. Vale o SENTIDO, não a escrita</p>
     <h3>Como funciona</h3>
     <ul>
-      <li><span class="tag2">CHUTA</span><span>Digita qualquer palavra e aperta <kbd>Enter</kbd>. Chutes são infinitos.</span></li>
-      <li><span class="tag2" style="--c:#8F7BFF">NÚMERO</span><span>É a <b>posição</b> da tua palavra numa fila de 16 mil, ordenada por quanto o sentido dela se parece com o da secreta. A secreta é a <b>1</b>. Número menor = mais perto.</span></li>
-      <li><span class="tag2" style="--c:#2EE6D6">SENTIDO</span><span>“Gato” e “pato” se escrevem parecido, mas ficam longe. “Gato” e “cachorro” ficam pertinho, porque aparecem nos mesmos assuntos.</span></li>
+      <li><span class="tag2">CHUTA</span><span>Digita qualquer palavra e aperta <kbd>Enter</kbd>. Pode chutar à vontade, não tem limite</span></li>
+      <li><span class="tag2" style="--c:#8F7BFF">NÚMERO</span><span>É a <b>posição</b> da tua palavra numa fila de 16 mil, ordenada pelo quanto o sentido dela parece com o da secreta. A secreta é a <b>1</b>, então <b>número menor = mais perto</b></span></li>
+      <li><span class="tag2" style="--c:#2EE6D6">SENTIDO</span><span>Gato e pato se escrevem parecido, mas ficam longe. Gato e cachorro ficam pertinho, pq aparecem nos mesmos assuntos</span></li>
     </ul>
     <h3>As cores</h3>
     <ul>
-      <li><span class="tag2" style="--c:var(--green)">VERDE</span><span>Até 300: quente, tá no assunto.</span></li>
-      <li><span class="tag2" style="--c:var(--sun)">AMARELO</span><span>De 301 a 1.500: morno, tá rondando.</span></li>
-      <li><span class="tag2" style="--c:var(--pink)">ROSA</span><span>Mais de 1.500: frio. Muda de assunto.</span></li>
+      <li><span class="tag2" style="--c:var(--green)">VERDE</span><span>Até 300: quente, tá no assunto</span></li>
+      <li><span class="tag2" style="--c:var(--sun)">AMARELO</span><span>De 301 a 1.500: morno, tá rondando</span></li>
+      <li><span class="tag2" style="--c:var(--pink)">ROSA</span><span>Mais de 1.500: frio, muda de assunto</span></li>
     </ul>
-    <h3>Truques</h3>
+    <h3>Manhas</h3>
     <ul>
-      <li><span class="tag2" style="--c:#FFF1B8">1</span><span>Começa com temas bem diferentes (bicho, comida, lugar, sentimento) e vê qual esquenta.</span></li>
-      <li><span class="tag2" style="--c:#FFF1B8">2</span><span>Achou algo quente? Chuta os “vizinhos”: onde fica, pra que serve, quem usa, sinônimos.</span></li>
-      <li><span class="tag2" style="--c:#FFF1B8">3</span><span>Plural e acento tanto faz: eu entendo “animais” como “animal”. Nome próprio eu não conheço.</span></li>
+      <li><span class="tag2" style="--c:#FFF1B8">1</span><span>Começa com temas bem diferentes (bicho, comida, lugar, sentimento) e vê qual esquenta</span></li>
+      <li><span class="tag2" style="--c:#FFF1B8">2</span><span>Achou algo quente? Chuta os vizinhos: onde fica, pra que serve, quem usa, sinônimo</span></li>
+      <li><span class="tag2" style="--c:#FFF1B8">3</span><span>Plural e acento tanto faz, eu entendo animais como animal. Nome próprio eu não conheço</span></li>
     </ul>
     <h3>Botões</h3>
     <ul>
-      <li><span class="tag2" style="--c:var(--cyan)">DICA</span><span>Revela uma palavra no meio do caminho entre teu melhor chute e a secreta. Custa XP.</span></li>
-      <li><span class="tag2" style="--c:#fff">DESISTIR</span><span>Mostra a resposta e as 100 palavras mais perto dela.</span></li>
-      <li><span class="tag2" style="--c:#8F7BFF">MODO</span><span><b>Diário</b>: uma palavra por dia, igual pra todo mundo. <b>Infinito</b>: sorteia quantas quiser (vale metade do XP).</span></li>
+      <li><span class="tag2" style="--c:var(--cyan)">DICA</span><span>Mostra uma palavra no meio do caminho entre teu melhor chute e a secreta. Custa XP</span></li>
+      <li><span class="tag2" style="--c:#fff">DESISTIR</span><span>Mostra a resposta e as 100 palavras mais perto dela</span></li>
+      <li><span class="tag2" style="--c:#8F7BFF">MODO</span><span><b>Diário</b>: uma palavra por dia, igual pra todo mundo. <b>Infinito</b>: sorteia quantas quiser (vale metade do XP)</span></li>
     </ul>
     <div class="m-actions"><button class="btn primary" type="button" data-act="close">Bora chutar</button></div>`);
 }
@@ -761,7 +770,7 @@ if (firstTime){ B.profile().seen.contexto = true; B.saveProfile(); $('#bHelp').c
 let loadTalk = null;
 async function boot(){
   loaderEl.hidden = false; listBox.hidden = true;
-  $('#ldSub').textContent = 'São 16 mil palavras. Só demora na primeira vez.';
+  $('#ldSub').textContent = 'São 16 mil. Só demora na primeira vez, depois abre na hora';
   loaderEl.querySelector('.btn') && loaderEl.querySelector('.btn').remove();
   say('ctxCarregando', null, 'talk', 4000);
   loadTalk = setInterval(() => say('ctxCarregando', null, Math.random() < .5 ? 'talk' : 'smug', 4000), 4200);
@@ -774,11 +783,11 @@ async function boot(){
     });
   } catch(err){
     clearInterval(loadTalk);
-    $('#ldSub').textContent = 'Deu ruim pra baixar o cérebro de palavras. Confere a internet e tenta de novo.';
+    $('#ldSub').textContent = 'Deu ruim pra baixar as palavras. Confere a internet e tenta de novo';
     txtEl.textContent = 'erro: ' + (err && err.message || 'desconhecido');
     const b = document.createElement('button'); b.type = 'button'; b.className = 'btn primary'; b.textContent = 'Tentar de novo';
     b.onclick = boot; loaderEl.appendChild(b);
-    B.say('Tropecei no cabo da internet. Tenta de novo?', 'dead', 99999);
+    B.say('Tropecei no fio da internet mano, tenta de novo aí', 'dead', 99999);
     return;
   }
   clearInterval(loadTalk);
@@ -787,7 +796,7 @@ async function boot(){
   const infSaved = B.store.get(KEY_I);
   const startInf = G.lastMode === 'inf' && infSaved && !infSaved.done && infSaved.guesses && infSaved.guesses.length;
   await openMode(startInf ? 'inf' : 'daily', { quiet: firstTime });
-  if (firstTime) B.say('Oi! Eu sou o <b>Bugado</b>. Aqui você chuta palavras e eu digo o quão perto do <b>sentido</b> da secreta elas estão. Número menor = mais quente. Dúvida? Aperta o <b>?</b> lá em cima.', 'talk', 9000);
+  if (firstTime){ B.say('Oi! Sou o <b>Bugado</b>. Cê chuta palavra e eu falo a posição dela. <b>Número menor = mais perto</b> da secreta', 'talk', 9000); showHelp(); }
 }
 boot();
 B.chatter({ active: () => ready && S && !S.done, randomCat:'ctxAleatorio', idleCat:'ctxParado', every:[55,100], idleAfter:45 });

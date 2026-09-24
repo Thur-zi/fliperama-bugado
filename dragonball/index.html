@@ -6,7 +6,7 @@
 <meta name="description" content="Adivinhe o personagem de Dragon Ball pelas pistas de raça, afiliação, estreia, planeta, cabelo e poder.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
-<link rel="stylesheet" href="../shared/base.css?v=2609241402">
+<link rel="stylesheet" href="../shared/base.css?v=2609242000">
 <style>
 /* ================= Dragon Ball: Quem é esse Guerreiro? ================= */
 :root{--db:#FF9A3C;--db2:#FF6A1A;--ok:var(--green);--part:var(--sun);--bad:var(--red);--scouter:#3DDC84}
@@ -20,6 +20,9 @@ body{overflow-x:hidden}
 }
 .side-card{display:none}
 @media (min-width:1040px){ .side-card{display:block} }
+/* balão com altura mínima de 3 linhas: a página não pula a cada fala (só as listas raras crescem) */
+@media (max-width:1039px){ #mascot .bg-bubble{min-height:76px} }
+@media (min-width:1040px){ #mascot .bg-bubble{min-height:120px} }
 
 /* ---------- modos ---------- */
 .modes{display:flex;gap:6px;background:var(--deep);border:3px solid var(--ink);border-radius:16px;padding:5px;box-shadow:0 4px 0 var(--ink)}
@@ -80,9 +83,16 @@ body{overflow-x:hidden}
 .blur img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;filter:blur(9px) saturate(1.3);transform:scale(1.15)}
 .name-hint{font-family:var(--chunky);font-size:22px;letter-spacing:.14em;color:var(--ink)}
 
-/* ---------- avatares ---------- */
+/* ---------- avatares ----------
+   .ava        recorte transparente (dragonball-api): zoom no rosto
+   .ava.ph     foto/print com fundo (Dragon Ball Wiki): preenche o quadro, foco no topo
+   .ava.ld     carregando (pisca o fundo) */
 .ava{position:relative;flex:none;display:grid;place-items:center;overflow:hidden;border:2.5px solid var(--ink);border-radius:12px;background:radial-gradient(circle at 50% 30%,#fff3dc,#ffd9a8);width:40px;height:40px}
-.ava img{position:absolute;left:0;top:0;width:100%;height:auto;min-height:100%;object-fit:cover;object-position:50% 0;transform:scale(1.55);transform-origin:50% 4%}
+.ava img{position:absolute;left:0;top:0;width:100%;height:auto;min-height:100%;object-fit:cover;object-position:50% 0;transform:scale(1.55);transform-origin:50% 4%;transition:opacity .25s}
+.ava.ph img{height:100%;object-position:50% 22%;transform:none}
+.ava.ld{animation:ava-ld 1.1s ease-in-out infinite}
+.ava.ld img{opacity:0}
+@keyframes ava-ld{50%{background:#f3e3c4}}
 .ava.fb{background:hsl(var(--h) 70% 62%)}
 .ava.fb b{position:relative;z-index:1;font-family:var(--chunky);font-weight:400;font-size:15px;color:var(--ink);text-shadow:1px 1px 0 rgba(255,255,255,.6)}
 .ava.fb .db4{position:absolute;right:-5px;bottom:-5px;width:22px;height:22px;opacity:.9}
@@ -90,6 +100,9 @@ body{overflow-x:hidden}
 .ava.lg.fb b{font-size:20px}
 .ava.xl{width:100%;height:100%;border:0;border-radius:0;background:none}
 .ava.xl img{position:static;width:100%;height:100%;object-fit:contain;object-position:50% 50%;transform:none;filter:drop-shadow(4px 4px 0 var(--ink))}
+.ava.xl.ph{border:4px solid var(--ink);border-radius:16px;background:#f3e6ff;box-shadow:4px 4px 0 var(--ink)}
+.ava.xl.ph img{position:absolute;inset:0;object-fit:cover;object-position:50% 20%;filter:none}
+.ava.xl.ld{background:#f3e6ff;border-radius:16px}
 .ava.xl.fb{background:hsl(var(--h) 70% 62%);border-radius:50%;border:4px solid var(--ink);width:150px;height:150px;margin:auto}
 .ava.xl.fb b{font-size:52px}
 .ava.xl.fb .db4{width:54px;height:54px;right:4px;bottom:4px}
@@ -131,6 +144,33 @@ body{overflow-x:hidden}
 .row.new .who{animation:who-in .4s cubic-bezier(.3,1.6,.5,1) both}
 @keyframes who-in{from{transform:translateX(-20px) scale(.6);opacity:0}}
 .empty{margin:4px 2px;color:var(--muted);font-size:14px;text-align:center;padding:18px 8px;border:3px dashed #4a3584;border-radius:16px}
+.tile .lb{display:none}
+/* "DRAGON BALL" cortava no topo em 360px */
+@media (max-width:380px){ .bar-title b{font-size:21px;letter-spacing:.02em} }
+
+/* celular: cada chute vira um cartão (nome em cima, 8 quadrados em 4x2 com o rótulo dentro).
+   Nada de rolar pro lado. */
+@media (max-width:599px){
+  .gridwrap{overflow:visible;padding:0}
+  .grid{width:auto;min-width:0;gap:10px}
+  .ghead{display:none}
+  .row{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;background:rgba(20,10,42,.55);border:2.5px solid #4a3584;border-radius:14px;padding:6px}
+  .row.win{border-color:var(--green)}
+  .row .who{grid-column:1/-1;position:static;flex-direction:row;align-items:center;gap:8px;padding:0 2px 2px;background:none;box-shadow:none}
+  .row .who .ava{width:34px;height:34px;border-radius:10px}
+  .row .who .wn{font-size:15px;text-align:left;-webkit-line-clamp:1;line-height:1.2}
+  .tile{aspect-ratio:auto;min-height:60px;font-size:12px;padding:19px 3px 5px;gap:1px;border-radius:10px}
+  .tile .lb{display:block;position:absolute;z-index:1;left:0;right:0;top:4px;font-family:var(--chunky);font-weight:400;font-size:12px;line-height:1;letter-spacing:.02em;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tile .big{font-size:1.25em}
+  .tile .num{font-size:1.6em}
+  .tile .sym{font-size:1.3em}
+  .tile .sw{width:14px;height:14px;margin-bottom:1px}
+  .tile .arr{inset:22% 18% 4%}
+  .legend .swipe{display:none}
+  .bg-card .help-tiles .tile{padding:3px;min-height:54px}
+  .bg-card .attr{grid-template-columns:1fr;gap:0}
+  .bg-card .attr dt{margin-top:8px}
+}
 
 /* ---------- revelação ---------- */
 .reveal{position:relative;overflow:hidden;background:var(--paper);color:var(--ink);border:4px solid var(--ink);border-radius:22px;box-shadow:6px 6px 0 var(--pink);padding:14px;animation:bg-popin .45s cubic-bezier(.3,1.6,.5,1)}
@@ -223,7 +263,7 @@ body{overflow-x:hidden}
           </svg>
           <div class="p-title">
             <h1 id="ttl">Quem é esse <span>Guerreiro?</span></h1>
-            <p id="sub">…</p>
+            <p id="sub">&nbsp;</p>
           </div>
           <div class="counter" aria-live="polite"><b id="count">0</b><span>chutes</span></div>
         </div>
@@ -233,7 +273,7 @@ body{overflow-x:hidden}
             <svg class="db4" aria-hidden="true"><use href="#db4"/></svg>
             <input id="q" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go"
               role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="list"
-              aria-label="Digite o nome de um personagem" placeholder="Digite um guerreiro…">
+              aria-label="Digite o nome de um personagem" placeholder="Digita um guerreiro">
             <ul class="list" id="list" role="listbox" aria-label="Sugestões" hidden></ul>
           </div>
           <button class="btn primary go" type="button" id="go">Chutar</button>
@@ -255,12 +295,12 @@ body{overflow-x:hidden}
       <section class="board" aria-label="Seus chutes">
         <div class="legend" id="legend">
           <span><i class="l-ok"></i>igual</span><span><i class="l-part"></i>quase</span><span><i class="l-bad"></i>diferente</span>
-          <span>▲▼ mais / menos</span><span class="swipe" id="swipe" hidden>arrasta pro lado ⇆</span>
+          <span>▲▼ o alvo tem mais / menos</span><span class="swipe" id="swipe" hidden>arrasta pro lado ⇆</span>
         </div>
         <div class="gridwrap" id="gridwrap">
           <div class="grid" id="grid" role="table" aria-label="Tabela de chutes"></div>
         </div>
-        <p class="empty" id="empty">Nenhum chute ainda. O scouter tá esperando.</p>
+        <p class="empty" id="empty">Nenhum chute ainda. Digita um nome ali em cima e escolhe na lista pra começar</p>
       </section>
     </main>
   </div>
@@ -268,8 +308,8 @@ body{overflow-x:hidden}
 <div class="burst-layer" aria-hidden="true"><div class="burst" id="burst"></div></div>
 <p class="sr" id="live" aria-live="polite"></p>
 
-<script src="../shared/falas.js?v=2609241402"></script><script src="../shared/bugado.js?v=2609241402"></script>
-<script src="personagens.js?v=2609241402"></script><script src="falas-dragonball.js?v=2609241402"></script>
+<script src="../shared/falas.js?v=2609242000"></script><script src="../shared/bugado.js?v=2609242000"></script>
+<script src="personagens.js?v=2609242000"></script><script src="falas-dragonball.js?v=2609242000"></script>
 <script>
 (() => {
 const B = window.Bugado, CH = window.DB_CHARS || [];
@@ -372,17 +412,28 @@ function curStreak(m){ const s = MS(m); return (MODES[m].daily && s.lastDay !== 
 /* ---------------- avatares ---------------- */
 const hash = s => { let h = 7; for (const ch of s) h = (h*31 + ch.charCodeAt(0)) >>> 0; return h; };
 const initials = nome => { const w = nome.replace(/[^\p{L}\p{N} ]/gu,'').split(/\s+/).filter(Boolean); return (w.length > 1 ? w[0][0] + w[1][0] : w[0].slice(0,2)).toUpperCase(); };
+// imagens que já carregaram uma vez não piscam de novo (cada render recria o <img>)
+const loaded = new Set();
 function avatar(c, size=''){
-  if (c.img) return `<span class="ava ${size}"><img src="${esc(c.img)}" alt="" loading="lazy" decoding="async" data-fb="${esc(c.nome)}"></span>`;
+  if (c.img){
+    const ld = loaded.has(c.img) ? '' : ' ld', ph = c.render === false ? ' ph' : '';
+    return `<span class="ava ${size}${ph}${ld}"><img src="${esc(c.img)}" alt="" loading="lazy" decoding="async" data-fb="${esc(c.nome)}"></span>`;
+  }
   return `<span class="ava ${size} fb" style="--h:${hash(c.nome)%360}"><b>${esc(initials(c.nome))}</b>${BALL}</span>`;
 }
-// imagem quebrada vira avatar desenhado (nunca ícone quebrado)
+document.addEventListener('load', e => {
+  const t = e.target; if (!(t instanceof HTMLImageElement) || t.dataset.fb === undefined) return;
+  loaded.add(t.getAttribute('src')); const box = t.parentElement; if (box) box.classList.remove('ld');
+}, true);
+// imagem quebrada: tenta a foto reserva (img2); se falhar também, vira avatar desenhado (nunca ícone quebrado)
 document.addEventListener('error', e => {
   const t = e.target;
   if (!(t instanceof HTMLImageElement) || t.dataset.fb === undefined) return;
-  const box = t.parentElement, nome = t.dataset.fb;
+  const box = t.parentElement, nome = t.dataset.fb, c = byName.get(nome);
+  if (c && c.img2 && !t.dataset.tried){ t.dataset.tried = 1; box.classList.add('ph'); t.src = c.img2; return; }
+  box.classList.remove('ld', 'ph');
   if (box.classList.contains('ava')){ box.classList.add('fb'); box.style.setProperty('--h', hash(nome)%360); box.innerHTML = `<b>${esc(initials(nome))}</b>${BALL}`; }
-  else { const c = byName.get(nome); if (c) box.innerHTML = `<div class="name-hint">${esc(c.nome[0])}${'·'.repeat(Math.max(0,c.nome.length-1))}</div>`; }
+  else if (c) box.innerHTML = `<div class="name-hint">${esc(c.nome[0])}${'·'.repeat(Math.max(0,c.nome.length-1))}</div>`;
 }, true);
 
 /* ---------------- tiles ---------------- */
@@ -409,7 +460,7 @@ function rowHTML(c, res, isNew){
   const cells = FIELDS.map((f, i) => {
     const r = res[i], arrow = r.arrow ? `<i class="arr"></i>` : '';
     const al = `${f.label}: ${plainVal(c,f)}, ${ST_TXT[r.st]}${r.arrow ? (r.arrow==='up' ? ', o alvo é maior' : ', o alvo é menor') : ''}`;
-    return `<div class="tile ${r.st} ${r.arrow||''}" style="--i:${i+1}" role="cell" aria-label="${esc(al)}" title="${esc(al)}">${arrow}${tileInner(c, f)}</div>`;
+    return `<div class="tile ${r.st} ${r.arrow||''}" style="--i:${i+1}" role="cell" aria-label="${esc(al)}" title="${esc(al)}">${arrow}<span class="lb" aria-hidden="true">${f.label}</span>${tileInner(c, f)}</div>`;
   }).join('');
   return `<div class="row${isNew?' new':''}${win?' win':''}" role="row"><div class="who" role="cell">${avatar(c)}<span class="wn">${esc(c.nome)}</span></div>${cells}</div>`;
 }
@@ -431,7 +482,7 @@ function renderModes(){
   document.querySelectorAll('.modes button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.mode === mode)));
   const m = MODES[mode], n = m.pool().length;
   $('#sub').textContent = m.daily ? `${m.label} #${today} · ${n} guerreiros no radar` : `Infinito · ${n} guerreiros no radar`;
-  $('#q').placeholder = mode === 'classico' ? 'Só DB e Z… digita aí' : 'Digite um guerreiro…';
+  $('#q').placeholder = mode === 'classico' ? 'Só DB e Z, digita aí' : 'Digita um guerreiro';
 }
 
 function renderHints(){
@@ -444,16 +495,16 @@ function renderHints(){
     el.setAttribute('aria-disabled', String(!open || used));
     el.querySelector('small').textContent = used ? 'aberta' : open ? (fin ? 'ver' : '−10 XP') : `em ${need - n}`;
     const label = k === 'frase' ? 'Dica: frase' : 'Dica: foto borrada';
-    el.setAttribute('aria-label', `${label}${used ? ' (aberta)' : open ? '' : ` — libera em ${need - n} chutes`}`);
+    el.setAttribute('aria-label', `${label}${used ? ' (aberta)' : open ? '' : `, libera em ${need - n} chutes`}`);
   });
   $('#giveup').hidden = mode !== 'infinito' || fin || n === 0;
   document.querySelector('.hints').hidden = fin;
   const box = $('#hintbox'), parts = [];
-  if (S.hints.frase || fin) parts.push(`<div class="hint-card"><p><span class="lbl">FRASE</span>“${esc(secret.frase)}”</p></div>`);
+  if (S.hints.frase || fin) parts.push(`<div class="hint-card"><p><span class="lbl">FRASE</span>${esc(secret.frase)}</p></div>`);
   if ((S.hints.foto) && !fin){
     parts.push(secret.img
-      ? `<div class="hint-card"><div class="blur"><img src="${esc(secret.img)}" alt="Foto borrada do personagem" data-fb="${esc(secret.nome)}"></div><p><span class="lbl">FOTO BORRADA</span>Aperta os olhos…</p></div>`
-      : `<div class="hint-card"><p><span class="lbl">SEM FOTO DESSE — TOMA A INICIAL</span><span class="name-hint">${esc(secret.nome[0])}${'·'.repeat(secret.nome.length-1)}</span><br>${secret.nome.length} caracteres</p></div>`);
+      ? `<div class="hint-card"><div class="blur"><img src="${esc(secret.img)}" alt="Foto borrada do personagem" data-fb="${esc(secret.nome)}"></div><p><span class="lbl">FOTO BORRADA</span>Aperta os olhos e tenta</p></div>`
+      : `<div class="hint-card"><p><span class="lbl">SEM FOTO, TOMA A INICIAL</span><span class="name-hint">${esc(secret.nome[0])}${'·'.repeat(secret.nome.length-1)}</span><br>${secret.nome.length} caracteres</p></div>`);
   }
   // frase só aparece no painel durante o jogo (no fim, fica no card de revelação)
   const show = fin ? [] : parts;
@@ -466,7 +517,7 @@ function renderSide(){
   el.innerHTML = `<h3>${MODES[mode].label}</h3>
     <p>Jogadas: <b>${m.played}</b> · Vitórias: <b>${m.wins}</b></p>
     <p>Média: <b>${m.wins ? (m.sum/m.wins).toFixed(1) : '–'}</b> chutes${MODES[mode].daily ? ` · Sequência: <b>${curStreak(mode)}</b>` : ''}</p>
-    <p style="margin-top:8px;color:#6b5a90">Amarelo em <b>Raça</b> = mesma família · em <b>Afiliação</b> = mesmo lado · em <b>Poder</b> = 1 nível de diferença.</p>`;
+    <p style="margin-top:8px;color:#6b5a90">Amarelo em <b>Raça</b> = mesma família. Em <b>Afiliação</b> = mesmo lado. Em <b>Poder</b> = 1 nível de diferença</p>`;
 }
 
 function renderReveal(animate){
@@ -474,7 +525,7 @@ function renderReveal(animate){
   if (!finished()){ el.hidden = true; el.innerHTML = ''; $('#guessRow').hidden = false; return; }
   $('#guessRow').hidden = true;
   const c = secret, n = S.guesses.length;
-  const kicker = S.won ? (n === 1 ? 'DE PRIMEIRA!' : `ACERTOU EM ${n} CHUTES!`) : 'O GUERREIRO ERA…';
+  const kicker = S.won ? (n === 1 ? 'DE PRIMEIRA!' : `ACERTOU EM ${n} CHUTES!`) : 'O GUERREIRO ERA';
   const hintsUsed = (S.hints.frase?1:0) + (S.hints.foto?1:0);
   const lvl = Array.from({length:10}, (_, i) => `<i class="${i < c.poder ? 'on' : ''}"></i>`).join('');
   const actions = [];
@@ -489,10 +540,10 @@ function renderReveal(animate){
         <div class="rv-kicker">${kicker}</div>
         <h2 class="rv-name">${esc(c.nome)}</h2>
         <p class="rv-meta">${esc(SERIES[c.estreia])} · ${esc(c.saga)}</p>
-        ${S.won ? `<p class="rv-meta">+${S.xp} XP${hintsUsed ? ` · ${hintsUsed} dica${hintsUsed>1?'s':''}` : ''}${mode==='infinito' ? ' · Infinito (metade)' : ''}</p>` : ''}
+        ${S.won ? `<p class="rv-meta">+${S.xp} XP${hintsUsed ? ` · ${hintsUsed} dica${hintsUsed>1?'s':''}` : ''}${mode==='infinito' ? ' · Infinito, XP pela metade' : ''}</p>` : ''}
       </div>
     </div>
-    <p class="rv-quote">“${esc(c.frase)}”</p>
+    <p class="rv-quote">${esc(c.frase)}</p>
     <div class="scouter" role="img" aria-label="Nível de poder ${c.poder} de 10">
       <div class="readout"><small>NÍVEL DE PODER</small><span>${esc(POWER_READ[c.poder])}</span></div>
       <b>${c.poder}</b><div class="lvl">${lvl}</div>
@@ -547,7 +598,7 @@ function openList(){
   if (!raw.trim()){ closeList(); return; }
   const qq = B.normalize(raw);
   list.innerHTML = items.length ? items.map((it, i) => `<li role="option" id="opt${i}" aria-selected="${i===active}" data-i="${i}">${avatar(it.c)}<span class="nm"><b>${hl(it.c.nome, qq)}</b>${it.via ? `<small>também: ${hl(it.via, qq)}</small>` : `<small>${esc(SERIES[it.c.estreia])}</small>`}</span></li>`).join('')
-    : `<li class="none" role="option" aria-disabled="true">Ninguém com esse nome no radar…</li>`;
+    : `<li class="none" role="option" aria-disabled="true">Ninguém com esse nome no radar</li>`;
   list.hidden = false; q.setAttribute('aria-expanded', 'true');
   q.setAttribute('aria-activedescendant', active >= 0 ? `opt${active}` : '');
 }
@@ -623,7 +674,7 @@ function makeGuess(c){
   if (n === 5 || n === 10) renderHints();
 }
 
-/* o mascote comenta o chute — escolhe entre várias categorias possíveis */
+/* o mascote comenta o chute: escolhe entre várias categorias possíveis */
 function react(c, res, n, prev){
   const vars = { nome: c.nome, n, raca: c.raca };
   const say = (cat, extra, mood='talk', hold=5500) => B.talk(cat, Object.assign({}, vars, extra||{}), mood, hold);
@@ -672,7 +723,7 @@ function ignoredClue(c, prev){
     const f = FIELDS.find(x => x.k === k), i = FIELDS.indexOf(f);
     const green = prev.find(p => compare(p, secret)[i].st === 'ok');
     if (green && green[k] !== c[k]) return { cat:'dbIgnorouVerde', campo: f.label, valor: green[k] };
-    // repetir gênero/transforma errado é quase inevitável — só comenta os atributos "ricos"
+    // repetir gênero/transforma errado é quase inevitável, só comenta os atributos "ricos"
     if (k === 'genero' || k === 'transforma') continue;
     const red = prev.find(p => p[k] === c[k] && compare(p, secret)[i].st === 'bad');
     if (red) return { cat:'dbIgnorouPista', campo: f.label, valor: c[k] };
@@ -726,15 +777,15 @@ function useHint(k){
   const need = k === 'frase' ? 5 : 10;
   if (finished()){ if (k === 'frase') $('#reveal').scrollIntoView({ behavior:'smooth', block:'nearest' }); return; }
   if (S.hints[k]) return;
-  if (S.guesses.length < need){ B.sfx.err(); B.say(`Calma! A dica ${k === 'frase' ? 'da frase' : 'da foto'} libera em <b>${need - S.guesses.length}</b> chute${need - S.guesses.length > 1 ? 's' : ''}.`, 'smug', 3500); return; }
+  if (S.guesses.length < need){ B.sfx.err(); B.say(`Calma, a dica ${k === 'frase' ? 'da frase' : 'da foto'} só libera daqui <b>${need - S.guesses.length}</b> chute${need - S.guesses.length > 1 ? 's' : ''}`, 'smug', 3500); return; }
   S.hints[k] = true; save(); B.sfx.hint(); renderHints();
   B.talk(k === 'frase' ? 'dbDicaFrase' : (secret.img ? 'dbDicaFoto' : 'dbDicaNome'), null, 'happy');
 }
 $('#hFrase').addEventListener('click', () => useHint('frase'));
 $('#hFoto').addEventListener('click', () => useHint('foto'));
 $('#giveup').addEventListener('click', () => {
-  B.openModal(`<h2>Desistir?</h2><p class="sub">O guerreiro vai ser revelado e essa rodada não dá XP. O Vegeta nunca faria isso. (Ele faria.)</p>
-    <div class="m-actions"><button class="btn hot" type="button" data-act="giveup-yes">Revelar</button><button class="btn" type="button" data-act="close">Continuar tentando</button></div>`);
+  B.openModal(`<h2>Desistir?</h2><p class="sub">O guerreiro aparece e essa rodada não dá XP. O Vegeta nunca desistiria. Desistiria sim KKKKK</p>
+    <div class="m-actions"><button class="btn hot" type="button" data-act="giveup-yes">Mostra quem é</button><button class="btn" type="button" data-act="close">Vou continuar</button></div>`);
 });
 B.onAct('giveup-yes', () => { B.closeModal(true); giveUp(); });
 
@@ -765,36 +816,36 @@ function shareText(){
 async function share(){
   const ok = await B.copyText(shareText());
   if (ok){ B.toast('Copiado!', 'Cola no grupo e se exibe'); B.talk('dbShare', null, 'happy'); }
-  else B.openModal(`<h2>Copia aí</h2><p class="sub">Não consegui copiar sozinho. Seleciona o texto:</p><pre style="white-space:pre-wrap;background:#fff;border:3px solid var(--ink);border-radius:12px;padding:10px;font-size:14px">${esc(shareText())}</pre><div class="m-actions"><button class="btn primary" type="button" data-act="close">Fechar</button></div>`);
+  else B.openModal(`<h2>Copia aí</h2><p class="sub">Não consegui copiar sozinho. Seleciona o texto aí e copia</p><pre style="white-space:pre-wrap;background:#fff;border:3px solid var(--ink);border-radius:12px;padding:10px;font-size:14px">${esc(shareText())}</pre><div class="m-actions"><button class="btn primary" type="button" data-act="close">Fechar</button></div>`);
 }
 
 /* ---------------- modais: ajuda e stats ---------------- */
 function openHelp(){
   B.openModal(`<h2>Quem é esse Guerreiro?</h2>
-    <p class="sub">Descubra o personagem secreto de Dragon Ball. Cada chute mostra o que bate com o alvo.</p>
+    <p class="sub">Tem um personagem de Dragon Ball escondido. Digita um nome, escolhe na lista e chuta. Cada chute vira uma linha na tabela mostrando o que bate com o escondido.</p>
     <div class="help-tiles">
       <div class="tile ok"><span class="t">Verde<br>igual</span></div>
       <div class="tile part"><span class="t">Amarelo<br>quase</span></div>
       <div class="tile bad"><i class="arr"></i><span class="t">Vermelho<br>▲ o alvo é maior</span></div>
     </div>
-    <h3>Os atributos</h3>
+    <h3>O que cada quadrado quer dizer</h3>
     <dl class="attr">
-      <dt>Raça</dt><dd>Amarelo = mesma família: Saiyajins (e meio/descendentes) · Humano e Animal (terráqueos) · Androides e Bio-Androides · Deus, Anjo, Kaioshin e Kaio · Majin e Demônio.</dd>
-      <dt>Afiliação</dt><dd>Amarelo = mesmo lado, grupo diferente. <b>Bem</b>: Guerreiros Z, Aliados, Tropa do Orgulho. <b>Mal</b>: Vilão, Red Ribbon, Forças do Freeza, Clã de Babidi. <b>Neutro</b>: Deuses, Neutro, Universo 6.</dd>
-      <dt>Estreia</dt><dd>Onde apareceu primeiro: DB → DBZ → Filmes Z → GT → Super. A seta diz se o alvo estreou depois (▲) ou antes (▼).</dd>
-      <dt>Planeta</dt><dd>Planeta natal (ou lar, pra deuses e anjos). Origem sem nome = Desconhecido.</dd>
-      <dt>Cabelo</dt><dd>Cor na forma base mais conhecida. Careca ou sem cabelo = Nenhum.</dd>
-      <dt>Transforma</dt><dd>Tem transformação ou forma alternativa mostrada na obra.</dd>
-      <dt>Poder</dt><dd>Pico canônico de 1 (Mr. Satan) a 10 (anjos e Zeno Sama). Amarelo = 1 nível de diferença.</dd>
+      <dt>Raça</dt><dd>Amarelo = mesma família. Saiyajins (e meio/descendentes), Humano e Animal (da Terra), Androides e Bio-Androides, Deus/Anjo/Kaioshin/Kaio, Majin e Demônio</dd>
+      <dt>Afiliação</dt><dd>Amarelo = mesmo lado, grupo diferente. <b>Bem</b>: Guerreiros Z, Aliados, Tropa do Orgulho. <b>Mal</b>: Vilão, Red Ribbon, Forças do Freeza, Clã de Babidi. <b>Neutro</b>: Deuses, Neutro, Universo 6</dd>
+      <dt>Estreia</dt><dd>Onde apareceu primeiro: DB, DBZ, Filmes Z, GT, Super. A seta fala se o alvo estreou depois (▲) ou antes (▼)</dd>
+      <dt>Planeta</dt><dd>Planeta natal (ou onde mora, no caso de deus e anjo). Origem sem nome = Desconhecido</dd>
+      <dt>Cabelo</dt><dd>Cor na forma normal mais conhecida. Careca ou sem cabelo = Nenhum</dd>
+      <dt>Transforma</dt><dd>Se ele tem transformação ou outra forma que aparece na obra</dd>
+      <dt>Poder</dt><dd>De 1 (Mr. Satan) a 10 (anjos e Zeno Sama). Amarelo = 1 nível de diferença. A seta fala se o alvo é mais forte (▲) ou mais fraco (▼)</dd>
     </dl>
     <h3>Modos e dicas</h3>
     <ul>
-      <li><span class="pill sun">Diário</span><span>Um guerreiro por dia, igual pra todo mundo.</span></li>
-      <li><span class="pill">Clássico Z</span><span>Diário só com personagens de Dragon Ball e Z.</span></li>
-      <li><span class="pill pink">Infinito</span><span>Sem limite, XP pela metade.</span></li>
-      <li><span class="pill sun">5 chutes</span><span>libera a <b>frase</b>; 10 chutes libera a <b>foto borrada</b>. Cada dica custa 10 XP.</span></li>
+      <li><span class="pill sun">Diário</span><span>Um guerreiro por dia, o mesmo pra todo mundo</span></li>
+      <li><span class="pill">Clássico Z</span><span>Outro diário, só com gente de Dragon Ball e Z</span></li>
+      <li><span class="pill pink">Infinito</span><span>Joga quantas quiser, mas o XP é pela metade</span></li>
+      <li><span class="pill sun">Dicas</span><span>Com 5 chutes libera a <b>frase</b>, com 10 libera a <b>foto borrada</b>. Cada dica custa 10 XP</span></li>
     </ul>
-    <p class="sub" style="margin-top:12px">Teclado: digite, <kbd>↑</kbd><kbd>↓</kbd> escolhem, <kbd>Enter</kbd> chuta, <kbd>Esc</kbd> fecha.</p>
+    <p class="sub" style="margin-top:12px">No teclado: digita, <kbd>↑</kbd><kbd>↓</kbd> escolhe, <kbd>Enter</kbd> chuta, <kbd>Esc</kbd> fecha a lista</p>
     <div class="m-actions"><button class="btn primary" type="button" data-act="close">Bora!</button></div>`);
 }
 function openStats(m){
@@ -868,12 +919,12 @@ B.chatter({ active: () => !finished() && !document.hidden, idleCat:'dbParadoMix'
 addEventListener('resize', checkSwipe);
 gridwrap.addEventListener('scroll', () => { if (gridwrap.scrollLeft > 10) $('#swipe').hidden = true; }, { passive:true });
 
-if (!CH.length){ B.say('Deu ruim: a lista de personagens não carregou. Recarrega a página?', 'dead', 99999); return; }
+if (!CH.length){ B.say('Deu ruim, a lista de personagens não carregou. Recarrega a página aí', 'dead', 99999); return; }
 setMode(mode, true);
 if (!B.store.get('fliperama.dragonball.seenHelp')){ B.store.set('fliperama.dragonball.seenHelp', 1); setTimeout(openHelp, 500); }
 setTimeout(() => {
   if (finished() && MODES[mode].daily) B.talk('dbInicioDiarioFeito', null, 'smug', 6000);
-  else if (S.guesses.length) B.say(`Voltou! Você tá com <b>${S.guesses.length}</b> chute${S.guesses.length>1?'s':''} nesse aqui. Bora terminar.`, 'happy', 5000);
+  else if (S.guesses.length) B.say(`Voltou! Cê já tem <b>${S.guesses.length}</b> chute${S.guesses.length>1?'s':''} nesse aqui, bora terminar`, 'happy', 5000);
   else B.talk('dbInicio', null, 'talk', 6000);
 }, 350);
 })();

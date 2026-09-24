@@ -6,7 +6,7 @@
 <meta name="description" content="Forca Bugada: adivinhe a palavra letra por letra antes que o mascote seja apagado pedaço por pedaço. Desafio do Dia e modo Infinito.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
-<link rel="stylesheet" href="../shared/base.css?v=2609241402">
+<link rel="stylesheet" href="../shared/base.css?v=2609242000">
 <style>
 :root{ --kh:48px; --peach:#FFB38A; --bsod:#0B63D6; }
 html,body{overflow-x:hidden}
@@ -15,9 +15,12 @@ html,body{overflow-x:hidden}
 #bar{flex:none}
 #side{flex:none;display:flex;flex-direction:column}
 #mascot{flex:none}
-#mascot .bg-bubble{min-height:0;height:62px;overflow:hidden}
-#mascot .bg-bubble p{font-size:13px;line-height:1.24}
-#mascot .bg-bubble p.long{font-size:12px;line-height:1.2}
+/* balão com altura fixa (4 linhas): nada embaixo pula quando a fala muda.
+   Antes era 62px com overflow:hidden e cortava a 4ª linha (e o bico do balão) */
+#mascot .bg-bubble{min-height:0;height:82px;padding:6px 12px}
+#mascot .bg-bubble p{max-height:100%;overflow-y:auto;scrollbar-width:none;font-size:13.5px;line-height:1.2}
+#mascot .bg-bubble p::-webkit-scrollbar{display:none}
+#mascot .bg-bubble p.long{font-size:12.5px;line-height:1.2}
 .side-card{display:none}
 main{flex:1;min-height:0;display:flex;flex-direction:column;gap:7px}
 
@@ -45,7 +48,7 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;gap:7px}
 .hint p{margin:0;min-width:0;flex:1;font-size:13.5px;line-height:1.25;color:var(--text-ink);text-wrap:pretty}
 .hint p b{font-family:var(--chunky);font-weight:400;color:var(--violet);font-size:14.5px}
 .hint p .fr{display:block;margin-top:2px;font-size:12px;font-weight:800;color:#6b5a90;font-style:italic}
-.hint p .lock{font-size:11.5px;color:#8c7cae;font-weight:800}
+.hint p .lock{font-size:12px;color:#76679a;font-weight:800}
 .hint.fresh{animation:fc-hintin .45s cubic-bezier(.3,1.6,.5,1)}
 @keyframes fc-hintin{from{transform:scale(.94) rotate(-1deg);opacity:.3}}
 
@@ -107,7 +110,7 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;gap:7px}
 
 /* barra de integridade (vertical, na lateral do palco) */
 .meter{position:absolute;left:max(0px,calc(50% - min(32cqw,35cqh) - 30px));top:50%;transform:translateY(-50%);height:min(92%,250px);width:30px;display:flex;flex-direction:column;align-items:center;gap:4px;z-index:2;pointer-events:none}
-.meter .lbl{flex:none;font-family:var(--chunky);font-size:9.5px;letter-spacing:.1em;color:var(--muted)}
+.meter .lbl{flex:none;font-family:var(--chunky);font-size:12px;letter-spacing:.04em;color:var(--muted)}
 .meter .segs{flex:1;width:20px;display:flex;flex-direction:column-reverse;gap:3px;padding:3px;background:var(--deep);border:2.5px solid var(--ink);border-radius:8px;box-shadow:0 3px 0 var(--ink)}
 .meter .segs i{flex:1;border-radius:3px;background:var(--green);transition:background-color .3s,opacity .3s}
 .meter[data-lv="mid"] .segs i{background:var(--sun)}
@@ -133,6 +136,11 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;gap:7px}
 .polar{position:absolute;right:1%;top:4%;z-index:4;width:min(40%,44cqh,180px);margin:0;padding:6px 6px 4px;background:#fff;border:3px solid var(--ink);border-radius:8px;box-shadow:4px 4px 0 var(--ink);transform:rotate(5deg);animation:fc-polar .6s cubic-bezier(.3,1.6,.5,1)}
 @keyframes fc-polar{from{transform:rotate(-20deg) scale(.2);opacity:0}}
 .polar img{display:block;width:100%;aspect-ratio:1;object-fit:contain;background:radial-gradient(circle,#FFF7E6,#F4EBFF)}
+/* ganhou com foto: o Bugado chega pro lado pra polaroide não tampar a cara dele */
+#big{transition:transform .45s cubic-bezier(.3,1.4,.5,1)}
+.meter{transition:opacity .3s}
+#stage.pic .meter{opacity:0}
+@container (max-width:560px){ #stage.pic #big{transform:translateX(-15cqw) scale(.8)} }
 .polar figcaption{font-family:var(--chunky);font-size:12px;line-height:1.1;color:var(--ink);text-align:center;padding-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* ---------- palavra ---------- */
@@ -165,7 +173,7 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;gap:7px}
 .key.shake{animation:fc-kshake .35s}
 @keyframes fc-kshake{25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
 .key.dica{flex:1.9 1 0;background:var(--pink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1;font-size:15px}
-.key.dica small{font-family:var(--body);font-size:9.5px;font-weight:900;letter-spacing:.02em}
+.key.dica small{font-family:var(--body);font-size:12px;font-weight:900;letter-spacing:0;white-space:nowrap}
 .key.dica[aria-disabled="true"]{background:#8a6a9a;color:#3a2d58;cursor:default}
 
 /* ---------- painel de fim ---------- */
@@ -192,13 +200,17 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;gap:7px}
 .cat-list .btn small{font-family:var(--body);font-weight:800;font-size:12px;color:#6b5a90;margin-top:2px}
 .cat-list .btn em{flex:none;font-style:normal;font-family:var(--body);font-weight:900;font-size:12px;color:#6b5a90;text-align:right;line-height:1.2}
 .cat-list .btn[aria-pressed="true"]{background:var(--c);}
+.cat-list .btn[aria-pressed="true"] .dot{background:var(--ink);box-shadow:inset 0 0 0 3px var(--paper)}
 .res-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
 .res-list div{display:flex;align-items:center;gap:8px;background:#fff;border:2.5px solid var(--ink);border-radius:10px;padding:5px 9px}
 .res-list .em{flex:none;font-size:18px;width:24px;text-align:center}
 .res-list .w{flex:1;min-width:0;font-family:var(--chunky);font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.res-list .c{flex:none;font-size:11px;color:#6b5a90;text-transform:uppercase;letter-spacing:.05em}
+.res-list .c{flex:none;font-size:12px;color:#6b5a90;text-transform:uppercase;letter-spacing:.05em}
 .res-list .e{flex:none;font-family:var(--chunky);font-size:13px;color:var(--violet);min-width:44px;text-align:right}
-.best-list{display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;margin-top:6px;font-size:14px;color:var(--text-ink)}
+.stat-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.bg-card .stat span{font-size:12px;letter-spacing:.02em;line-height:1.2;display:block}
+@media (max-width:420px){ .stat-grid.four{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.best-list{display:grid;grid-template-columns:1fr auto auto;align-items:baseline;gap:4px 12px;margin-top:6px;font-size:14px;color:var(--text-ink)}
 .best-list b{font-family:var(--chunky);font-weight:400;color:var(--ink);text-align:right}
 .best-list .h{font-size:11px;color:#6b5a90;text-transform:uppercase;letter-spacing:.05em}
 .dist{display:flex;flex-direction:column;gap:4px;margin-top:4px}
@@ -206,6 +218,9 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;gap:7px}
 .dist .dr > span{width:30px;text-align:right;color:var(--ink)}
 .dist .bb{min-width:26px;padding:2px 7px;text-align:right;background:#cfc3e8;border:2px solid var(--ink);border-radius:6px;color:var(--ink);font-size:13px}
 .dist .bb.hi{background:var(--green)}
+.help-list{margin-top:12px!important}
+.help-list li{align-items:flex-start}
+.help-list .tag2{min-width:78px;text-align:center;margin-top:2px}
 .help-demo{display:flex;align-items:center;gap:12px;margin:10px 0 4px}
 .help-demo svg{width:74px;height:74px;flex:none}
 .share-box{width:100%;min-height:120px;margin-top:10px;font:700 14px/1.3 var(--body);border:2.5px solid var(--ink);border-radius:10px;padding:8px;resize:vertical;color:var(--ink);background:#fff}
@@ -213,17 +228,22 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;gap:7px}
 
 /* ---------- telas baixas no celular ---------- */
 @media (max-height:740px) and (max-width:879px){ .fc{--kh:44px;gap:6px} main{gap:6px} .kr{gap:4px} #kb{gap:5px} }
-@media (max-height:680px) and (max-width:879px){ .fc{--kh:41px} #mascot .bg-mascot{width:46px;height:46px} #mascot .bg-bubble{height:52px} #mascot .bg-bubble p{font-size:12px} .hint{min-height:34px;padding-block:3px} .hint p{font-size:12.5px} .seg button{padding:4px 8px} .catbtn{height:32px} }
-/* título comprido + 4 botões: quebra em duas linhas no celular em vez de virar "FORCA…" */
-@media (max-width:480px){ #bar .bar-title b{white-space:normal;font-size:20px;line-height:.86;overflow:visible;text-overflow:clip} #bar .bar-title small{margin-bottom:1px} }
+@media (max-height:680px) and (max-width:879px){ .fc{--kh:41px} #mascot .bg-mascot{width:46px;height:46px} #mascot .bg-bubble{height:68px} #mascot .bg-bubble p,#mascot .bg-bubble p.long{font-size:12px} .hint{min-height:34px;padding-block:3px} .hint p{font-size:12.5px} .seg button{padding:4px 8px} .catbtn{height:32px} }
+/* título comprido + 4 botões: quebra em duas linhas no celular em vez de virar "FORCA..." */
+@media (max-width:480px){ #bar .bar-title b{white-space:normal;font-size:20px;line-height:.9;overflow:visible;text-overflow:clip} #bar .bar-title small{margin-bottom:1px} }
+/* 4 botões + nível no celular: a barrinha de XP do nível sai (o número fica) pra o título não ser esmagado */
+@media (max-width:480px){ #bar{gap:6px} #bar .lvl-chip .mini{display:none} #bar .lvl-chip{padding-right:3px} }
+@media (max-width:420px){ #bar .bar-title small{display:none} }
 @media (max-width:380px){ .seg button{font-size:13px;padding:5px 7px} .seg .n{display:none} .key{font-size:17px} .prog i{width:14px;height:14px} .prog{gap:4px} }
 
+/* tablet em pé: teclado e teclas maiores (antes ficava um tecladinho de celular no meio da tela) */
+@media (min-width:600px) and (max-width:879px) and (min-height:800px){ .fc{--kh:58px;gap:10px} main{gap:10px} #kb{max-width:640px;gap:8px} .kr{gap:7px} .key{font-size:23px;border-radius:12px} .key.dica{font-size:17px} .endp{max-width:640px} .hint{padding:8px 14px 8px 8px} .hint p{font-size:15px} }
 /* ---------- desktop ---------- */
 @media (min-width:880px){
   .fc{--kh:54px;display:grid;grid-template-columns:300px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);column-gap:30px;row-gap:12px;padding-block:12px 18px;min-height:640px}
   #bar{grid-column:1/-1}
   #side{grid-column:1;grid-row:2;gap:18px;padding-top:14px;min-height:0;overflow:auto}
-  #mascot .bg-bubble{height:auto;min-height:118px;overflow:visible}
+  #mascot .bg-bubble{flex:none;height:136px;padding:10px 15px}
   #mascot .bg-bubble p{font-size:15.5px;line-height:1.3}
   #mascot .bg-bubble p.long{font-size:14.5px}
   main{grid-column:2;grid-row:2;gap:10px}
@@ -270,15 +290,15 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;gap:7px}
       <div class="prog" id="prog" aria-label="Progresso do desafio"></div>
       <button type="button" class="btn catbtn" id="catBtn" hidden></button>
     </nav>
-    <div class="hint" id="hint"><span class="tag2" id="catTag">…</span><p id="hintTxt"></p></div>
+    <div class="hint" id="hint"><span class="tag2" id="catTag">DICA</span><p id="hintTxt"></p></div>
     <section id="stage" aria-label="O Bugado, sendo apagado a cada erro">
       <div class="meter" id="meter" aria-hidden="true"><span class="lbl">VIDA</span><div class="segs"></div><b id="pct">100%</b></div>
       <div id="bigWrap"></div>
       <figure class="polar" id="polar" hidden><img alt="" id="polImg"><figcaption id="polCap"></figcaption></figure>
       <div class="bsod" id="bsod" hidden><div class="in">
         <div class="sad">:(</div>
-        <p class="t1">Bugado.exe parou de funcionar.</p>
-        <p>Seu mascote encontrou um problema e precisa ser reiniciado. A palavra era:</p>
+        <p class="t1">Bugado.exe parou de funcionar</p>
+        <p>Teu mascote deu pau e precisa ser reiniciado. A palavra era:</p>
         <p class="ans" id="bsAns"></p>
         <p class="t3"><span id="bsPct">0</span>% concluído · código de parada: FORCA_0x07</p>
       </div></div>
@@ -290,10 +310,10 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;gap:7px}
     <p class="sr" id="sr" aria-live="polite"></p>
   </main>
 </div>
-<script src="../shared/falas.js?v=2609241402"></script><script src="../shared/bugado.js?v=2609241402"></script>
-<script src="../conexo/puzzles.js?v=2609241402"></script><script src="../pokemon/pokedex.js?v=2609241402"></script>
-<script src="../dragonball/personagens.js?v=2609241402"></script><script src="../contexto/segredos.js?v=2609241402"></script>
-<script src="falas-forca.js?v=2609241402"></script>
+<script src="../shared/falas.js?v=2609242000"></script><script src="../shared/bugado.js?v=2609242000"></script>
+<script src="../conexo/puzzles.js?v=2609242000"></script><script src="../pokemon/pokedex.js?v=2609242000"></script>
+<script src="../dragonball/personagens.js?v=2609242000"></script><script src="../contexto/segredos.js?v=2609242000"></script>
+<script src="falas-forca.js?v=2609242000"></script>
 <script>
 (() => {
 'use strict';
@@ -306,13 +326,13 @@ const chance = p => Math.random() < p;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
 const MAXE = 7;                 // o 7º erro trava tudo
 const VOW = 'aeiou', RARE = 'kwyzqx';
-const PARTS = ['', 'a orelha esquerda', 'a orelha direita', 'o Jorge', 'os olhos', 'a resolução', 'a boca'];
+const PARTS = ['', 'a orelha esquerda', 'a orelha direita', 'o pixel rosa', 'os olhos', 'a resolução', 'a boca'];
 const CATS = {
-  mistura: { name:'Mistureba',   color:'#FFB38A', desc:'Categoria sorteada a cada palavra' },
+  mistura: { name:'Mistureba',   color:'#FFB38A', desc:'Cada palavra cai numa categoria diferente' },
   conexo:  { name:'Conexo',      color:'#FFD23F', desc:'Palavras do Conexo · dica: o tema do grupo' },
-  pokemon: { name:'Pokémon',     color:'#FF4F9A', desc:'Os 1025 · dica: geração e tipo' },
-  db:      { name:'Dragon Ball', color:'#FF9A3C', desc:'Guerreiros · dica: raça (e mais com 3 erros)' },
-  coisas:  { name:'Coisas',      color:'#2EE6D6', desc:'Substantivos do dia a dia · dica: 1ª letra' }
+  pokemon: { name:'Pokémon',     color:'#FF4F9A', desc:'Os 1025 pokémon · dica: geração e tipo' },
+  db:      { name:'Dragon Ball', color:'#FF9A3C', desc:'Guerreiros · dica: raça (com 3 erros eu conto mais)' },
+  coisas:  { name:'Coisas',      color:'#2EE6D6', desc:'Coisa do dia a dia · dica: a 1ª letra' }
 };
 const REAL = ['coisas','conexo','pokemon','db'];
 const TIPOS = { normal:'Normal', fogo:'Fogo', agua:'Água', planta:'Planta', eletrico:'Elétrico', gelo:'Gelo', lutador:'Lutador', venenoso:'Venenoso', terrestre:'Terrestre', voador:'Voador', psiquico:'Psíquico', inseto:'Inseto', pedra:'Pedra', fantasma:'Fantasma', dragao:'Dragão', sombrio:'Sombrio', metalico:'Metálico', fada:'Fada' };
@@ -596,7 +616,7 @@ function renderHint(fresh){
   const words = String(E.ans).trim().split(/\s+/).length;
   const moreDB = E.cat === 'db' && E.frase && !(e >= 3 || R.done);
   h += ` <span class="lock">· ${nLetters(E.ans)} letras${words > 1 ? ` em ${words} palavras` : ''}${moreDB ? ' · mais dica com 3 erros' : ''}</span>`;
-  if (E.cat === 'db' && E.frase && (e >= 3 || R.done)) h += `<span class="fr">“${esc(E.frase)}”</span>`;
+  if (E.cat === 'db' && E.frase && (e >= 3 || R.done)) h += `<span class="fr">${esc(E.frase)}</span>`;
   $('#hintTxt').innerHTML = h;
   if (fresh && !RM){ hintEl.classList.remove('fresh'); void hintEl.offsetWidth; hintEl.classList.add('fresh'); }
 }
@@ -637,12 +657,20 @@ function renderKeys(){
     key.setAttribute('aria-label', L.toUpperCase() + (s === 'a' ? ' (não tem)' : s ? ' (tem)' : ''));
   });
 }
-const setPol = on => { $("#polar").hidden = !on; $("#bsod").classList.toggle("pic", on); };
+const setPol = on => { $("#polar").hidden = !on; $("#bsod").classList.toggle("pic", on); $("#stage").classList.toggle("pic", on && !!(R && R.won)); };
+// foto que não carregou (sem internet, link quebrado): polaroide "sem sinal" em vez de sumir
+const POL_FALLBACK = 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#2A1650"/><g opacity=".5">${[0,1,2,3,4,5,6,7,8,9].map(i => `<rect y="${i*10}" width="100" height="4" fill="#3A2170"/>`).join('')}</g><rect x="22" y="18" width="10" height="10" fill="#FF4F9A"/><rect x="70" y="64" width="7" height="7" fill="#2EE6D6"/><text x="50" y="62" text-anchor="middle" font-family="Arial Black,Impact,sans-serif" font-size="44" fill="#FFD23F" stroke="#1B1030" stroke-width="3" paint-order="stroke">?</text><text x="50" y="86" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="10" fill="#FFF7E6">sem sinal</text></svg>`);
 function renderPolar(){
-  const pol = $('#polar'), src = R.done ? imgOf(R.E) : '';
-  if (!src){ setPol(false); return; }
+  const src = imgOf(R.E);
   const img = $('#polImg');
-  if (img.dataset.src !== src){ img.dataset.src = src; setPol(false); img.onload = () => { if (R && R.done && imgOf(R.E) === src) setPol(true); }; img.onerror = () => { setPol(false); }; img.src = src; }
+  if (!src){ setPol(false); return; }
+  if (!R.done){ if (img.dataset.pre !== src){ img.dataset.pre = src; const pre = new Image(); pre.src = src; } setPol(false); return; } // já baixa a foto durante a rodada
+  if (img.dataset.src !== src){
+    img.dataset.src = src; setPol(false);
+    img.onload = () => { if (R && R.done && imgOf(R.E) === src) setPol(true); };
+    img.onerror = () => { img.onerror = null; img.src = POL_FALLBACK; };
+    img.src = src;
+  }
   else if (img.complete && img.naturalWidth) setPol(true);
   img.alt = up(R.E.ans); $('#polCap').textContent = up(R.E.ans);
 }
@@ -653,7 +681,8 @@ function fitWord(){
   const W = wordEl.clientWidth; if (!W) return;
   const desk = innerWidth >= 880, H = innerHeight;
   const words = String(R.E.ans).split(/\s+/).filter(Boolean).map(w => ({ n:[...w].length, u:[...w].reduce((a, ch) => a + (keyOf(ch) || /\d/.test(ch) ? 1 : .5), 0) }));
-  const maxT = desk ? 56 : (H < 700 ? 38 : 44), maxH = desk ? 136 : (H < 700 ? 70 : 96);
+  const tab = !desk && innerWidth >= 600 && H >= 800; // tablet em pé: quadradinhos maiores
+  const maxT = desk ? 56 : tab ? 54 : (H < 700 ? 38 : 44), maxH = desk ? 136 : tab ? 124 : (H < 700 ? 70 : 96);
   let best = null;
   for (let t = maxT; t >= 14; t--){
     const g = Math.max(3, Math.round(t*.11)), sp = Math.round(t*.5), rg = Math.round(t*.24);
@@ -848,9 +877,9 @@ function renderEnd(){
   if (kind === 'daily'){
     const i = D.idx, last = D.rounds.every(r => r.done);
     const solved = D.rounds.filter(r => r.won).length;
-    meta = last ? `Desafio #${D.day} fechado: <b>${solved}/5</b> · próximo em <b id="cd">${countdown()}</b>`
-                : `Palavra <b>${i+1}/5</b> · ${R.won ? `${e} erro${e === 1 ? '' : 's'}` : 'o Bugado travou'} · vale vitória com 3 de 5`;
-    acts = last ? `<button type="button" class="btn cool" data-end="result">Resultado</button><button type="button" class="btn" data-end="share">Compartilhar</button><button type="button" class="btn primary" data-end="inf">Infinito</button>`
+    meta = last ? `Desafio #${D.day} fechado: <b>${solved}/5</b> · o próximo sai em <b id="cd">${countdown()}</b>`
+                : `Palavra <b>${i+1}/5</b> · ${R.won ? `${e} erro${e === 1 ? '' : 's'}` : 'eu travei'} · acerta 3 de 5 pra valer vitória`;
+    acts = last ? `<button type="button" class="btn cool" data-end="result">Resultado</button><button type="button" class="btn" data-end="share" aria-label="Copiar o resultado pra compartilhar">Copiar</button><button type="button" class="btn primary" data-end="inf">Infinito</button>`
                 : `<button type="button" class="btn primary big" data-end="next">Próxima palavra ▶</button><button type="button" class="btn" data-end="stats">Estatísticas</button>`;
   } else {
     const st = infSlot().streak;
@@ -899,10 +928,10 @@ function renderSide(){
   const title = kind === 'daily' ? `Desafio #${D.day}` : `Infinito`;
   const sub = kind === 'daily' ? `Palavra ${D.idx+1} de 5 · igual pra todo mundo` : `${CATS[INF.cat].name} · sequência ${infSlot().streak} · recorde ${G.best[INF.cat]||0}`;
   card.innerHTML = `<h4>${title}</h4><p class="sub">${sub}</p>
-    <div style="font-size:12px;color:#6b5a90;text-transform:uppercase;letter-spacing:.05em">Letras que me custaram pedaço</div>
-    <div class="wrong">${wr.length || hl.length ? wr.map(k => `<i>${k.toUpperCase()}</i>`).join('') + hl.map(k => `<i class="h" title="dica">${k.toUpperCase()}</i>`).join('') : '<span>nenhuma ainda (continua assim)</span>'}</div>
+    <div style="font-size:12px;color:#6b5a90;text-transform:uppercase;letter-spacing:.05em">Letras que me custaram um pedaço</div>
+    <div class="wrong">${wr.length || hl.length ? wr.map(k => `<i>${k.toUpperCase()}</i>`).join('') + hl.map(k => `<i class="h" title="dica">${k.toUpperCase()}</i>`).join('') : '<span>nenhuma ainda, continua assim</span>'}</div>
     <div class="mini"><div><b>${G.solved}</b><span>Acertos</span></div><div><b>${G.perfect}</b><span>Perfeitas</span></div><div><b>${G.lost}</b><span>Telas azuis</span></div></div>
-    <div class="kbd">Digita as letras no teclado · <kbd>Enter</kbd> vai pra próxima · <kbd>?</kbd> pede dica (custa uma vida). Acento e Ç aparecem sozinhos.</div>`;
+    <div class="kbd">Digita as letras no teclado · <kbd>Enter</kbd> vai pra próxima · <kbd>?</kbd> pede dica (custa uma vida). Acento e Ç aparecem sozinhos</div>`;
 }
 
 /* ---------------- entrada ---------------- */
@@ -964,7 +993,7 @@ function openCats(){
     const C = CATS[c], b = INF.by[c];
     return `<button class="btn" data-act="cat-${c}" style="--c:${C.color}" aria-pressed="${c === INF.cat}"><i class="dot"></i><span>${C.name}<small>${C.desc}</small></span><em>🔥 ${b.streak}<br>recorde ${G.best[c]||0}</em></button>`;
   }).join('');
-  B.openModal(`<h2>Categoria</h2><p class="sub">Cada categoria tem sua própria sequência. A palavra em andamento fica guardada.</p>
+  B.openModal(`<h2>Categoria</h2><p class="sub">Cada categoria tem sua própria sequência, e a palavra que cê tava jogando fica guardada.</p>
     <div class="cat-list">${list}</div>
     <div class="m-actions"><button class="btn" data-act="close">Fechar</button></div>`);
 }
@@ -981,7 +1010,7 @@ function skipWord(){
   if (R.done){ nextWord(); return; }
   if (!R.g){ const w = up(R.E.ans); infSlot().R = null; ensureInfRound(); buildRound({ pop:true }); talk('forcaPulou', { palavra:w }, 'smug', 5000); later(() => { if (!R.done && !R.g) startLine(); }, 5200); return; }
   const st = infSlot().streak;
-  B.openModal(`<h2>Pular essa?</h2><p class="sub">Pular no meio conta como tela azul${st ? ` e zera tua sequência de <b>${st}</b>` : ''}. O Bugado vai lembrar.</p>
+  B.openModal(`<h2>Pular essa?</h2><p class="sub">Pular no meio conta como tela azul${st ? ` e zera tua sequência de <b>${st}</b>` : ''}. E eu vou lembrar.</p>
     <div class="m-actions"><button class="btn hot" data-act="skip-yes">Pular mesmo</button><button class="btn primary" data-act="close">Voltar pro jogo</button></div>`);
 }
 B.onAct('skip-yes', () => {
@@ -1003,18 +1032,18 @@ function shareText(){
 async function share(){
   const txt = shareText();
   const ok = await B.copyText(txt);
-  if (ok){ B.toast('Copiado!', 'Resultado na área de transferência.'); talk('forcaCompartilhou', null, 'happy', 4500); return; }
-  B.openModal(`<h2>Copia aí</h2><p class="sub">Não consegui copiar sozinho. Seleciona e copia:</p><textarea class="share-box" readonly>${esc(txt)}</textarea><div class="m-actions"><button class="btn primary" data-act="close">Fechou</button></div>`);
+  if (ok){ B.toast('Copiado!', 'Agora é só colar no grupo'); talk('forcaCompartilhou', null, 'happy', 4500); return; }
+  B.openModal(`<h2>Copia aí</h2><p class="sub">Não consegui copiar sozinho, seleciona e copia na mão:</p><textarea class="share-box" readonly>${esc(txt)}</textarea><div class="m-actions"><button class="btn primary" data-act="close">Fechou</button></div>`);
   const ta = document.querySelector('.share-box'); if (ta){ ta.focus(); ta.select(); }
 }
 function openDailyResult(){
   const solved = D.rounds.filter(r => r.won).length, tot = D.rounds.reduce((a, r) => a + errorsOf(r), 0);
-  const titles = ['TELA AZUL TOTAL', 'QUASE NADA', 'DEU RUIM', 'SOBREVIVI!', 'BRABO!', 'PERFEIÇÃO!'];
-  const rows = D.rounds.map((r, i) => `<div><span class="em">${emOf(r)}</span><span class="w">${r.done ? esc(up(r.E.ans)) : '???'}</span><span class="c">${CATS[r.E.cat].name}</span><span class="e">${r.done ? (r.won ? `${errorsOf(r)} erro${errorsOf(r) === 1 ? '' : 's'}` : 'travou') : '—'}</span></div>`).join('');
+  const titles = ['TELA AZUL TOTAL', 'SÓ UMA, MDS', 'DEU RUIM', 'SOBREVIVI', 'BRABO DMS', '5 DE 5 QUE ISSO'];
+  const rows = D.rounds.map((r, i) => `<div><span class="em">${emOf(r)}</span><span class="w">${r.done ? esc(up(r.E.ans)) : '???'}</span><span class="c">${CATS[r.E.cat].name}</span><span class="e">${r.done ? (r.won ? `${errorsOf(r)} erro${errorsOf(r) === 1 ? '' : 's'}` : 'travou') : '-'}</span></div>`).join('');
   B.openModal(`<h2 class="big">${titles[solved]}</h2>
     <p class="sub">Desafio #${D.day} · <b>${solved}/5</b> palavras · ${tot} erro${tot === 1 ? '' : 's'} no total${D.xp ? ` · <b style="color:var(--violet)">+${D.xp} XP bônus</b>` : ''}</p>
     <div class="res-list">${rows}</div>
-    <p class="m-note">${solved >= 3 ? 'Vitória do dia registrada no Fliperama.' : 'Precisava de 3 de 5 pra contar vitória. Amanhã tem mais.'} Próximo desafio em <b id="cd2">${countdown()}</b></p>
+    <p class="m-note">${solved >= 3 ? 'Vitória do dia registrada no Fliperama.' : 'Precisava de 3 de 5 pra contar vitória, amanhã tem mais.'} O próximo sai em <b id="cd2">${countdown()}</b></p>
     <div class="m-actions"><button class="btn hot" data-act="share">Compartilhar</button><button class="btn primary" data-act="goinf">Jogar Infinito</button><button class="btn" data-act="close">Fechar</button></div>`);
   clearInterval(openDailyResult.t);
   openDailyResult.t = setInterval(() => { const el = document.getElementById('cd2'); if (!el) return clearInterval(openDailyResult.t); el.textContent = countdown(); }, 1000);
@@ -1029,11 +1058,11 @@ function openStats(){
   const maxBar = Math.max(1, ...Object.values(G.dailyDist));
   const today = D && D.counted ? D.rounds.filter(r => r.won).length : -1;
   const dist = [5,4,3,2,1,0].map(n => { const v = G.dailyDist[n]||0; return `<div class="dr"><span>${n}/5</span><div class="bb ${n === today ? 'hi' : ''}" style="width:${Math.max(8, v/maxBar*100)}%">${v}</div></div>`; }).join('');
-  B.openModal(`<h2>Estatísticas</h2><p class="sub">O histórico completo das minhas mortes e renascimentos.</p>
-    <div class="stat-grid">
+  B.openModal(`<h2>Estatísticas</h2><p class="sub">O histórico completo das minhas mortes e ressurreições.</p>
+    <div class="stat-grid four">
       <div class="stat"><b>${G.solved}</b><span>Acertos</span></div>
       <div class="stat"><b>${G.lost}</b><span>Telas azuis</span></div>
-      <div class="stat"><b>${pct}%</b><span>Aproveit.</span></div>
+      <div class="stat"><b>${pct}%</b><span>Acerto</span></div>
       <div class="stat"><b>${G.perfect}</b><span>Perfeitas</span></div>
     </div>
     <h3>Infinito: sequência e recorde</h3>
@@ -1046,18 +1075,18 @@ const HELP_SVG = `<svg viewBox="0 0 120 120" aria-hidden="true"><path d="M27 50 
 function openHelp(auto){
   G.seenHelp = true; B.saveProfile();
   B.openModal(`<h2>Como jogar Forca Bugada</h2>
-    <p class="sub">É a forca de sempre: descobre a palavra secreta chutando uma letra de cada vez. A diferença é que quem paga pelos teus erros sou EU.</p>
-    <div class="help-demo">${HELP_SVG}<p style="margin:0">Cada letra errada apaga um pedaço meu: orelha, orelha, o Jorge (meu pixel rosa), os olhos, a imagem e a boca. No <b>7º erro</b> eu viro tela azul e você perde.</p></div>
-    <ul>
-      <li>🔤 <span>Toca numa letra do teclado (ou digita no PC). Se tiver na palavra, ela aparece em todos os lugares. Tecla verde = tem, tecla escura com X = não tem.</span></li>
-      <li>✍️ <span>Não precisa de acento: chutou <b>A</b>, aparecem Á, Â, Ã e À também. <b>C</b> revela o Ç. Espaço, hífen, ponto e número já vêm à mostra.</span></li>
-      <li>💡 <span>A dica em cima da palavra ajuda: tema do grupo do Conexo, geração e tipo do Pokémon, raça do guerreiro (com 3 erros eu conto mais) ou a primeira letra.</span></li>
-      <li>🆘 <span>O botão <b>DICA</b> revela uma letra, mas custa uma vida (um pedaço meu). Na última vida eu me recuso.</span></li>
-      <li>📅 <span><b>Desafio do Dia</b>: 5 palavras (Coisas, Conexo, Pokémon, Dragon Ball e uma surpresa), iguais pra todo mundo. Acertou 3 ou mais, vitória. Dá pra compartilhar o resultado.</span></li>
-      <li>♾️ <span><b>Infinito</b>: palavra atrás de palavra na categoria que você escolher, com sequência e recorde. A cada 5 seguidas, vitória no Fliperama.</span></li>
-      <li>⭐ <span>Cada palavra acertada dá XP. Menos erros e palavras mais longas dão mais. Palavra perfeita (zero erros) dá bônus.</span></li>
+    <p class="sub">É a forca de sempre: descobre a palavra secreta chutando uma letra de cada vez. A diferença é que quem paga pelos teus erros sou eu.</p>
+    <div class="help-demo">${HELP_SVG}<p style="margin:0">Cada letra errada apaga um pedaço meu: orelha, outra orelha, meu pixel rosa, os olhos, a imagem e a boca. No <b>7º erro</b> eu viro tela azul e cê perde a palavra.</p></div>
+    <ul class="help-list">
+      <li><span class="tag2" style="--c:#3DDC84">LETRA</span><span>Toca numa letra do teclado (ou digita no PC). Se ela tiver na palavra, aparece em todos os lugares. Tecla verde = tem, tecla escura com X = não tem.</span></li>
+      <li><span class="tag2" style="--c:#FFD23F">ACENTO</span><span>Não precisa: chutou <b>A</b>, aparece Á, Â, Ã e À junto. <b>C</b> mostra o Ç. Espaço, hífen, ponto e número já vêm à mostra.</span></li>
+      <li><span class="tag2" style="--c:#2EE6D6">DICA</span><span>A faixa em cima ajuda: tema do grupo do Conexo, geração e tipo do Pokémon, raça do guerreiro (com 3 erros eu conto mais) ou a primeira letra.</span></li>
+      <li><span class="tag2" style="--c:#FF4F9A">BOTÃO</span><span>A tecla <b>DICA</b> mostra uma letra, mas custa uma vida (um pedaço meu). Na última vida eu não dou.</span></li>
+      <li><span class="tag2" style="--c:#FFB38A">DESAFIO</span><span><b>Desafio do Dia</b>: 5 palavras (Coisas, Conexo, Pokémon, Dragon Ball e uma surpresa), iguais pra todo mundo. Acertou 3 ou mais, é vitória. Dá pra compartilhar o resultado.</span></li>
+      <li><span class="tag2" style="--c:#B7A6DC">INFINITO</span><span><b>Infinito</b>: palavra atrás de palavra na categoria que cê escolher, valendo sequência e recorde. A cada 5 seguidas conta uma vitória no Fliperama.</span></li>
+      <li><span class="tag2" style="--c:#FFD23F">XP</span><span>Cada palavra certa dá XP. Menos erro e palavra maior dão mais. Palavra perfeita (zero erro) ganha bônus.</span></li>
     </ul>
-    <div class="m-actions"><button class="btn primary" data-act="close">Bora, não te deixo virar tela azul</button></div>`);
+    <div class="m-actions"><button class="btn primary" data-act="close">Bora, não me deixa virar tela azul</button></div>`);
   if (auto !== true) talk('forcaAjuda', null, 'smug', 4500);
 }
 

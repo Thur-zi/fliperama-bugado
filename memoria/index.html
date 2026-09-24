@@ -6,7 +6,7 @@
 <meta name="description" content="Memória: jogo de pares com Pokémon e Dragon Ball. Jornada com níveis e twists (Evolução, Sombra, Bagunça, Relâmpago) e Desafio do Dia.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
-<link rel="stylesheet" href="../shared/base.css?v=2609241402">
+<link rel="stylesheet" href="../shared/base.css?v=2609242000">
 <style>
 html,body{overflow-x:hidden}
 .mm{height:100vh;height:100dvh;min-height:520px;display:flex;flex-direction:column;gap:7px;padding-block:8px 10px}
@@ -77,6 +77,8 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;gap:7px}
   radial-gradient(rgba(27,16,48,.14) 18%,transparent 24%) 0 0/calc(var(--cw)*.1) calc(var(--cw)*.1),
   linear-gradient(135deg,var(--tc) 0 62%,var(--tc2,var(--tc)) 62%)}
 .front img{position:absolute;left:5%;right:5%;top:4%;width:90%;height:calc(100% - var(--nh) - 4%);object-fit:contain;filter:drop-shadow(calc(var(--cw)*.025) calc(var(--cw)*.025) 0 rgba(27,16,48,.55));transition:filter .6s}
+/* foto com fundo (Dragon Ball Wiki): vira um retratinho emoldurado em vez de recorte solto */
+.front.ph img{left:9%;right:9%;top:6%;width:82%;height:calc(100% - var(--nh) - 12%);object-fit:cover;object-position:50% 18%;border:max(1.5px,calc(var(--bw)*.8)) solid var(--ink);border-radius:calc(var(--r)*.7);background:#fff;filter:none;box-shadow:calc(var(--cw)*.025) calc(var(--cw)*.025) 0 rgba(27,16,48,.55)}
 .front .nm{position:absolute;left:0;right:0;bottom:0;height:var(--nh);display:grid;place-items:center;padding:0 3px;background:var(--paper);border-top:var(--bw) solid var(--ink);color:var(--ink);font-family:var(--chunky);font-size:calc(var(--cw)*.135);line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .front .nm span{max-width:100%;overflow:hidden;text-overflow:ellipsis}
 #board{--nh:calc(var(--ch)*.19)}
@@ -251,9 +253,9 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;gap:7px}
     <p class="sr" id="sr" aria-live="polite"></p>
   </main>
 </div>
-<script src="../shared/falas.js?v=2609241402"></script><script src="../shared/bugado.js?v=2609241402"></script>
-<script src="../pokemon/pokedex.js?v=2609241402"></script><script src="../dragonball/personagens.js?v=2609241402"></script>
-<script src="falas-memoria.js?v=2609241402"></script>
+<script src="../shared/falas.js?v=2609242000"></script><script src="../shared/bugado.js?v=2609242000"></script>
+<script src="../pokemon/pokedex.js?v=2609242000"></script><script src="../dragonball/personagens.js?v=2609242000"></script>
+<script src="falas-memoria.js?v=2609242000"></script>
 <script>
 (() => {
 'use strict';
@@ -275,7 +277,10 @@ const RACE = { 'Saiyajin':'#FF9A3C', 'Meio-Saiyajin':'#FFB02E', 'Descendente Sai
   'Dragão':'#3FBF5A', 'Raça do Freeza':'#B58CF0', 'Animal':'#D6A93E', 'Outro':'#A8A77A', 'Tsufurujin':'#735797' };
 const PK = (window.POKEDEX || []).map(r => ({ id:'p'+r[0], num:r[0], nome:r[1], gen:r[2], t1:r[3], t2:r[4], stage:r[8], img:ART(r[0]), tc:TC[r[3]]||'#A8A77A', tc2:r[4] ? TC[r[4]] : '' }));
 const byNum = {}; PK.forEach(p => byNum[p.num] = p);
-const DB = (window.DB_CHARS || []).filter(c => c.img).map((c,i) => ({ id:'d'+i, nome:c.nome, img:c.img, tc:RACE[c.raca]||'#8F75E8', tc2:'', db:true }));
+// DB: img = recorte transparente (render) ou foto da wiki (render:false, fica emoldurada no card)
+const DB = (window.DB_CHARS || []).filter(c => c.img).map((c,i) => ({ id:'d'+i, nome:c.nome, img:c.img, img2:c.img2||'', photo:c.render === false, tc:RACE[c.raca]||'#8F75E8', tc2:'', db:true }));
+// silhueta (twist Sombra) só funciona com recorte transparente
+const DB_R = DB.filter(d => !d.photo);
 const dbBy = {}; DB.forEach(d => dbBy[d.nome] = d);
 // linhas evolutivas: nº consecutivos, mesmo tipo principal, estágio subindo de 1 em 1
 // (conferido à mão: Wobbuffet não vem do Unown, Dipplin não vem do Iron Leaves)
@@ -297,6 +302,7 @@ const DUOS = [['Goku','Chi-Chi'],['Vegeta','Bulma'],['Kuririn','Androide 18'],['
   ['Zarbon','Dodoria'],['Kaio do Norte','Grande Kaio'],['Vegetto','Gogeta'],['Marcarita','Vermoud'],['Cell','Androide 17'],['Trunks','Gotenks'],['Dende','Nail'],
   ['Grande Kaioshin','Kibito-Shin'],['Mestre Kame','Launch']]
   .filter(d => dbBy[d[0]] && dbBy[d[1]]).map(d => [dbBy[d[0]], dbBy[d[1]]]);
+const DUOS_R = DUOS.filter(d => !d[0].photo && !d[1].photo);
 
 const THEMES = {
   gen1:{ name:'Pokémon Gen 1', short:'Gen 1', sub:'Os 151 clássicos' },
@@ -312,13 +318,13 @@ const THEME_ART = {
 };
 const TW = {
   evolucao: { name:'Evolução', c:'#3DDC84', ic:'<svg viewBox="0 0 24 24"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>',
-    desc:'O par não é igual: é da mesma linha evolutiva (Charmander ↔ Charizard). No Dragon Ball, é a dupla famosa (Kuririn ↔ Androide 18).' },
+    desc:'O par não é igual, é da mesma família: Charmander faz par com Charizard. No Dragon Ball é a dupla famosa, tipo Kuririn e Androide 18' },
   sombra:   { name:'Sombra', c:'#8F7BFF', ic:'<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"/></svg>',
-    desc:'Um card de cada par aparece só como silhueta. Reconhece pelo formato!' },
+    desc:'Um card de cada par aparece só a silhueta preta, sem nome. Reconhece pelo formato' },
   bagunca:  { name:'Bagunça', c:'#FF4F9A', ic:'<svg viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="M4 4l5 5"/></svg>',
-    desc:'A cada erro, dois cards virados pra baixo trocam de lugar (com animação: fica de olho).' },
+    desc:'A cada erro, dois cards virados pra baixo trocam de lugar. A troca é animada, fica de olho' },
   relampago:{ name:'Relâmpago', c:'#FFD23F', ic:'<svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
-    desc:'No começo, todos os cards ficam virados pra cima por 3 segundos. Depois, é com a sua memória.' }
+    desc:'No começo todos os cards ficam abertos por 3 segundos. Depois é com a sua memória' }
 };
 const TW_ORDER = ['relampago','sombra','bagunca','evolucao'];
 const twIcon = k => `<span class="tw-i" style="--c:${TW[k].c}" title="${TW[k].name}">${TW[k].ic}</span>`;
@@ -355,10 +361,11 @@ function buildPairs(theme, pairs, tw, rnd){
   if (evo){
     const ch = theme === 'gen1' ? CH_GEN1 : CH_ALL;
     pickN(ch, pkN, rnd).forEach(c => { const i = Math.floor(rnd()*(c.length-1)); const j = i + 1 + Math.floor(rnd()*(c.length-1-i)); out.push([c[i], c[j]]); });
-    pickN(DUOS, dbN, rnd).forEach(d => out.push(rnd() < .5 ? [d[0], d[1]] : [d[1], d[0]]));
+    pickN(tw.includes('sombra') ? DUOS_R : DUOS, dbN, rnd).forEach(d => out.push(rnd() < .5 ? [d[0], d[1]] : [d[1], d[0]]));
   } else {
-    pickN(poolFor(theme === 'mix' ? 'poke' : theme), pkN, rnd).forEach(e => out.push([e, e]));
-    pickN(DB, dbN, rnd).forEach(e => out.push([e, e]));
+    const base = poolFor(theme === 'mix' ? 'poke' : theme);
+    pickN(base === DB && tw.includes('sombra') ? DB_R : base, pkN, rnd).forEach(e => out.push([e, e]));
+    pickN(tw.includes('sombra') ? DB_R : DB, dbN, rnd).forEach(e => out.push([e, e]));
   }
   return out;
 }
@@ -398,7 +405,7 @@ function cardHTML(c, i){
   const e = c.e;
   return `<button type="button" class="card" data-i="${i}" style="--i:${i}" aria-label="Card virado pra baixo">
     <span class="in"><span class="face back"><span class="medal"><svg viewBox="0 0 100 100"><use href="#bgface"/></svg></span></span>
-    <span class="face front${c.shadow?' sh':''}${failed.has(e.img)?' noimg':''}" style="--tc:${e.tc};${e.tc2?`--tc2:${e.tc2}`:''}">
+    <span class="face front${c.shadow?' sh':''}${e.photo?' ph':''}${failed.has(e.img)?' noimg':''}" style="--tc:${e.tc};${e.tc2?`--tc2:${e.tc2}`:''}">
       <img src="${esc(e.img)}" alt="" draggable="false" decoding="async"><span class="fb">${esc(c.shadow ? '???' : e.nome)}</span>
       <span class="nm"><span>${esc(c.shadow ? '???' : e.nome)}</span></span></span></span></button>`;
 }
@@ -407,7 +414,11 @@ function renderBoard(deal){
   els = [...board.children];
   els.forEach((el, i) => {
     const img = el.querySelector('img');
-    img.addEventListener('error', () => { failed.add(S.cards[i] && S.cards[i].e.img); img.closest('.front').classList.add('noimg'); }, { once:true });
+    img.addEventListener('error', function onErr(){
+      const e = S.cards[i] && S.cards[i].e;
+      if (e && e.img2 && !img.dataset.tried){ img.dataset.tried = 1; img.src = e.img2; return; } // foto reserva
+      img.removeEventListener('error', onErr); if (e) failed.add(e.img); img.closest('.front').classList.add('noimg');
+    });
     syncCard(i);
     if (deal && !RM){ el.classList.add('deal'); setTimeout(() => el.classList.remove('deal'), 520 + i*28); }
   });
@@ -472,7 +483,7 @@ function renderSide(){
     ? `<h4>Desafio do Dia</h4><p class="sub">#${S.day} · ${S.pairs} pares · mesmo tabuleiro pra todo mundo</p>`
     : `<h4>Nível ${S.level}</h4><p class="sub">${S.pairs} pares · ${THEMES[theme].name}${G.stars[S.level] ? ` · recorde ${'★'.repeat(G.stars[S.level])}` : ''}</p>`;
   const tws = S.tw.length ? `<div class="tw-list">${S.tw.map(k => `<div class="tw-row">${twIcon(k)}<p><b>${TW[k].name}.</b> ${TW[k].desc}</p></div>`).join('')}</div>`
-    : `<p class="sub" style="margin:0">Sem twist neste nível. Só você, os cards e a sua memória.</p>`;
+    : `<p class="sub" style="margin:0">Sem twist nesse nível. Só você, os cards e sua memória</p>`;
   el.innerHTML = `${head}${tws}${prog}<p class="sub" style="margin:4px 0 0">Pares: ${found}/${S.pairs} · ★★★ até ${t3} jogadas · ★★ até ${t2}</p>
     <div class="kbd"><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> anda entre os cards · <kbd>Enter</kbd> ou <kbd>Espaço</kbd> vira</div>`;
 }
@@ -493,7 +504,7 @@ function preload(urls, ms=9000){
 }
 function showShuffling(on){
   let s = stage.querySelector('.shuf');
-  if (on && !s){ s = document.createElement('div'); s.className = 'shuf'; s.innerHTML = '<div class="deck"><i></i><i></i><i></i></div><p>embaralhando…</p>'; stage.appendChild(s); }
+  if (on && !s){ s = document.createElement('div'); s.className = 'shuf'; s.innerHTML = '<div class="deck"><i></i><i></i><i></i></div><p>embaralhando...</p>'; stage.appendChild(s); }
   if (!on && s) s.remove();
 }
 
@@ -525,7 +536,7 @@ async function begin(opts){
     await wait(RM ? 200 : 450 + S.cards.length*28); if (my !== token) return;
     const peek = document.createElement('div'); peek.className = 'peek'; stage.appendChild(peek);
     S.cards.forEach((c, i) => { c.up = true; syncCard(i); }); B.sfx.hint();
-    for (let k = 3; k > 0; k--){ peek.textContent = `OLHA! ${k}…`; B.sfx.note(); await wait(1000); if (my !== token){ peek.remove(); return; } }
+    for (let k = 3; k > 0; k--){ peek.textContent = `OLHA! ${k}`; B.sfx.note(); await wait(1000); if (my !== token){ peek.remove(); return; } }
     peek.remove();
     S.cards.forEach((c, i) => { c.up = false; setTimeout(() => syncCard(i), RM ? 0 : i*18); });
     B.sfx.flip();
@@ -760,14 +771,14 @@ function openDailyDone(r, fresh, xp, endLine){
   const st = starsFor(8, r.moves, []);
   B.openModal(`<h2 class="big">${fresh ? 'DIÁRIO FEITO!' : 'JÁ FOI HOJE!'}</h2>
     <div class="stars-big">${starsHTML(st)}</div>
-    ${endLine ? `<p class="m-line">${endLine}</p>` : `<p class="sub">Desafio #${r.day} concluído. Amanhã tem tabuleiro novo.</p>`}
+    ${endLine ? `<p class="m-line">${endLine}</p>` : `<p class="sub">Desafio #${r.day} feito. Amanhã tem tabuleiro novo</p>`}
     <div class="stat-grid g4" style="grid-template-columns:repeat(${xp ? 4 : 3},minmax(0,1fr))">
       <div class="stat"><b>${r.moves}</b><span>jogadas</span></div>
       <div class="stat"><b>${B.fmtTime(r.time)}</b><span>tempo</span></div>
       <div class="stat"><b>${r.mism||0}</b><span>erros</span></div>
       ${xp ? `<div class="stat"><b>+${xp}</b><span>XP</span></div>` : ''}
     </div>
-    ${fresh && !xp ? '<p class="m-note">Essa foi de novo, só por diversão: o placar oficial é o da primeira vez.</p>' : ''}
+    ${fresh && !xp ? '<p class="m-note">Essa foi só de zoeira, o placar que vale é o da primeira vez</p>' : ''}
     <div class="m-actions"><button class="btn cool" data-act="share">Compartilhar</button><button class="btn primary" data-act="tojourney">Ir pra Jornada</button></div>
     <div class="m-actions" style="margin-top:10px"><button class="btn" data-act="again">Jogar de novo (não conta)</button><button class="btn" data-act="close">Fechar</button></div>`);
 }
@@ -776,15 +787,15 @@ B.onAct('replay', () => { B.closeModal(true); startJourney(S ? S.level : G.cur, 
 B.onAct('share', async () => {
   const r = dailyRec() || lastDailyShown; if (!r) return;
   const txt = shareText(r);
-  if (await B.copyText(txt)) B.toast('Copiado!', 'Cola no grupo e se gaba.');
-  else B.openModal(`<h2>Copia aí</h2><p class="sub">Não consegui copiar sozinho. Seleciona e copia:</p><textarea class="share-box" readonly>${esc(txt)}</textarea><div class="m-actions"><button class="btn primary" data-act="close">Fechou</button></div>`);
+  if (await B.copyText(txt)) B.toast('Copiado!', 'Cola no grupo e se gaba');
+  else B.openModal(`<h2>Copia aí</h2><p class="sub">Não consegui copiar sozinho. Seleciona o texto aí e copia</p><textarea class="share-box" readonly>${esc(txt)}</textarea><div class="m-actions"><button class="btn primary" data-act="close">Fechou</button></div>`);
 });
 B.onAct('tojourney', () => { B.closeModal(true); startJourney(G.cur); });
 B.onAct('again', () => { B.closeModal(true); startDaily({ again:true }); });
 
 /* ---------------- modais: tema, níveis, stats, ajuda ---------------- */
 function openThemes(){
-  B.openModal(`<h2>Escolhe o tema</h2><p class="sub">Troca os cards da Jornada. Seu progresso continua o mesmo.</p>
+  B.openModal(`<h2>Escolhe o tema</h2><p class="sub">Troca os cards da Jornada. Seu progresso continua o mesmo</p>
     <div class="themes">${Object.keys(THEMES).map(k => `<button type="button" class="btn th" data-act="theme" data-k="${k}" aria-pressed="${k===theme}"><span class="ic">${THEME_ART[k]}</span>${THEMES[k].name}<small>${THEMES[k].sub}</small></button>`).join('')}</div>
     <div class="m-actions"><button class="btn" data-act="close">Fechar</button></div>`);
 }
@@ -806,7 +817,7 @@ function openLevels(){
       ${d.tw.length ? `<span class="t">${d.tw.map(t => `<i style="--c:${TW[t].c}"></i>`).join('')}</span>` : ''}</button>`;
   }).join('');
   const total = Object.values(G.stars).reduce((a, b) => a + b, 0);
-  B.openModal(`<h2>Mapa da Jornada</h2><p class="sub">${total} estrela${total===1?'':'s'} · nível ${G.level} liberado. Os pontinhos coloridos são os twists.</p>
+  B.openModal(`<h2>Mapa da Jornada</h2><p class="sub">${total} estrela${total===1?'':'s'} · nível ${G.level} liberado. Os pontinhos coloridos são os twists</p>
     <div class="lvgrid">${btns}</div>
     <div class="m-actions"><button class="btn" data-act="close">Fechar</button><button class="btn primary" data-act="lv" data-n="${G.level}">Continuar (nível ${G.level})</button></div>`);
   speak('memNiveis', null, 'smug', 4000);
@@ -816,7 +827,7 @@ function openStats(){
   const total = Object.values(G.stars).reduce((a, b) => a + b, 0);
   const rows = SIZES.map(p => { const b = G.best[p]; return `<tr><td>${p} pares</td><td>${b ? b.moves : '–'}</td><td>${b ? B.fmtTime(b.time) : '–'}</td></tr>`; }).join('');
   const d = dailyRec();
-  B.openModal(`<h2>Estatísticas</h2><p class="sub">A prova documental da sua memória.</p>
+  B.openModal(`<h2>Estatísticas</h2><p class="sub">Seus números no Memória</p>
     <div class="stat-grid">
       <div class="stat"><b>${G.maxLevel||0}</b><span>nível máx.</span></div>
       <div class="stat"><b>${total}</b><span>estrelas</span></div>
@@ -826,25 +837,25 @@ function openStats(){
     </div>
     <h3>Melhores por tamanho</h3>
     <table class="best-t"><thead><tr><th>Tabuleiro</th><th>Jogadas</th><th>Tempo</th></tr></thead><tbody>${rows}</tbody></table>
-    <p class="m-note">Diário de hoje: ${d ? `${d.moves} jogadas em ${B.fmtTime(d.time)}` : 'ainda não jogado'}. “Perfeita” = partida sem nenhum erro.</p>
+    <p class="m-note">Diário de hoje: ${d ? `${d.moves} jogadas em ${B.fmtTime(d.time)}` : 'ainda não jogado'}. Perfeita = partida sem nenhum erro</p>
     <div class="m-actions">${d ? '<button class="btn cool" data-act="share">Compartilhar diário</button>' : ''}<button class="btn primary" data-act="close">Fechar</button></div>`);
   speak('memStats', null, 'smug', 4000);
 }
 function openHelp(first){
   B.openModal(`<h2>Como jogar Memória</h2>
-    <p class="sub">Todos os cards começam virados pra baixo. Cada card tem um par.</p>
+    <p class="sub">Todos os cards começam virados pra baixo e cada um tem um par escondido no tabuleiro</p>
     <div class="ex-cards" aria-hidden="true"><i></i><i class="f">?</i><i></i><i class="f">?</i></div>
     <ul>
-      <li><span class="chip">1</span><span>Toca num card pra virar. Depois vira outro.</span></li>
-      <li><span class="chip">2</span><span>Se forem <b>par</b>, ficam abertos. Se não, desviram. <b>Grava onde cada um tava!</b></span></li>
-      <li><span class="chip">3</span><span>Cada dupla virada é <b>1 jogada</b>. Menos jogadas = mais estrelas (★★★ se jogar quase sem errar).</span></li>
+      <li><span class="chip">1</span><span>Toca num card pra virar. Depois toca em outro</span></li>
+      <li><span class="chip">2</span><span>Se os dois forem <b>par</b>, ficam abertos. Se não, desviram. <b>Grava onde cada um tava</b></span></li>
+      <li><span class="chip">3</span><span>Cada dupla virada é <b>1 jogada</b>. Menos jogadas = mais estrelas (★★★ se errar quase nada)</span></li>
     </ul>
     <h3>Jornada</h3>
-    <p style="margin:0">Os níveis crescem: 3 pares, 4, 6, 8, 10, 12… Depois do nível 6 aparecem os <b>twists</b>:</p>
+    <p style="margin:0">Os níveis vão crescendo: 3 pares, 4, 6, 8, 10, 12. Depois do nível 6 aparecem os <b>twists</b>:</p>
     <div class="tw-list">${TW_ORDER.map(k => `<div class="tw-row">${twIcon(k)}<p><b>${TW[k].name}.</b> ${TW[k].desc}</p></div>`).join('')}</div>
     <h3>Desafio do Dia</h3>
-    <p style="margin:0">Um tabuleiro de 8 pares, igual pra todo mundo. Vale a primeira partida: menos jogadas e menos tempo. Depois é só compartilhar.</p>
-    <p class="m-note">Teclado: setas andam entre os cards, Enter ou Espaço vira. Tema (Gen 1, Pokémon, Dragon Ball, Mistureba) no botão ao lado do modo.</p>
+    <p style="margin:0">Um tabuleiro de 8 pares, o mesmo pra todo mundo. Só a primeira partida vale: menos jogadas e menos tempo ganha. Depois é só compartilhar</p>
+    <p class="m-note">Teclado: as setas andam entre os cards, Enter ou Espaço vira. O tema (Gen 1, Pokémon, Dragon Ball, Mistureba) troca no botão do lado do modo</p>
     <div class="m-actions"><button class="btn primary" data-act="helpok">${first ? 'Bora jogar!' : 'Entendi'}</button></div>`, { locked: !!first });
 }
 B.onAct('helpok', () => { B.closeModal(true); if (!G.seenHelp){ G.seenHelp = 1; B.saveProfile(); } speak('memAjuda', null, 'smug', 4500, true); });
@@ -902,7 +913,10 @@ setTimeout(() => {
 }, 250);
 if (!G.seenHelp) setTimeout(() => openHelp(true), 600);
 
-B.chatter({ active: () => !!(S && !S.done && !busy), idleCat:'memParadoMix' });
+// o balão do celular tem altura fixa (pra o tabuleiro não pular): fala em lista de 3+ linhas não cabe, fica de fora aqui
+const fitsBubble = s => (String(s).match(/<br>/g) || []).length < 3;
+B.addLines({ memAleatorioMix: B.lines('aleatorio').filter(fitsBubble) });
+B.chatter({ active: () => !!(S && !S.done && !busy), idleCat:'memParadoMix', randomCat:'memAleatorioMix' });
 })();
 </script>
 </body></html>

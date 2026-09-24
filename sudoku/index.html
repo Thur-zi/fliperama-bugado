@@ -8,21 +8,29 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
-<link rel="stylesheet" href="../shared/base.css?v=2609241402">
+<link rel="stylesheet" href="../shared/base.css?v=2609242000">
 <style>
 :root{
   --peer:#EEE4FF; --same:#FFC9E0;
-  /* tamanho do tabuleiro: cabe na largura E na altura do celular */
-  --bw:max(250px, min(calc(100vw - 28px), 520px, calc(100dvh - 318px)));
+  /* tamanho do tabuleiro: cabe na largura E na altura do celular
+     (344px = barra + balão + status + ferramentas + teclado + espaços) */
+  --bw:max(250px, min(calc(100vw - 28px), 520px, calc(100dvh - 344px)));
 }
 .wrap{padding-block:8px 16px}
-.game{display:grid;gap:8px;grid-template-areas:"bar" "mascot" "board" "tools" "pad";justify-items:center}
+/* celular: barra e balão em cima, ferramentas + números embaixo (no alcance do dedão),
+   e o tabuleiro centralizado no espaço que sobra, em vez de um buraco no fim da tela */
+.game{display:grid;gap:8px;min-height:100vh;min-height:100dvh;grid-template-rows:auto auto 1fr auto auto;grid-template-areas:"bar" "mascot" "board" "tools" "pad";justify-items:center}
 #bar{grid-area:bar;width:100%}
 #mascot{grid-area:mascot;width:var(--bw)}
-.board-wrap{grid-area:board;width:var(--bw);position:relative;display:flex;flex-direction:column;gap:6px}
+.board-wrap{grid-area:board;align-self:center;width:var(--bw);position:relative;display:flex;flex-direction:column;gap:6px}
 .tools{grid-area:tools;width:var(--bw)}
 .pad{grid-area:pad;width:var(--bw)}
-#mascot .bg-bubble{min-height:52px}
+/* balão com altura mínima de 4 linhas: quase nenhuma fala muda o tamanho dele.
+   Fala muito longa (dica) cresce um tico, mas as ferramentas e os números ficam presos embaixo */
+#mascot .bg-bubble{min-height:80px;max-height:116px;padding:6px 12px}
+#mascot .bg-bubble p{max-height:98px;overflow-y:auto;font-size:14px;line-height:1.25;scrollbar-width:none}
+#mascot .bg-bubble p::-webkit-scrollbar{display:none}
+#mascot .bg-bubble p.long{font-size:12.5px;line-height:1.22}
 
 /* status */
 .status{display:flex;align-items:center;gap:8px;min-height:28px}
@@ -47,41 +55,48 @@
 .cell.sel{background:var(--sun);box-shadow:inset 0 0 0 3px var(--ink);z-index:1}
 .cell.err{background:var(--red);color:#fff}
 .cell:focus-visible{outline:3px solid var(--pink);outline-offset:-3px;z-index:2}
-.notes{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:100%;height:100%;padding:6%;font-family:var(--body);font-weight:900;font-size:calc(var(--bw) * .028);color:#7A67A8;place-items:center}
+.notes{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:100%;height:100%;padding:6%;font-family:var(--body);font-weight:900;font-size:calc(var(--bw) * .031);color:#62508F;place-items:center}
 .notes i{font-style:normal;line-height:1;padding:0 1px}
 .notes i.hl{color:#fff;background:var(--pink);border-radius:3px}
 .floatxp{position:absolute;pointer-events:none;z-index:6;font-family:var(--chunky);font-size:17px;color:var(--cyan);-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;transform:translate(-50%,-50%)}
-.paused-veil{position:absolute;inset:34px 0 0;display:grid;place-items:center;background:rgba(42,22,80,.82);border-radius:18px;z-index:4;font-family:var(--display);font-size:34px;letter-spacing:.05em;color:var(--sun);text-shadow:3px 3px 0 var(--pink);cursor:pointer;text-align:center;line-height:1}
+.paused-veil{position:absolute;inset:34px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;background:rgba(42,22,80,.82);border-radius:18px;z-index:4;font-family:var(--display);font-size:34px;letter-spacing:.05em;color:var(--sun);text-shadow:3px 3px 0 var(--pink);cursor:pointer;text-align:center;line-height:1}
 .paused-veil small{display:block;font-family:var(--body);font-size:14px;color:var(--paper);text-shadow:none;letter-spacing:0;margin-top:6px}
 
 /* ferramentas + teclado numérico */
-.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
-.tool{position:relative;height:48px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px;padding:0 4px;border-radius:12px}
-.tool svg{flex:none;width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+/* ícone + nome sempre (iniciante não adivinha o que é a borrachinha) */
+.tool{position:relative;height:56px;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:13px;line-height:1;padding:0 4px;border-radius:12px}
+.tool span{white-space:nowrap}
+.tool svg{flex:none;width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 .tool.on{background:var(--sun)}
 .tool.hint{background:var(--cyan)}
-.tool .tag{position:absolute;top:-8px;right:-5px;font-family:var(--chunky);font-size:10px;background:var(--ink);color:var(--sun);border-radius:99px;padding:1px 6px;border:2px solid var(--sun)}
+.tool .tag{position:absolute;top:-9px;right:-5px;font-family:var(--chunky);font-size:11px;line-height:1.1;background:var(--ink);color:var(--sun);border-radius:99px;padding:1px 6px;border:2px solid var(--sun)}
 .pad{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:4px}
-.num{position:relative;height:54px;min-width:0;padding:0;display:grid;place-items:center;font-size:25px;line-height:1;border-radius:11px;box-shadow:0 3px 0 var(--ink)}
-.num small{position:absolute;right:3px;bottom:2px;font-family:var(--body);font-weight:900;font-size:10px;color:#8A77B8;line-height:1}
+.num{position:relative;height:58px;min-width:0;padding:0;display:grid;place-items:center;font-size:26px;line-height:1;border-radius:11px;box-shadow:0 3px 0 var(--ink)}
+.num small{position:absolute;right:3px;bottom:3px;font-family:var(--body);font-weight:900;font-size:12px;color:#7A67A8;line-height:1}
 .num.done{opacity:.3;box-shadow:0 0 0 var(--ink);transform:translateY(3px)}
-.pad.notes-mode .num{background:#FFF1B8;font-size:18px}
+.pad.notes-mode .num{background:#FFF1B8;font-size:19px}
 .pad.notes-mode .num::after{content:"";position:absolute;top:4px;left:4px;width:6px;height:6px;border-radius:50%;background:var(--violet)}
 
-@media (max-width:420px){ .tool span{display:none} .tool svg{width:22px;height:22px} }
-@media (max-width:360px){ .num{height:48px;font-size:21px} .tool{height:44px} }
+@media (max-width:374px){ .tool{font-size:12px} .num small{right:2px;bottom:2px} }
+/* celular baixinho: aperta um pouco pra o tabuleiro não ficar minúsculo */
+@media (max-height:700px) and (max-width:879px){ :root{--bw:max(250px, min(calc(100vw - 28px), 520px, calc(100dvh - 316px)))} .tool{height:48px;flex-direction:row;gap:5px} .tool span{display:none} .num{height:50px} #mascot .bg-bubble{min-height:68px} }
 
-/* desktop: tabuleiro à esquerda, painel à direita */
+/* desktop: tabuleiro à esquerda, painel à direita (centralizado na altura do tabuleiro) */
 @media (min-width:880px){
-  :root{--bw:max(340px, min(600px, calc(100dvh - 120px), calc(100vw - 480px)))}
-  .game{grid-template-columns:auto minmax(320px,380px);grid-template-rows:auto auto auto auto 1fr;grid-template-areas:"bar bar" "board mascot" "board tools" "board pad" "board .";justify-content:center;align-items:start;column-gap:30px;row-gap:16px}
+  :root{--bw:max(340px, min(640px, calc(100dvh - 132px), calc(100vw - 500px)))}
+  .game{min-height:0;grid-template-columns:auto minmax(320px,380px);grid-template-rows:auto 1fr auto auto auto 1fr;grid-template-areas:"bar bar" "board ." "board mascot" "board tools" "board pad" "board .";justify-content:center;column-gap:34px;row-gap:16px}
+  .board-wrap{align-self:start}
   #mascot,.tools,.pad{width:100%}
+  #mascot .bg-bubble{flex:none;height:120px;min-height:0;max-height:none;padding:10px 15px}
+  #mascot .bg-bubble p{max-height:100%}
+  #mascot .bg-bubble p{font-size:15.5px;line-height:1.3}
+  #mascot .bg-bubble p.long{font-size:14px;line-height:1.28}
   .pad{grid-template-columns:repeat(3,1fr);gap:10px}
-  .num{height:72px;font-size:34px;box-shadow:0 4px 0 var(--ink)}
-  .num small{font-size:12px;right:7px;bottom:5px}
+  .num{height:clamp(64px, calc((100dvh - 470px) / 3), 84px);font-size:34px;box-shadow:0 4px 0 var(--ink)}
+  .num small{font-size:13px;right:8px;bottom:6px}
   .pad.notes-mode .num{font-size:26px}
-  .tool{height:60px;flex-direction:column;gap:2px;font-size:14px}
-  .tool span{display:inline}
+  .tool{height:60px;gap:4px;font-size:14px}
   .status .timer{font-size:20px}
 }
 
@@ -107,9 +122,15 @@
 .ach small{display:block;font-size:12px;font-weight:700;color:#6b5a90;line-height:1.25}
 .ach.locked{background:#eee7f7;border-style:dashed}
 .ach.locked .ic{background:#d6cbe9}
-.ach.locked b{color:#8a7aa8}
+.ach.locked b{color:#6f5f92}
+.stat-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.bg-card .stat span{font-size:12px;letter-spacing:.02em;line-height:1.2;display:block}
 .besttimes{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:14px;font-weight:800}
 .besttimes b{font-family:var(--chunky);font-weight:400;font-variant-numeric:tabular-nums}
+/* ajuda: etiquetas com a mesma largura, pra os textos começarem todos na mesma linha */
+.help-list li{align-items:flex-start}
+.help-list .tag2{min-width:86px;text-align:center;margin-top:2px}
+@media (max-width:380px){ .help-list .tag2{min-width:78px;padding-inline:4px} }
 </style>
 </head>
 <body>
@@ -125,7 +146,7 @@
       <span class="hearts" id="hearts" aria-label="Vidas"></span>
     </div>
     <div class="board" id="board" role="grid" aria-label="Grade do sudoku"></div>
-    <div class="paused-veil" id="veil" hidden>PAUSADO<small>O Bugado cochilou. Toca pra continuar.</small></div>
+    <div class="paused-veil" id="veil" hidden>PAUSADO<small>cochilei aqui, toca pra voltar</small></div>
     <div class="burst" id="burst" aria-hidden="true"></div>
   </section>
 
@@ -139,9 +160,9 @@
   <div class="pad" id="pad"></div>
 </div>
 
-<script src="../shared/falas.js?v=2609241402"></script>
-<script src="../shared/bugado.js?v=2609241402"></script>
-<script src="falas-sudoku.js?v=2609241402"></script>
+<script src="../shared/falas.js?v=2609242000"></script>
+<script src="../shared/bugado.js?v=2609242000"></script>
+<script src="falas-sudoku.js?v=2609242000"></script>
 <script>
 (() => {
 const B = Bugado, $ = s => document.querySelector(s), RM = B.RM;
@@ -215,24 +236,24 @@ function generateWith(key){
 
 /* ================= conteúdo ================= */
 const DIFFS = {
-  bebe:      { name:'Bebê',          givens:44, mode:'singles', xp:40,  par:360,  color:'#2EE6D6', desc:'Praticamente pronto. Impossível errar. (Você vai errar.)' },
-  normal:    { name:'Normal',        givens:36, mode:'singles', xp:70,  par:660,  color:'#FFD23F', desc:'Sudoku de verdade. Sem rodinha, mas com capacete.' },
-  achando:   { name:'Tô Me Achando', givens:30, mode:'singles', xp:110, par:1020, color:'#FF4F9A', desc:'Pra quem ganhou duas e já quer fazer tatuagem.' },
-  sofrencia: { name:'Sofrência',     givens:25, mode:'unique',  xp:180, par:1800, color:'#FF3B3B', desc:'Não. Sério. Você não tá pronto. Mas vai, né.' }
+  bebe:      { name:'Bebê',          givens:44, mode:'singles', xp:40,  par:360,  color:'#2EE6D6', desc:'Quase tudo já vem preenchido. Bom pra aprender, difícil errar.' },
+  normal:    { name:'Normal',        givens:36, mode:'singles', xp:70,  par:660,  color:'#FFD23F', desc:'Sudoku de verdade, sem rodinha. Os 2 truques da ajuda resolvem.' },
+  achando:   { name:'Tô Me Achando', givens:30, mode:'singles', xp:110, par:1020, color:'#FF4F9A', desc:'Pouca pista. Pra quem ganhou duas e já tá se achando.' },
+  sofrencia: { name:'Sofrência',     givens:25, mode:'unique',  xp:180, par:1800, color:'#FF3B3B', desc:'Quase nada preenchido, vai precisar de lápis e paciência. Cê não tá pronto mas vai né' }
 };
 const ACH = [
-  ['first','Nasceu','Ganhou a primeira partida. Parabéns, eu acho.'],
+  ['first','Nasceu','Ganhou a primeira. Bem-vindo à resenha.'],
   ['clean','Zero Vergonha','Ganhou sem errar nenhuma vez.'],
   ['nohint','Orgulho Próprio','Ganhou sem pedir dica.'],
-  ['combo5','Tá Possuído','Fez um combo x5.'],
-  ['combo15','Modo Anime','Fez um combo x15. Cadê a música de abertura?'],
+  ['combo5','Tá Possuído','Fez combo x5.'],
+  ['combo15','Modo Anime','Fez combo x15. Cadê a música de abertura?'],
   ['fast','Speedrun de Padaria','Ganhou em menos de 6 minutos.'],
-  ['streak3','Viciado (com carinho)','Ganhou 3 dias seguidos.'],
-  ['night','Vai Dormir','Jogou entre meia-noite e 5 da manhã.'],
-  ['normal','Tirou a Rodinha','Ganhou no Normal (ou mais difícil).'],
+  ['streak3','Viciado','Ganhou 3 dias seguidos.'],
+  ['night','Vai Dormir Mano','Jogou entre meia-noite e 5 da manhã.'],
+  ['normal','Tirou a Rodinha','Ganhou no Normal ou mais difícil.'],
   ['hard','Sofredor Certificado','Ganhou na Sofrência.'],
   ['phoenix','Renasceu das Cinzas','Perdeu, continuou e ganhou mesmo assim.'],
-  ['ten','Isso Tem Nome: Vício','10 vitórias.']
+  ['ten','Isso Tem Nome: Vício','10 vitórias no Sudoku.']
 ];
 const heartSVG = '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.8 4.5c2.1 0 3.6 1.2 5.2 3 1.6-1.8 3.1-3 5.2-3 3.8 0 5.9 3.9 4.4 7.3C19.5 16.4 12 21 12 21z"/><path class="crack" d="M12 7.5 10 11l3 2-2 4" stroke-width="2"/></svg>';
 
@@ -330,8 +351,10 @@ function newGame(key, quiet, daily){
   notesAdded = 0; undos = 0; lastPlace = Date.now(); setPaused(false);
   save(); render();
   if (daily){ talk('sdDaily', {n:day}, 'smug', 6000); burst('DO DIA!', '#FFD23F'); }
-  else if (!quiet){ B.say(B.line('sdStart') + ' ' + B.line('sdDiff_' + key), 'smug', 6000); burst('VALENDO!', DIFFS[key].color); }
+  else if (!quiet){ sayStart(key); burst('VALENDO!', DIFFS[key].color); }
 }
+// abertura + comentário da dificuldade, cada um numa linha do balão
+const sayStart = key => B.say(B.line('sdStart') + '<br>' + B.line('sdDiff_' + key), 'smug', 6000);
 function unlock(id){
   if (G.ach[id]) return false;
   G.ach[id] = Date.now(); B.saveProfile(); const a = ACH.find(x => x[0]===id);
@@ -447,7 +470,7 @@ function toggleNotes(){
 
 function findHint(){
   const g = S.board, rc = i => `linha ${Math.floor(i/9)+1}, coluna ${i%9+1}`;
-  const naked = i => { const d = digitsOf(cand(g,i))[0]; return { i, d, text:`Casa da ${rc(i)}: tirando o que já tem na linha, coluna e quadrado, só sobra o <b>${d}</b>. Truque: <b>candidato único</b>.` }; };
+  const naked = i => { const d = digitsOf(cand(g,i))[0]; return { i, d, text:`Na ${rc(i)}, tirando o que já tem na linha, coluna e quadrado, só sobra o <b>${d}</b> (<b>candidato único</b>).` }; };
   const isNaked = i => !g[i] && pc(cand(g,i))===1;
   if (S.sel>=0 && isNaked(S.sel)) return naked(S.sel);
   const order = shuffle([...Array(81).keys()]);
@@ -459,7 +482,7 @@ function findHint(){
       const spots = u.filter(j => !g[j] && (cand(g,j)>>d&1));
       if (spots.length===1){
         const where = ui<9 ? `Na linha ${ui+1}` : ui<18 ? `Na coluna ${ui-8}` : 'Nesse quadrado';
-        return { i:spots[0], d, text:`${where}, o <b>${d}</b> só cabe aqui: o resto tá bloqueado. Truque: <b>único lugar</b>.` };
+        return { i:spots[0], d, text:`${where}, o <b>${d}</b> só cabe aqui, o resto tá bloqueado (<b>único lugar</b>).` };
       }
     }
   }
@@ -482,7 +505,7 @@ function win(){
   const add = (label, v) => { rows.push([label, v]); total += v; };
   add(`Vitória no ${D.name}`, D.xp);
   const tb = Math.max(0, Math.round((D.par - S.time)/D.par * D.xp * .6)); if (tb) add('Bônus de velocidade', tb);
-  if (!S.mistakes && !S.continued) add('Zero erros', 30);
+  if (!S.mistakes && !S.continued) add('Zero erro', 30);
   if (!S.hints) add('Sem pedir dica', 25);
   if (S.maxCombo >= 5) add(`Combo máximo x${S.maxCombo}`, S.maxCombo*2);
   const officialDaily = S.daily === B.dayNumber() && !(G.lastDaily && G.lastDaily.day === S.daily && G.lastDaily.won);
@@ -513,11 +536,11 @@ function win(){
 
   setTimeout(() => {
     B.openModal(`
-      <h2 class="big">MEU DEUS QUE MANEIRO</h2>
+      <h2 class="big">${!S.mistakes && !S.continued ? 'MDSSS ZERO ERRO' : S.continued ? 'ZEROU NO SUFOCO' : 'ZEROUUU'}</h2>
       <p class="sub">${B.line('vitoriaGeral')}</p>
-      <div class="stat-grid">
+      <div class="stat-grid four">
         <div class="stat"><b>${fmt(S.time)}</b><span>tempo</span></div>
-        <div class="stat"><b>${S.mistakes}${S.continued?'+':''}</b><span>erros</span></div>
+        <div class="stat"><b>${S.continued ? 3 + S.mistakes : S.mistakes}</b><span>erros</span></div>
         <div class="stat"><b>${S.hints}</b><span>dicas</span></div>
         <div class="stat"><b>x${S.maxCombo}</b><span>combo</span></div>
       </div>
@@ -527,16 +550,16 @@ function win(){
         ${B.streakNow()>1 ? `<span class="pill sun">${B.streakNow()} DIAS SEGUIDOS</span>` : ''}
       </div>
       <div class="xprows">
-        <div class="xprow"><span>XP durante o jogo</span><b>+${earlier}</b></div>
+        <div class="xprow"><span>XP no meio do jogo</span><b>+${earlier}</b></div>
         ${rows.map(([l,v]) => `<div class="xprow"><span>${l}</span><b class="${v<0?'neg':''}">${v<0?v:'+'+v}</b></div>`).join('')}
         <div class="xprow total"><span>Total</span><b>+${earlier+total} XP</b></div>
       </div>
-      ${newAch.length ? `<h3>Conquistas novas</h3><div class="achs">${newAch.map(achCard).join('')}</div>` : ''}
       <div class="m-actions">
         ${S.daily != null ? '<button class="btn cool" type="button" data-act="share">Copiar resultado</button>' : ''}
-        <button class="btn primary" type="button" data-act="again">Outra no ${D.name}!</button>
+        <button class="btn primary" type="button" data-act="again">Outra no ${D.name}</button>
         <button class="btn" type="button" data-act="menu">Trocar dificuldade</button>
-      </div>`, {locked:true});
+      </div>
+      ${newAch.length ? `<h3>Conquistas novas</h3><div class="achs">${newAch.map(achCard).join('')}</div>` : ''}`, {locked:true});
     if (lvlAfter > lvlBefore) B.sfx.lvl();
   }, RM ? 400 : 1500);
 }
@@ -544,9 +567,9 @@ function win(){
 function gameOver(){
   B.sfx.lose(); B.mood('dead'); B.talk('sdOver', null, 'dead', 99999);
   B.openModal(`
-    <h2>A GRADE VENCEU</h2>
+    <h2>PERDEU PRA GRADE</h2>
     <p class="sub">${B.line('derrotaGeral')}</p>
-    <p>Os números certos continuam lá. Você pode continuar (perde metade do bônus de vitória, e eu vou lembrar disso pra sempre) ou começar outra do zero.</p>
+    <p>3 erros. Os números certos continuam lá: dá pra continuar essa com os corações cheios (mas perde metade do bônus de vitória e eu vou lembrar pra sempre) ou começar outra do zero.</p>
     <div class="m-actions">
       <button class="btn hot" type="button" data-act="continue">Continuar (com vergonha)</button>
       <button class="btn" type="button" data-act="menu">Jogo novo</button>
@@ -554,45 +577,45 @@ function gameOver(){
 }
 
 /* ================= modais ================= */
-const achCard = id => { const a = ACH.find(x => x[0]===id), got = G.ach[id]; return `<div class="ach ${got?'':'locked'}"><span class="ic">${got?B.ICON.star:B.ICON.lock}</span><div><b>${a[1]}</b><small>${got ? a[2] : '???  Segredo. Descobre jogando.'}</small></div></div>`; };
+const achCard = id => { const a = ACH.find(x => x[0]===id), got = G.ach[id]; return `<div class="ach ${got?'':'locked'}"><span class="ic">${got?B.ICON.star:B.ICON.lock}</span><div><b>${a[1]}</b><small>${got ? a[2] : '??? descobre jogando'}</small></div></div>`; };
 function showNewGame(){
   const inProgress = !S.won && !S.over && S.board.some((v,i) => v && !S.puzzle[i]);
   B.openModal(`
     <h2>Escolhe teu sofrimento</h2>
-    <p class="sub">${inProgress ? 'O jogo atual vai pro lixo. Ele não vai sentir falta. Eu talvez.' : 'Começa pelo Bebê. Ninguém tá olhando. Só eu.'}</p>
+    <p class="sub">${inProgress ? 'O jogo de agora vai pro lixo se cê escolher outro, beleza?' : 'Nunca jogou? Começa pelo Bebê, ninguém tá vendo.'}</p>
     <div class="diffs">
       ${(() => { const day = B.dayNumber(), ld = G.lastDaily, done = ld && ld.day === day && ld.won;
-        return `<button class="btn diff ${S.daily===day?'cur':''}" type="button" data-act="daily" style="--c:#FFD23F;background:${done?'#E6FBD9':'#FFF1B8'}"><b>Sudoku do Dia #${day}</b><span>${done ? `Feito em ${fmt(ld.time)}. Pode jogar de novo, mas o oficial já foi.` : 'O mesmo tabuleiro pra todo mundo hoje. Nível Normal. +40 XP.'}</span><em>${done ? 'feito' : 'novo'}</em></button>`; })()}
-      ${Object.entries(DIFFS).map(([k,D]) => `<button class="btn diff ${k===S.diff?'cur':''}" type="button" data-act="start" data-d="${k}" style="--c:${D.color}"><b>${D.name}</b><span>${D.desc}</span><em>${G.best[k] ? 'recorde<br>'+fmt(G.best[k]) : 'sem<br>recorde'}</em></button>`).join('')}
+        return `<button class="btn diff ${S.daily===day?'cur':''}" type="button" data-act="daily" style="--c:#FFD23F;background:${done?'#E6FBD9':'#FFF1B8'}"><b>Sudoku do Dia #${day}</b><span>${done ? `Feito em ${fmt(ld.time)}. Pode jogar de novo, mas o oficial já foi.` : 'Mesma grade pra todo mundo hoje. Nível Normal, vale +40 XP.'}</span><em>${done ? 'feito' : 'novo'}</em></button>`; })()}
+      ${Object.entries(DIFFS).map(([k,D]) => `<button class="btn diff ${k===S.diff && S.daily==null?'cur':''}" type="button" data-act="start" data-d="${k}" style="--c:${D.color}"><b>${D.name}</b><span>${D.desc}</span><em>${G.best[k] ? 'recorde<br>'+fmt(G.best[k]) : 'sem<br>recorde'}</em></button>`).join('')}
     </div>
     ${S.over || S.won ? '' : '<div class="m-actions"><button class="btn" type="button" data-act="close">Voltar pro jogo</button></div>'}`, {locked: S.over || S.won});
 }
 function showHelp(){
   B.openModal(`
     <h2>Sudoku pra quem nunca jogou</h2>
-    <p class="sub">É um quebra-cabeça de lógica. Zero conta. Juro pelo meu pixel rosa.</p>
+    <p class="sub">É quebra-cabeça de lógica, não tem conta nenhuma. Tem que preencher a grade inteira com números de 1 a 9.</p>
     <h3>A única regra</h3>
-    <ul>
-      <li><span class="tag2" style="--c:#2EE6D6">LINHA</span><span>Cada linha tem de 1 a 9, sem repetir.</span></li>
-      <li><span class="tag2" style="--c:#FFD23F">COLUNA</span><span>Cada coluna também.</span></li>
-      <li><span class="tag2" style="--c:#FF4F9A">QUADRADO</span><span>Cada quadrado 3×3 também. Pronto, acabou a teoria.</span></li>
+    <ul class="help-list">
+      <li><span class="tag2" style="--c:#2EE6D6">LINHA</span><span>Cada linha (deitada) tem os números de 1 a 9, sem repetir.</span></li>
+      <li><span class="tag2" style="--c:#FFD23F">COLUNA</span><span>Cada coluna (em pé) também, de 1 a 9 sem repetir.</span></li>
+      <li><span class="tag2" style="--c:#FF4F9A">QUADRADO</span><span>Cada quadrado 3×3 (os blocos de borda grossa) também. Pronto, acabou a teoria.</span></li>
     </ul>
     <h3>Como joga aqui</h3>
-    <ul>
-      <li><span class="tag2">TOQUE</span><span>Toca numa casa vazia, depois no número de baixo. O numerinho no canto do botão diz quantos ainda faltam.</span></li>
-      <li><span class="tag2" style="--c:#FF4F9A">VIDAS</span><span>Errou, perde um coração. Três erros e a grade ganha (mas dá pra continuar).</span></li>
-      <li><span class="tag2" style="--c:#FFF1B8">LÁPIS</span><span>Anota números pequenos de palpite. Não conta como erro.</span></li>
-      <li><span class="tag2" style="--c:#2EE6D6">DICA</span><span>Eu preencho uma casa e explico o porquê. Com julgamento incluso.</span></li>
-      <li><span class="tag2" style="--c:#B7A6DC">PAUSA</span><span>Ficou parado 1 minuto? O tempo pausa sozinho. Não precisa agradecer.</span></li>
+    <ul class="help-list">
+      <li><span class="tag2">TOQUE</span><span>Toca numa casa vazia e depois num número lá embaixo. O numerinho no canto do botão fala quantos daquele ainda faltam.</span></li>
+      <li><span class="tag2" style="--c:#FF4F9A">VIDAS</span><span>Errou, perde um coração. Com 3 erros a grade ganha (mas dá pra continuar).</span></li>
+      <li><span class="tag2" style="--c:#FFF1B8">LÁPIS</span><span>Com o lápis ligado, o número entra pequenininho, só como palpite. Anotação não conta como erro.</span></li>
+      <li><span class="tag2" style="--c:#2EE6D6">DICA</span><span>Eu preencho uma casa e explico por quê. Com julgamento incluso.</span></li>
+      <li><span class="tag2" style="--c:#B7A6DC">PAUSA</span><span>Ficou 1 minuto parado? O tempo pausa sozinho.</span></li>
     </ul>
     <h3>Os 2 truques que resolvem quase tudo</h3>
-    <ul>
-      <li><span class="tag2" style="--c:#FFD23F">ÚNICO</span><span><b>Candidato único:</b> olha uma casa e risca de cabeça os números que já estão na linha, na coluna e no quadrado dela. Sobrou um? É ele.</span></li>
-      <li><span class="tag2" style="--c:#FFD23F">LUGAR</span><span><b>Único lugar:</b> pega um número (tipo o 5) e um quadrado sem ele. Em quais casas o 5 PODE entrar? Se só tem uma, é lá.</span></li>
+    <ul class="help-list">
+      <li><span class="tag2" style="--c:#FFD23F">ÚNICO</span><span><b>Candidato único:</b> olha uma casa e risca de cabeça os números que já tão na linha, na coluna e no quadrado dela. Sobrou um só? É ele.</span></li>
+      <li><span class="tag2" style="--c:#FFD23F">LUGAR</span><span><b>Único lugar:</b> pega um número (tipo o 5) e um quadrado que ainda não tem ele. Em quais casas o 5 PODE entrar? Se só tem uma, é lá.</span></li>
     </ul>
     <h3>No PC</h3>
-    <p><kbd>1</kbd>–<kbd>9</kbd> coloca, <kbd>setas</kbd> andam, <kbd>Backspace</kbd> apaga, <kbd>N</kbd> lápis, <kbd>Z</kbd> desfaz, <kbd>H</kbd> dica.</p>
-    <div class="m-actions"><button class="btn primary" type="button" data-act="close">Entendi. Acho.</button></div>`);
+    <p><kbd>1</kbd> a <kbd>9</kbd> coloca, <kbd>setas</kbd> andam, <kbd>Backspace</kbd> apaga, <kbd>N</kbd> lápis, <kbd>Z</kbd> desfaz, <kbd>H</kbd> dica.</p>
+    <div class="m-actions"><button class="btn primary" type="button" data-act="close">Entendi, bora</button></div>`);
 }
 function showStats(){
   const got = ACH.filter(a => G.ach[a[0]]).length;
@@ -604,7 +627,7 @@ function showStats(){
       <div class="stat"><b>${B.streakNow()}</b><span>dias seguidos</span></div>
     </div>
     <h3>Recordes</h3>
-    <div class="besttimes">${Object.entries(DIFFS).map(([k,D]) => `<span>${D.name}</span><b>${G.best[k] ? fmt(G.best[k]) : '—'}</b>`).join('')}</div>
+    <div class="besttimes">${Object.entries(DIFFS).map(([k,D]) => `<span>${D.name}</span><b>${G.best[k] ? fmt(G.best[k]) : '--:--'}</b>`).join('')}</div>
     <h3>Conquistas (${got}/${ACH.length})</h3>
     <div class="achs">${ACH.map(a => achCard(a[0])).join('')}</div>
     <div class="m-actions"><button class="btn primary" type="button" data-act="close">Fechar</button></div>`);
@@ -676,8 +699,8 @@ if (validGame(saved) && !saved.won){
   if (S.over) gameOver(); else talk('sdBack', null, 'smug', 5000);
 } else {
   newGame((saved && DIFFS[saved.diff] && saved.diff) || G.lastDiff || 'bebe', true);
-  if (!B.profile().seen.sudoku){ B.say('Oi. Eu sou o <b>Bugado</b>. Vou ficar aqui te julgando com carinho. Nunca jogou sudoku? Aperta o <b>?</b> lá em cima.', 'talk', 7000); }
-  else B.say(B.line('sdStart') + ' ' + B.line('sdDiff_' + S.diff), 'smug', 6000);
+  if (!B.profile().seen.sudoku){ B.say('oi, eu sou o <b>Bugado</b> e vou ficar aqui te zoando. Nunca jogou sudoku? Aperta o <b>?</b> lá em cima', 'talk', 7000); }
+  else sayStart(S.diff);
 }
 if (!B.profile().seen.sudoku){ B.profile().seen.sudoku = true; B.saveProfile(); $('#bHelp').classList.add('pulse'); }
 B.chatter({ active: () => !busy() && !paused, every:[55,100], idleAfter:35 });

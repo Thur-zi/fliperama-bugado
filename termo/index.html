@@ -3,10 +3,10 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2A1650">
 <title>Termo · Fliperama Bugado</title>
-<meta name="description" content="Termo: adivinhe a palavra de cinco letras em seis tentativas. Com dueto, quarteto, diário e treino infinito.">
+<meta name="description" content="Termo: descobre a palavra de 5 letras em 6 chances. Tem dueto, quarteto, diário e treino infinito.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
-<link rel="stylesheet" href="../shared/base.css?v=2609241402">
+<link rel="stylesheet" href="../shared/base.css?v=2609242000">
 <style>
 :root{
   --c-ok:#3DDC84; --c-mid:#FFD23F; --c-no:#4A3A6E; --c-no-t:#D9CDF2; --c-noq:#9C8FB8;
@@ -18,10 +18,19 @@ html,body{overflow-x:hidden}
 #bar{flex:none}
 #side{flex:none;display:flex;flex-direction:column}
 #mascot{flex:none}
-#mascot .bg-bubble{min-height:0;height:62px;overflow:hidden}
-#mascot .bg-bubble p{font-size:13px;line-height:1.24}
+/* balão com altura fixa no celular: fala nova não empurra tabuleiro/teclado.
+   3 linhas cabem no tamanho normal; fala muito longa encolhe a fonte (fitBubble). */
+#mascot .bg-bubble{min-height:0;height:70px;overflow:hidden;padding:6px 12px}
+#mascot .bg-bubble p{font-size:13px;line-height:1.22}
 #mascot .bg-bubble p.long{font-size:12px;line-height:1.2}
 .side-card{display:none}
+/* barra no celular: o título do jogo não pode virar "T..." */
+@media (max-width:559px){
+  #bar{gap:6px}
+  #bar .bar-title small{display:none}
+  #bar .lvl-chip{padding-right:3px}
+  #bar .lvl-chip .mini{display:none}
+}
 main{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 
 /* ---------- modos ---------- */
@@ -33,27 +42,26 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 .seg.kind button[aria-pressed="true"]{background:var(--cyan)}
 .seg button:focus-visible{outline:3px solid var(--cyan);outline-offset:1px}
 .seg .n{font-size:11px;opacity:.75;margin-left:2px}
-#bar .bar-title small{overflow:hidden;text-overflow:ellipsis}
-@media (max-width:420px){ #bar .bar-title small{letter-spacing:.1em} }
 @media (max-width:560px){ .seg button{font-size:13.5px;padding:5px 7px} .seg .n{display:none} }
 @media (max-width:360px){ .seg button{font-size:12.5px;padding:5px 5px} .modes{gap:5px} }
 
 /* ---------- tabuleiros ---------- */
 #stage{flex:1;min-height:0;position:relative;display:grid;place-items:center}
 #boards{display:grid;gap:var(--gb,10px);grid-template-columns:repeat(var(--cols,1),auto);justify-content:center;align-content:center}
-.board{position:relative;display:grid;gap:var(--g,6px);padding:var(--pad,0px);border-radius:14px;transition:border-color .3s,box-shadow .3s}
+.board{position:relative;display:grid;gap:var(--gy,var(--g,6px));padding:var(--pad,0px);border-radius:14px;transition:border-color .3s,box-shadow .3s}
 .multi .board{background:rgba(20,10,42,.55);border:2.5px solid var(--ink);box-shadow:0 3px 0 var(--ink)}
 .multi .board.solved{border-color:var(--c-ok);box-shadow:0 3px 0 var(--ink),0 0 0 2px var(--ink)}
 .board .ok{position:absolute;right:-7px;top:-9px;z-index:2;display:none;width:22px;height:22px;border-radius:50%;background:var(--c-ok);border:2.5px solid var(--ink);color:var(--ink);font:400 13px/17px var(--chunky);text-align:center}
 .multi .board.solved .ok{display:block}
 .row{display:grid;grid-template-columns:repeat(5,var(--t,56px));gap:var(--g,6px)}
-.tile{--bw:max(1.5px,calc(var(--t,56px)*.055));width:var(--t,56px);height:var(--t,56px);display:grid;place-items:center;font-family:var(--chunky);font-size:calc(var(--t,56px)*.56);line-height:1;color:var(--paper);border:var(--bw) dashed rgba(255,247,230,.17);border-radius:calc(var(--t,56px)*.17);user-select:none;-webkit-user-select:none;text-transform:uppercase}
+/* --t = largura, --th = altura (no quarteto do celular o quadradinho pode ser mais largo que alto) */
+.tile{--h:var(--th,var(--t,56px));--bw:max(1.5px,calc(var(--h)*.055));width:var(--t,56px);height:var(--h);display:grid;place-items:center;font-family:var(--chunky);font-size:var(--fs,calc(var(--h)*.56));line-height:1;color:var(--paper);border:var(--bw) dashed rgba(255,247,230,.17);border-radius:calc(var(--h)*.17);user-select:none;-webkit-user-select:none;text-transform:uppercase}
 .row.cur .tile{border-style:solid;border-color:rgba(255,247,230,.42);background:rgba(255,247,230,.05);cursor:pointer}
-.row.cur .tile.cursor{border-color:var(--cyan);box-shadow:inset 0 calc(var(--t,56px)*-.08) 0 var(--cyan)}
+.row.cur .tile.cursor{border-color:var(--cyan);box-shadow:inset 0 calc(var(--h)*-.08) 0 var(--cyan)}
 .tile[data-s]{border-style:solid;border-color:var(--ink);box-shadow:0 calc(var(--bw)*1.3) 0 var(--ink)}
 .tile[data-s="t"]{background:var(--paper);color:var(--ink)}
 .row.cur .tile[data-s="t"]{border-color:var(--ink);background:var(--paper)}
-.row.cur .tile[data-s="t"].cursor{box-shadow:0 calc(var(--bw)*1.3) 0 var(--ink),inset 0 calc(var(--t,56px)*-.09) 0 var(--cyan)}
+.row.cur .tile[data-s="t"].cursor{box-shadow:0 calc(var(--bw)*1.3) 0 var(--ink),inset 0 calc(var(--h)*-.09) 0 var(--cyan)}
 .tile[data-s="c"]{background:var(--c-ok);color:var(--ink)}
 .tile[data-s="p"]{background:var(--c-mid);color:var(--ink)}
 .tile[data-s="a"]{background:var(--c-no);color:var(--c-no-t)}
@@ -92,16 +100,21 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 /* ---------- painel de fim ---------- */
 .endp{flex:none;width:100%;max-width:560px;margin:0 auto;height:calc(var(--kh)*3 + 18px);display:flex;flex-direction:column;justify-content:center;gap:8px;padding:10px 12px;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--pink);animation:bg-popin .35s cubic-bezier(.3,1.6,.5,1)}
 .endp .top{display:flex;align-items:center;gap:10px;min-width:0}
-.endp h3{margin:0;font-family:var(--display);font-weight:400;font-size:28px;letter-spacing:.03em;line-height:1;color:var(--violet);white-space:nowrap}
+.endp h3{flex:none;margin:0;font-family:var(--display);font-weight:400;font-size:28px;letter-spacing:.03em;line-height:1;color:var(--violet);white-space:nowrap}
+.endp h3 small{font-size:.7em;color:#D0206E}
 .endp .ans{display:flex;flex-wrap:wrap;gap:5px;min-width:0}
 .endp .ans span{font-family:var(--chunky);font-size:15px;padding:2px 8px;border:2.5px solid var(--ink);border-radius:8px;background:var(--c-ok);white-space:nowrap}
 .endp .ans span.lost{background:var(--pink)}
 .endp .meta{margin:0;font-size:13px;color:var(--text-ink);line-height:1.3}
 .endp .meta b{font-family:var(--chunky);font-weight:400;color:var(--violet)}
 .endp .acts{display:flex;gap:8px}
-.endp .acts .btn{flex:1 1 0;min-width:0;height:44px;font-size:15px;padding:0 6px;white-space:nowrap}
+.endp .acts .btn{flex:1 1 0;min-width:0;height:44px;font-size:clamp(13px,3.8vw,15px);padding:0 4px;white-space:nowrap}
 
 /* ---------- modais ---------- */
+.bg-card .stat-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.bg-card .stat{padding:8px 2px}
+.bg-card .stat b{font-size:20px}
+.bg-card .stat span{display:block;font-size:12px;letter-spacing:0;line-height:1.15;text-transform:none}
 .st-tabs{display:flex;gap:6px;margin:10px 0 2px;flex-wrap:wrap}
 .st-tabs .btn{height:34px;padding:0 12px;font-size:14px;box-shadow:0 3px 0 var(--ink)}
 .st-tabs .btn[aria-pressed="true"]{background:var(--cyan)}
@@ -127,11 +140,13 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
   .tm[data-mode="quarteto"]{--kh:46px}
   .tm[data-mode="quarteto"] #kb{gap:5px}
 }
-@media (max-height:700px) and (max-width:879px){ .tm{--kh:46px} #mascot .bg-mascot{width:48px;height:48px} #mascot .bg-bubble{height:54px} #mascot .bg-bubble p{font-size:12px} }
+@media (max-height:700px) and (max-width:879px){ .tm{--kh:46px} #mascot .bg-mascot{width:48px;height:48px} #mascot .bg-bubble{height:62px;padding-block:5px} #mascot .bg-bubble p,#mascot .bg-bubble p.long{font-size:12px;line-height:1.2} }
 
 /* ---------- desktop ---------- */
 @media (min-width:880px){
   .tm{--kh:58px;display:grid;grid-template-columns:290px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);column-gap:30px;row-gap:12px;padding-block:12px 18px;min-height:600px}
+  /* 4 quadros lado a lado (quarteto) precisam de largura, senão o quadradinho fica miúdo */
+  .tm{max-width:1360px}
   #bar{grid-column:1/-1}
   #side{grid-column:1;grid-row:2;gap:18px;padding-top:14px;min-height:0;overflow:auto}
   #mascot .bg-bubble{height:auto;min-height:118px;overflow:visible}
@@ -183,9 +198,9 @@ main{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
     <p class="sr" id="sr" aria-live="polite"></p>
   </main>
 </div>
-<script src="../shared/falas.js?v=2609241402"></script><script src="../shared/bugado.js?v=2609241402"></script>
-<script src="palavras.js?v=2609241402"></script>
-<script src="falas-termo.js?v=2609241402"></script>
+<script src="../shared/falas.js?v=2609242000"></script><script src="../shared/bugado.js?v=2609242000"></script>
+<script src="palavras.js?v=2609242000"></script>
+<script src="falas-termo.js?v=2609242000"></script>
 <script>
 (() => {
 'use strict';
@@ -304,21 +319,29 @@ function fit(){
   if (!M) return;
   const W = stage.clientWidth, H = stage.clientHeight; if (!W || !H) return;
   const desk = innerWidth >= 880, n = M.n, R = M.tries;
-  const maxT = desk ? {1:66, 2:56, 4:46}[n] : {1:64, 2:52, 4:42}[n];
+  const maxT = desk ? {1:66, 2:56, 4:48}[n] : innerWidth >= 600 ? {1:72, 2:60, 4:48}[n] : {1:64, 2:52, 4:42}[n];
   const opts = n === 1 ? [[1,1]] : n === 2 ? [[2,1],[1,2]] : [[2,2],[4,1]];
+  // quarteto no celular: 18 linhas empilhadas, a altura é o gargalo. Deixa o quadradinho
+  // ficar mais largo que alto (até 1.45x) e aperta os espaços pra letra não virar formiga.
+  const rect = n === 4 && !desk;
   let best = null;
   for (const [c, r] of opts){
-    const gb = n === 1 ? 0 : (desk ? 18 : 10), pad = n === 1 ? 0 : (desk ? 9 : 5);
+    const gb = n === 1 ? 0 : (desk ? 18 : rect ? 6 : 10), pad = n === 1 ? 0 : (desk ? 9 : rect ? 3 : 5);
     for (const g of (n === 1 ? [6] : n === 2 ? [5,4] : [4,3])){
+      const gy = rect ? 2 : g;
       const bw = (W - gb*(c-1))/c - pad*2 - 5, bh = (H - gb*(r-1))/r - pad*2 - 8;
-      const t = Math.floor(Math.min((bw - 4*g)/5, (bh - (R-1)*g)/R, maxT));
-      if (!best || t > best.t) best = { t, c, r, g, gb, pad };
+      const tw = Math.floor((bw - 4*g)/5), th = Math.floor((bh - (R-1)*gy)/R);
+      let t, h;
+      if (rect){ h = Math.min(th, maxT); t = Math.min(tw, Math.floor(h*1.45)); h = Math.min(h, t); }
+      else t = h = Math.min(tw, th, maxT);
+      if (!best || t*h > best.t*best.h) best = { t, h, c, r, g, gy, gb, pad };
     }
   }
-  const t = Math.max(12, best.t);
+  const t = Math.max(12, best.t), h = Math.max(12, best.h);
   const s = boardsEl.style;
-  s.setProperty('--t', t + 'px'); s.setProperty('--g', best.g + 'px'); s.setProperty('--gb', best.gb + 'px');
-  s.setProperty('--pad', best.pad + 'px'); s.setProperty('--cols', best.c);
+  s.setProperty('--t', t + 'px'); s.setProperty('--th', h + 'px'); s.setProperty('--g', best.g + 'px'); s.setProperty('--gy', best.gy + 'px');
+  s.setProperty('--fs', Math.round(t > h ? Math.min(h*.68, t*.5) : t*.56) + 'px');
+  s.setProperty('--gb', best.gb + 'px'); s.setProperty('--pad', best.pad + 'px'); s.setProperty('--cols', best.c);
   if (layout.c !== best.c || layout.r !== best.r){ layout = { c:best.c, r:best.r }; renderKeys(); }
 }
 if ('ResizeObserver' in window) new ResizeObserver(() => fit()).observe(stage); else addEventListener('resize', fit);
@@ -396,14 +419,14 @@ function renderSide(){
   const used = S.guesses.length;
   const m = stats(S.mode), st = streakOf(m);
   card.innerHTML = `<h4>${M.name}${S.kind === 'daily' ? ' #' + S.day : ''}</h4>
-    <p class="sub">${S.kind === 'daily' ? 'Diário · igual pra todo mundo hoje' : 'Treino · palavra aleatória'} · ${M.n} palavra${M.n>1?'s':''}</p>
+    <p class="sub">${S.kind === 'daily' ? 'Diário · a mesma pra geral hoje' : 'Treino · palavra aleatória'} · ${M.n} palavra${M.n>1?'s':''}</p>
     <div class="dots" aria-label="${used} de ${M.tries} tentativas usadas">${Array.from({length:M.tries}, (_, i) => `<i class="${i < used ? 'u' : ''}"></i>`).join('')}</div>
     <div class="leg">
       <span><i style="background:var(--c-ok)"></i>Letra certa no lugar certo</span>
-      <span><i style="background:var(--c-mid)"></i>Tem na palavra, lugar errado</span>
+      <span><i style="background:var(--c-mid)"></i>Tem na palavra, mas em outro lugar</span>
       <span><i style="background:var(--c-no)"></i>Não tem na palavra</span>
     </div>
-    <div class="kbd">🔥 Sequência no ${M.name.toLowerCase()} diário: <b>${st}</b><br>Atalhos: <kbd>Enter</kbd> envia · <kbd>←</kbd><kbd>→</kbd> movem o cursor · clique num quadradinho pra editar</div>`;
+    <div class="kbd">🔥 Sequência no diário: <b>${st}</b> dia${st === 1 ? '' : 's'}<br><kbd>Enter</kbd> manda · <kbd>←</kbd><kbd>→</kbd> mexem o cursor · clica num quadradinho pra editar ele</div>`;
 }
 
 /* ---------------- entrada ---------------- */
@@ -544,7 +567,7 @@ function after(word, idx, before, fin){
   const newly = S.answers.map((a,b) => b).filter(b => !before.solvedBefore[b] && solvedAt(b) === idx);
   if (newly.length){
     newly.forEach(b => { const bd = boardsEl.children[b]; bd.classList.remove('yay'); void bd.offsetWidth; bd.classList.add('yay'); });
-    B.sfx.good(); B.burst($('#burst'), pick(['UMA JÁ!','CAIU!','PAPOU!','BOA!']), '#3DDC84');
+    B.sfx.good(); B.burst($('#burst'), pick(['UMA JÁ!','CAIU!','PAPOU!','AÍ SIM!']), '#3DDC84');
     const left = S.answers.filter((a,b) => solvedAt(b) < 0).length;
     B.talk('termoQuadroResolvido', { palavra: show(S.answers[newly[0]]), n: left }, 'happy', 5000);
     return;
@@ -625,7 +648,7 @@ function finish(won){
       if (b === S.answers.findIndex((x, i) => solvedAt(i) === used - 1) || M.n === 1)
         [...row.children].forEach((t, i) => setTimeout(() => t.classList.add('win'), i*90));
     });
-    const words = M.n === 1 ? ({1:'DE PRIMEIRA!!',2:'GÊNIO!',3:'BRABO!',4:'BOA!',5:'UFA!',6:'NO SUFOCO!'})[used] : (M.n === 2 ? 'DUETOU!' : 'QUARTETOU!');
+    const words = M.n === 1 ? ({1:'DE PRIMEIRA!!',2:'QUE ISSO!',3:'BRABO!',4:'BOA!',5:'UFA!',6:'NO SUFOCO!'})[used] : (M.n === 2 ? 'DUETOU!' : 'QUARTETOU!');
     B.burst($('#burst'), words, '#FFD23F');
     if (M.n === 1) B.talk('termoGanhou' + used, null, 'happy', 7000);
     else if (used === M.tries) B.talk('termoGanhouLimite', null, 'happy', 7000);
@@ -637,7 +660,7 @@ function finish(won){
     }, 7600);
   } else {
     B.sfx.lose(); B.glitch();
-    B.burst($('#burst'), pick(['DEU RUIM','GAME OVER','F','AI AI AI']), '#FF4F9A');
+    B.burst($('#burst'), pick(['DEU RUIM','MDS','F','AI AI AI']), '#FF4F9A');
     const miss = S.answers.filter((a, b) => solvedAt(b) < 0).map(show).join(', ');
     B.talk(M.n === 1 ? 'termoPerdeu' : M.n === 2 ? 'duetoPerdeu' : 'quartetoPerdeu', { palavra: miss }, 'dead', 8000);
     if (lostStreak >= 2) setTimeout(() => B.talk('termoSequenciaPerdida', { n: lostStreak }, 'dead', 6000), 8200);
@@ -652,14 +675,14 @@ function renderEnd(){
   if (!done){ clearInterval(renderEnd.t); return; }
   const used = S.guesses.length;
   const words = S.answers.map((a, b) => `<span class="${solvedAt(b) < 0 ? 'lost' : ''}">${show(a)}</span>`).join('');
-  const title = S.won ? (M.n === 1 ? `${used}/${M.tries}!` : `${used}/${M.tries}!`) : 'Não deu';
+  const title = S.won ? `${used}/${M.tries}` : `X/${M.tries}`;
   const daily = S.kind === 'daily';
-  endEl.innerHTML = `<div class="top"><h3>${S.won ? 'ACERTOU' : 'DEU RUIM'} <small style="font-size:.65em;color:var(--pink)">${title}</small></h3><div class="ans">${words}</div></div>
-    <p class="meta">${daily ? `Próximo diário em <b id="cd">--:--:--</b> · ` : ''}${daily ? 'Enquanto isso, o treino é infinito.' : 'Treino: palavra nova quando quiser.'}</p>
+  endEl.innerHTML = `<div class="top"><h3>${S.won ? 'ACERTOU' : 'DEU RUIM'} <small>${title}</small></h3><div class="ans">${words}</div></div>
+    <p class="meta">${daily ? `Próximo diário em <b id="cd">--:--:--</b>. Até lá, treino infinito.` : 'Treino: quer outra palavra? É só apertar ali.'}</p>
     <div class="acts">
       <button type="button" class="btn" data-end="share">Compartilhar</button>
       <button type="button" class="btn cool" data-end="stats">Resultado</button>
-      <button type="button" class="btn primary" data-end="${daily ? 'treino' : 'nova'}">${daily ? 'Jogar treino' : 'Nova palavra'}</button>
+      <button type="button" class="btn primary" data-end="${daily ? 'treino' : 'nova'}">${daily ? 'Bora treinar' : 'Outra palavra'}</button>
     </div>`;
   clearInterval(renderEnd.t);
   if (daily){ const tick = () => { const el = document.getElementById('cd'); if (el) el.textContent = countdown(); }; tick(); renderEnd.t = setInterval(tick, 1000); }
@@ -695,8 +718,8 @@ function shareText(){
 async function share(){
   const txt = shareText();
   const ok = await B.copyText(txt);
-  if (ok){ B.toast('Copiado!', 'Resultado na área de transferência.'); B.talk('termoCompartilhou', null, 'happy', 4500); return; }
-  B.openModal(`<h2>Copia aí</h2><p class="sub">Não consegui copiar sozinho. Seleciona e copia:</p><textarea class="share-box" readonly>${txt}</textarea><div class="m-actions"><button class="btn primary" data-act="close">Fechou</button></div>`);
+  if (ok){ B.toast('Copiado!', 'agora é só colar no grupo'); B.talk('termoCompartilhou', null, 'happy', 4500); return; }
+  B.openModal(`<h2>Copia aí</h2><p class="sub">Não consegui copiar sozinho. Seleciona o texto e copia:</p><textarea class="share-box" readonly>${txt}</textarea><div class="m-actions"><button class="btn primary" data-act="close">Fechou</button></div>`);
   const ta = document.querySelector('.share-box'); if (ta){ ta.focus(); ta.select(); }
 }
 
@@ -715,26 +738,27 @@ function openStats(mode, result){
   let head = `<h2>Estatísticas</h2>`;
   if (statsResult){
     const used = S.guesses.length;
-    head = `<h2 class="big">${S.won ? (M.n === 1 ? ['','DE PRIMEIRA!','GÊNIO!','BRABO!','MANDOU BEM!','UFA!','NO SUFOCO!'][used] || 'ACERTOU!' : 'ACERTOU TUDO!') : 'DEU RUIM!'}</h2>
-      <p class="sub">${S.kind === 'daily' ? `${M.name} #${S.day}` : `${M.name} · treino`} · ${S.won ? `${used}/${M.tries} tentativas` : 'faltou pouco (ou muito)'}${lastXP ? ` · <b style="color:var(--violet)">+${lastXP} XP</b>` : ''}</p>
+    head = `<h2 class="big">${S.won ? (M.n === 1 ? ['','DE PRIMEIRA!','QUE ISSO!','BRABO!','MANDOU BEM!','UFA!','NO SUFOCO!'][used] || 'ACERTOU!' : 'ACERTOU TUDO!') : 'DEU RUIM!'}</h2>
+      <p class="sub">${S.kind === 'daily' ? `${M.name} #${S.day}` : `${M.name} · treino`} · ${S.won ? `acertou em ${used} de ${M.tries}` : 'faltou pouco (ou muito)'}${lastXP ? ` · <b style="color:var(--violet)">+${lastXP} XP</b>` : ''}</p>
       <div class="res-words">${S.answers.map((a,b) => `<span class="${solvedAt(b) < 0 ? 'lost' : ''}">${show(a)}</span>`).join('')}</div>`;
   }
   const tabs = `<div class="st-tabs" role="group" aria-label="Modo">${Object.keys(MODES).map(k => `<button class="btn" data-act="st-${k}" aria-pressed="${k===statsMode}">${MODES[k].name}</button>`).join('')}</div>`;
   const daily = S.kind === 'daily';
   const acts = [];
   if (statsResult) acts.push(`<button class="btn hot" data-act="share">Compartilhar</button>`);
-  if (statsResult) acts.push(daily ? `<button class="btn primary" data-act="treino">Jogar treino</button>` : `<button class="btn primary" data-act="nova">Nova palavra</button>`);
+  if (statsResult) acts.push(daily ? `<button class="btn primary" data-act="treino">Bora treinar</button>` : `<button class="btn primary" data-act="nova">Outra palavra</button>`);
   acts.push(`<button class="btn" data-act="close">Fechar</button>`);
+  const pl = (n, s, p) => `<b>${n}</b> ${n === 1 ? s : p}`;
   B.openModal(`${head}${tabs}
     <div class="stat-grid">
       <div class="stat"><b>${m.played}</b><span>Jogos</span></div>
       <div class="stat"><b>${winPct}%</b><span>Vitórias</span></div>
-      <div class="stat"><b>${streakOf(m)}</b><span>Sequência</span></div>
+      <div class="stat"><b>${streakOf(m)}</b><span>Seguidas</span></div>
       <div class="stat"><b>${m.max}</b><span>Recorde</span></div>
     </div>
-    <h3>Tentativas no diário (${MM.name})</h3>
+    <h3>Em quantas acertou (diário)</h3>
     <div class="dist">${rows}</div>
-    <p class="m-note">Treino: <b>${m.tp}</b> jogos, <b>${m.tw}</b> vitórias · Próximo diário em <b id="cd2">${countdown()}</b></p>
+    <p class="m-note">Treino: ${pl(m.tp, 'jogo', 'jogos')}, ${pl(m.tw, 'vitória', 'vitórias')} · próximo diário em <b id="cd2">${countdown()}</b></p>
     <div class="m-actions">${acts.join('')}</div>`);
   clearInterval(openStats.t);
   openStats.t = setInterval(() => { const el = document.getElementById('cd2'); if (!el) return clearInterval(openStats.t); el.textContent = countdown(); }, 1000);
@@ -746,23 +770,23 @@ B.onAct('nova', () => { B.closeModal(true); newTreino(); });
 
 function openHelp(auto){
   G.seenHelp = true; B.saveProfile();
-  B.openModal(`<h2>Como jogar Termo</h2>
-    <p class="sub">Descubra a palavra secreta de 5 letras. Você digita um chute, aperta ENTER e as letras mudam de cor pra te dar pistas.</p>
+  B.openModal(`<h2>Como joga o Termo</h2>
+    <p class="sub">Tem uma palavra secreta de 5 letras. Cê digita um chute, aperta ENTER e as letras mudam de cor pra te dar pista. São 6 chances.</p>
     <div class="ex" aria-label="Exemplo: G verde"><i class="c">G</i><i>A</i><i>T</i><i>O</i><i>S</i></div>
-    <p><b>Verde</b>: a letra G está na palavra e no lugar certo.</p>
-    <div class="ex" aria-label="Exemplo: I amarelo"><i>P</i><i>I</i><i class="p">L</i><i>H</i><i>A</i></div>
-    <p><b>Amarelo</b>: o L está na palavra, mas em outro lugar.</p>
+    <p><b>Verde</b>: o G tá na palavra e no lugar certo.</p>
+    <div class="ex" aria-label="Exemplo: L amarelo"><i>P</i><i>I</i><i class="p">L</i><i>H</i><i>A</i></div>
+    <p><b>Amarelo</b>: o L tá na palavra, mas em outro lugar.</p>
     <div class="ex" aria-label="Exemplo: M cinza"><i>T</i><i>E</i><i>R</i><i class="a">M</i><i>O</i></div>
-    <p><b>Cinza</b>: o M não aparece na palavra. Em lugar nenhum. Esquece ele.</p>
-    <h3>O que mais eu preciso saber</h3>
+    <p><b>Cinza</b>: o M não tem na palavra, em lugar nenhum. Pode esquecer ele.</p>
+    <h3>O que mais cê precisa saber</h3>
     <ul>
-      <li>🎯 <span>Só vale palavra que existe (plural e verbo conjugado valem). Palavra inventada não gasta tentativa, só a tua dignidade.</span></li>
-      <li>✍️ <span>Não precisa de acento nem cedilha: digita <b>acoes</b> e eu mostro <b>AÇÕES</b>. C vale Ç, A vale Ã.</span></li>
-      <li>🔁 <span>Letras podem se repetir na resposta. Se aparecer um amarelo e um cinza da mesma letra, a palavra só tem uma dela.</span></li>
-      <li>👆 <span>Clica num quadradinho da linha atual pra escrever direto nele. No PC: setas movem, Backspace apaga, Enter envia.</span></li>
-      <li>👯 <span><b>Dueto</b>: 2 palavras ao mesmo tempo, 7 chances. <b>Quarteto</b>: 4 palavras, 9 chances. Cada chute vale pra todos os quadros; as teclas mostram um pedacinho de cor pra cada quadro.</span></li>
-      <li>📅 <span><b>Diário</b>: a mesma palavra pra todo mundo, uma por dia, com sequência e estatística. <b>Treino</b>: palavra aleatória infinita.</span></li>
-      <li>⭐ <span>Ganhar dá XP pro teu nível no Fliperama. Quanto menos tentativas, mais XP.</span></li>
+      <li>🎯 <span>Só vale palavra que existe (plural e verbo conjugado valem). Palavra inventada não gasta tentativa, só tua dignidade.</span></li>
+      <li>✍️ <span>Não precisa de acento nem cedilha: digita <b>acoes</b> que eu mostro <b>AÇÕES</b>.</span></li>
+      <li>🔁 <span>A resposta pode ter letra repetida. Se a mesma letra der um amarelo e um cinza, a palavra só tem uma dela.</span></li>
+      <li>👆 <span>Clica num quadradinho da linha de agora pra escrever direto nele. No PC: as setas mexem o cursor, Backspace apaga, Enter manda.</span></li>
+      <li>👯 <span><b>Dueto</b>: 2 palavras de uma vez, 7 chances. <b>Quarteto</b>: 4 palavras, 9 chances. Cada chute vale pra todos os quadros, e cada tecla mostra um pedacinho de cor pra cada quadro.</span></li>
+      <li>📅 <span><b>Diário</b>: a mesma palavra pra geral, uma por dia, com sequência e estatística. <b>Treino</b>: palavra aleatória, joga quanto quiser.</span></li>
+      <li>⭐ <span>Ganhar dá XP pro teu nível no Fliperama. Quanto menos tentativa, mais XP.</span></li>
     </ul>
     <div class="m-actions"><button class="btn primary" data-act="close">Bora!</button></div>`);
   if (auto !== true) B.talk('termoAjuda', null, 'smug', 4500);
@@ -803,6 +827,18 @@ B.mountBar(document.getElementById('bar'), { title:'Termo', color:'#3DDC84', but
   { id:'btnSom', icon: B.profile().sound ? 'on' : 'off', label:'Som liga/desliga', onClick: () => { B.setSound(!B.profile().sound); document.getElementById('btnSom').innerHTML = B.ICON[B.profile().sound ? 'on' : 'off']; } }
 ]});
 B.mountMascot(document.getElementById('mascot'), { pokeCat:'cutucarTermo' });
+// balão de altura fixa no celular: se a fala não couber, encolhe a fonte até caber (mín. 11px)
+const bubP = document.querySelector('#mascot .bg-bubble p');
+function fitBubble(){
+  if (!bubP) return;
+  bubP.style.fontSize = '';
+  if (innerWidth >= 880) return;
+  const box = bubP.parentElement, avail = box.clientHeight - 12;
+  let fs = parseFloat(getComputedStyle(bubP).fontSize);
+  while (bubP.scrollHeight > avail + 1 && fs > 11){ fs -= .5; bubP.style.fontSize = fs + 'px'; }
+}
+if (bubP) new MutationObserver(fitBubble).observe(bubP, { childList:true, characterData:true, subtree:true });
+addEventListener('resize', fitBubble);
 const wide = matchMedia('(min-width:880px)');
 const onWide = () => { B.setStack(wide.matches); fit(); };
 wide.addEventListener ? wide.addEventListener('change', onWide) : wide.addListener(onWide);

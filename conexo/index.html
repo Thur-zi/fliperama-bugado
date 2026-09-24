@@ -3,27 +3,30 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2A1650">
 <title>Conexo · Fliperama Bugado</title>
-<meta name="description" content="Ache os 4 grupos escondidos entre 16 palavras. Diário e Infinito, com um mascote que julga cada jogada.">
+<meta name="description" content="Acha os 4 grupos escondidos no meio de 16 palavras. Tem diário, tem Infinito e tem um mascote zoando cada jogada.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
-<link rel="stylesheet" href="../shared/base.css?v=2609241402">
+<link rel="stylesheet" href="../shared/base.css?v=2609242000">
 <style>
 :root{
   --g1:#FFD23F; --g2:#3DDC84; --g3:#4FA8FF; --g4:#C07BFF;
   --gap:8px;
-  --rowh:clamp(56px, min(22vw, calc((100dvh - 330px) / 4.6)), 84px);
+  --rowh:clamp(56px, min(22vw, calc((100dvh - 360px) / 4.6)), 84px);
 }
 .cx-layout{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 .cx-main{width:100%;max-width:560px;margin:0 auto;min-width:0}
 #mascot{width:100%;max-width:560px;margin:0 auto}
-#mascot .bg-bubble{min-height:60px}
+/* balão com altura fixa: a fala muda e o tabuleiro não pula (fala longa encolhe a letra) */
+#mascot .bg-bubble{height:78px;min-height:0;overflow:hidden}
+#mascot .bg-bubble p{max-height:100%;overflow:hidden}
+#mascot .bg-bubble.grow{height:auto}
 .cx-side-extra{display:none}
 
 /* ---------- topo: modo + vidas ---------- */
 .cx-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .seg{display:flex;background:var(--deep);border:3px solid var(--ink);border-radius:14px;padding:3px;gap:3px;box-shadow:0 3px 0 var(--ink)}
-.seg button{appearance:none;border:0;background:transparent;color:var(--muted);font-family:var(--chunky);font-size:15px;padding:6px 11px;border-radius:10px;cursor:pointer;line-height:1.05;white-space:nowrap;transition:background-color .15s,color .15s}
-.seg button small{font-size:11px;opacity:.8;margin-left:2px}
+.seg button{appearance:none;border:0;background:transparent;color:var(--muted);font-family:var(--chunky);font-size:15px;min-height:40px;padding:6px 11px;border-radius:10px;cursor:pointer;line-height:1.05;white-space:nowrap;transition:background-color .15s,color .15s}
+.seg button small{font-size:12px;opacity:.85;margin-left:2px}
 .seg button.on{background:var(--pink);color:var(--ink)}
 .seg button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
 .seg .done-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);border:1.5px solid var(--ink);margin-left:4px;vertical-align:1px}
@@ -76,7 +79,9 @@
 
 /* ---------- modais ---------- */
 .cx-legend{display:flex;flex-direction:column;gap:6px;margin:12px 0 2px}
-.cx-legend div{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:800;color:var(--text-ink)}
+.cx-legend div{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:800;color:var(--text-ink);line-height:1.3}
+.bg-card li > .tag2:first-child{min-width:28px;text-align:center}
+.bg-card .stat span{font-size:12px;letter-spacing:.02em}
 .cx-legend i{flex:none;width:34px;height:20px;border:2.5px solid var(--ink);border-radius:6px}
 .bg-card .ex{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:8px 0 4px}
 .bg-card .ex span{font-family:var(--chunky);font-size:12px;text-align:center;border:2.5px solid var(--ink);border-radius:8px;padding:6px 2px;background:#fff}
@@ -109,6 +114,7 @@
   .cx-main{grid-area:main;max-width:none}
   .cx-side{grid-area:side;position:sticky;top:18px;display:flex;flex-direction:column;gap:18px}
   #mascot{max-width:none}
+  #mascot .bg-bubble{height:auto;min-height:112px}
   .cx-side-extra{display:block;background:var(--deep);border:3px solid var(--ink);border-radius:18px;padding:14px 16px;box-shadow:4px 4px 0 var(--ink)}
   .cx-side-extra h4{margin:0 0 8px;font-family:var(--chunky);font-weight:400;font-size:15px;color:var(--cyan);letter-spacing:.04em}
   .cx-side-extra .cx-legend div{color:var(--paper);font-size:13px}
@@ -118,6 +124,8 @@
   .solved span{font-size:14.5px}
   .actions .btn{height:54px;font-size:18px}
 }
+/* 4 botões + nível na barra: sem isso o título "Conexo" corta entre 381 e 420px */
+@media (max-width:420px){ #bar.bg-bar{gap:5px} }
 @media (max-width:360px){
   .seg button{font-size:13px;padding:6px 8px}
   .heart{width:20px;height:20px}
@@ -137,12 +145,12 @@
       <div class="cx-side-extra">
         <h4>CORES DOS GRUPOS</h4>
         <div class="cx-legend">
-          <div><i style="background:var(--g1)"></i>Amarelo · o fácil</div>
-          <div><i style="background:var(--g2)"></i>Verde · o médio</div>
-          <div><i style="background:var(--g3)"></i>Azul · o difícil</div>
-          <div><i style="background:var(--g4)"></i>Roxo · a pegadinha</div>
+          <div><i style="background:var(--g1)"></i>Amarelo: o fácil</div>
+          <div><i style="background:var(--g2)"></i>Verde: o médio</div>
+          <div><i style="background:var(--g3)"></i>Azul: o difícil</div>
+          <div><i style="background:var(--g4)"></i>Roxo: a pegadinha</div>
         </div>
-        <p>Teclado: <kbd>Enter</kbd> envia · <kbd>Esc</kbd> desmarca · <kbd>E</kbd> embaralha</p>
+        <p>No teclado: <kbd>Enter</kbd> manda, <kbd>Esc</kbd> desmarca e <kbd>E</kbd> embaralha</p>
       </div>
     </aside>
     <main class="cx-main">
@@ -166,10 +174,10 @@
         <button type="button" class="btn cool" id="bResult">Ver resultado</button>
         <button type="button" class="btn primary" id="bNext">Próximo</button>
       </div>
-      <p class="hint" id="hint">Ache <b>4 grupos</b> de 4 palavras com algo em comum.</p>
+      <p class="hint" id="hint">Acha <b>4 grupos</b> de 4 palavras que têm algo em comum</p>
     </main>
   </div>
 </div>
-<script src="../shared/falas.js?v=2609241402"></script><script src="../shared/bugado.js?v=2609241402"></script>
-<script src="puzzles.js?v=2609241402"></script><script src="falas-conexo.js?v=2609241402"></script><script src="conexo.js?v=2609241402"></script>
+<script src="../shared/falas.js?v=2609242000"></script><script src="../shared/bugado.js?v=2609242000"></script>
+<script src="puzzles.js?v=2609242000"></script><script src="falas-conexo.js?v=2609242000"></script><script src="conexo.js?v=2609242000"></script>
 </body></html>
